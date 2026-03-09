@@ -30,9 +30,15 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(plan.openclaw_settings_bundle.mode, "lite")
         self.assertTrue(plan.openclaw_settings_bundle.supports_direct_import)
         self.assertEqual(plan.openclaw_settings_bundle.default_entry_agent_id, "exmachina-main")
+        self.assertIn("OPENCLAW_INSTALL_LANGUAGE", plan.openclaw_settings_bundle.template_variables)
+        self.assertIn("install_mode", plan.openclaw_settings_bundle.install_intake["answers_template"])
+        required_keys = {item["key"] for item in plan.openclaw_settings_bundle.install_intake["required_questions"]}
+        self.assertTrue({"install_language", "conductor_name", "install_mode"}.issubset(required_keys))
         main_agent = plan.openclaw_settings_bundle.settings_patch["agents"]["list"][0]
         self.assertNotIn("metadata", main_agent)
         self.assertEqual(main_agent["sandbox"]["mode"], "off")
+        self.assertEqual(main_agent["name"], "{{OPENCLAW_CONDUCTOR_NAME}}")
+        self.assertIn("{{OPENCLAW_INSTALL_LANGUAGE}}", main_agent["identity"]["theme"])
         self.assertIn("子个体", main_agent["identity"]["theme"])
         self.assertIn("少女式终端", main_agent["identity"]["theme"])
         self.assertIn("已接收", main_agent["identity"]["theme"])
@@ -56,6 +62,7 @@ class PlannerTests(unittest.TestCase):
         self.assertIn("少女式终端", plan.openclaw_install_prompt)
         self.assertIn("可参考句式", plan.openclaw_install_prompt)
         self.assertIn("本机", plan.openclaw_install_prompt)
+        self.assertIn("install/INTAKE.md", plan.openclaw_install_prompt)
 
     def test_plan_mission_builds_full_runtime_topology_when_requested(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -82,6 +89,7 @@ class PlannerTests(unittest.TestCase):
             self.assertIn(agent["sandbox"]["mode"], {"off", "all"})
             self.assertIn("对话口吻要求", agent["identity"]["theme"])
             self.assertIn("优先词汇", agent["identity"]["theme"])
+            self.assertIn("{{OPENCLAW_INSTALL_LANGUAGE}}", agent["identity"]["theme"])
         self.assertEqual(plan.openclaw_settings_bundle.dialogue_contracts["exmachina-primary"]["role_name"], "主连结体")
 
 

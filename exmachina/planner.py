@@ -78,7 +78,7 @@ def plan_mission(
         rationality_protocol,
     )
     workflow = _build_workflow(primary_name, support_names)
-    install_prompt = _build_openclaw_prompt(repo, task, mode, dialogue_contracts["exmachina-main"])
+    install_prompt = _build_openclaw_prompt_with_install_intake(repo, task, mode, dialogue_contracts["exmachina-main"])
     knowledge_handoff = _build_knowledge_handoff(
         task,
         repo,
@@ -1228,6 +1228,18 @@ def _build_openclaw_settings_bundle(
         workspace_value = repo.url
 
     target_config_paths = ["~/.openclaw/openclaw.json", "~/.clawdbot/clawdbot.json"]
+    template_variables = _build_openclaw_template_variables(mode, workspace_value)
+    install_intake = _build_openclaw_install_intake(
+        task=task,
+        current_mode=mode,
+        workspace_value=workspace_value,
+        target_config_paths=target_config_paths,
+        top_conductor=top_conductor,
+        primary_body=primary_body,
+        support_bodies=support_bodies,
+    )
+    main_name = "{{OPENCLAW_CONDUCTOR_NAME}}"
+    main_theme = _with_install_context_theme(dialogue_contracts["exmachina-main"]["theme"], include_conductor_name=True)
     if mode == "lite":
         settings_patch = {
             "agents": {
@@ -1239,9 +1251,9 @@ def _build_openclaw_settings_bundle(
                 "list": [
                     {
                         "id": "exmachina-main",
-                        "name": "ExMachina 主控体",
+                        "name": main_name,
                         "model": {"primary": "{{OPENCLAW_PRIMARY_MODEL}}"},
-                        "identity": {"theme": dialogue_contracts["exmachina-main"]["theme"]},
+                        "identity": {"theme": main_theme},
                         "sandbox": {"mode": "off"},
                     }
                 ],
@@ -1250,11 +1262,13 @@ def _build_openclaw_settings_bundle(
         channels_template: dict[str, object] = {}
         bindings_template: list[dict[str, object]] = []
         merge_instructions = [
+            "先读取 `install/INTAKE.md`，问清语言、全连结指挥体显示名、安装模式和其它配置，再继续安装。",
             "将 `openclaw.settings.json` 中的 `settings_patch.agents` 合并进 OpenClaw 主配置。",
             "把 `workspace` 指向当前仓库或导出包所在路径。",
             "填入 `{{OPENCLAW_PRIMARY_MODEL}}` 后即可通过单个主控 agent 使用 Lite 模式。",
         ]
         usage_notes = [
+            "安装前不要跳过问询；至少确认语言、全连结指挥体显示名、安装模式、配置路径和模型。",
             "Lite 模式默认不要求 channels/accounts/bindings。",
             "如果 OpenClaw 宿主支持 WebUI 或默认入口，只需要一个主控 agent 即可。",
         ]
@@ -1269,16 +1283,16 @@ def _build_openclaw_settings_bundle(
                 "list": [
                     {
                         "id": "exmachina-main",
-                        "name": "ExMachina 主控体",
+                        "name": main_name,
                         "model": {"primary": "{{OPENCLAW_FAST_MODEL}}"},
-                        "identity": {"theme": dialogue_contracts["exmachina-main"]["theme"]},
+                        "identity": {"theme": main_theme},
                         "sandbox": {"mode": "off"},
                     },
                     {
                         "id": "exmachina-primary",
                         "name": f"ExMachina 主连结体 · {primary_body.name}",
                         "model": {"primary": "{{OPENCLAW_PRIMARY_MODEL}}"},
-                        "identity": {"theme": dialogue_contracts["exmachina-primary"]["theme"]},
+                        "identity": {"theme": _with_install_context_theme(dialogue_contracts["exmachina-primary"]["theme"])},
                         "sandbox": {"mode": "all", "scope": "agent"},
                     },
                     *[
@@ -1286,7 +1300,9 @@ def _build_openclaw_settings_bundle(
                             "id": f"exmachina-support-{index}",
                             "name": f"ExMachina 协作连结体 · {body.name}",
                             "model": {"primary": "{{OPENCLAW_SUPPORT_MODEL}}"},
-                            "identity": {"theme": dialogue_contracts[f"exmachina-support-{index}"]["theme"]},
+                            "identity": {
+                                "theme": _with_install_context_theme(dialogue_contracts[f"exmachina-support-{index}"]["theme"])
+                            },
                             "sandbox": {"mode": "all", "scope": "agent"},
                         }
                         for index, body in enumerate(support_bodies, start=1)
@@ -1298,7 +1314,7 @@ def _build_openclaw_settings_bundle(
             "discord": {
                 "enabled": True,
                 "accounts": {
-                    "main": {"name": "ExMachina 主控体", "token": "{{DISCORD_TOKEN_MAIN}}"}
+                    "main": {"name": main_name, "token": "{{DISCORD_TOKEN_MAIN}}"}
                 },
             }
         }
@@ -1319,11 +1335,13 @@ def _build_openclaw_settings_bundle(
             ],
         ]
         merge_instructions = [
+            "先读取 `install/INTAKE.md`，问清语言、全连结指挥体显示名、安装模式和其它配置，再继续安装。",
             "将 `settings_patch.agents` 合并进 OpenClaw 主配置。",
             "按需将 `channels_template` 与 `bindings_template` 合并进 OpenClaw 配置，并替换 token/model 占位符。",
             "仅当宿主明确支持完整多 agent 绑定与路由时再启用 Full 模式。",
         ]
         usage_notes = [
+            "安装前不要跳过问询；至少确认语言、全连结指挥体显示名、安装模式、配置路径和模型。",
             "Full 模式需要宿主支持多个 agent、bindings 和跨 agent 路由。",
             "如果宿主不支持，请退回 Lite 模式。",
         ]
@@ -1335,6 +1353,8 @@ def _build_openclaw_settings_bundle(
         target_config_paths=target_config_paths,
         supports_direct_import=(mode == "lite"),
         default_entry_agent_id="exmachina-main",
+        template_variables=template_variables,
+        install_intake=install_intake,
         dialogue_contracts=dialogue_contracts,
         settings_patch=settings_patch,
         channels_template=channels_template,
@@ -1342,6 +1362,206 @@ def _build_openclaw_settings_bundle(
         merge_instructions=merge_instructions,
         usage_notes=usage_notes,
     )
+
+
+def _build_openclaw_template_variables(mode: str, workspace_value: str) -> dict[str, dict[str, object]]:
+    return {
+        "OPENCLAW_INSTALL_LANGUAGE": {
+            "default": "zh-CN",
+            "required": True,
+            "description": "安装问询确认后的默认输出语言。",
+        },
+        "OPENCLAW_CONDUCTOR_NAME": {
+            "default": "ExMachina 主控体",
+            "required": True,
+            "description": "全连结指挥体 / 主控体的对外显示名。",
+        },
+        "OPENCLAW_INSTALL_MODE": {
+            "default": mode,
+            "required": True,
+            "description": "本次安装模式；若与当前导出包 mode 不一致，需要先重生成对应模式的 pack。",
+        },
+        "EXMACHINA_PACK_ROOT": {
+            "default": workspace_value,
+            "required": True,
+            "description": "当前仓库或导出包所在路径。",
+        },
+        "OPENCLAW_PRIMARY_MODEL": {
+            "default": "",
+            "required": True,
+            "description": "主入口 / Lite 模式主控体使用的模型。",
+        },
+        "OPENCLAW_FAST_MODEL": {
+            "default": "",
+            "required": mode == "full",
+            "description": "Full 模式主控体快速模型。",
+        },
+        "OPENCLAW_SUPPORT_MODEL": {
+            "default": "",
+            "required": mode == "full",
+            "description": "Full 模式协作 agent 使用的模型。",
+        },
+        "DISCORD_TOKEN_MAIN": {
+            "default": "",
+            "required": False,
+            "description": "Full 模式主控体绑定 token；仅在启用渠道绑定时需要。",
+        },
+    }
+
+
+def _build_openclaw_install_intake(
+    task: str,
+    current_mode: str,
+    workspace_value: str,
+    target_config_paths: list[str],
+    top_conductor: TopConductor,
+    primary_body: LinkBody,
+    support_bodies: list[LinkBody],
+) -> dict[str, object]:
+    support_names_text = "、".join(body.name for body in support_bodies) if support_bodies else "无"
+    return {
+        "summary": f"在安装任务「{task}」前，必须先确认语言、全连结指挥体显示名、安装模式和配置参数。",
+        "blocking_rule": "在语言、全连结指挥体显示名、安装模式、目标配置路径与模型未确认前，不得导入 settings patch。",
+        "required_questions": [
+            {
+                "key": "install_language",
+                "label": "语言",
+                "prompt": "这次安装与后续默认输出使用什么语言？",
+                "type": "choice",
+                "required": True,
+                "default": "zh-CN",
+                "placeholder": "OPENCLAW_INSTALL_LANGUAGE",
+                "options": ["zh-CN", "en-US", "ja-JP"],
+            },
+            {
+                "key": "conductor_name",
+                "label": "全连结指挥体名字",
+                "prompt": "希望把全连结指挥体 / 主控体显示为哪个名字？",
+                "type": "text",
+                "required": True,
+                "default": "ExMachina 主控体",
+                "placeholder": "OPENCLAW_CONDUCTOR_NAME",
+                "notes": [
+                    f"默认主控来源仍是 {top_conductor.name}。",
+                    "该名字会写入主控 agent 的 display name，并用于安装期提示。",
+                ],
+            },
+            {
+                "key": "install_mode",
+                "label": "安装模式",
+                "prompt": "这次安装走 lite 还是 full？",
+                "type": "choice",
+                "required": True,
+                "default": current_mode,
+                "placeholder": "OPENCLAW_INSTALL_MODE",
+                "options": ["lite", "full"],
+                "notes": [
+                    "lite 走单会话内联协作路径。",
+                    "full 需要宿主支持多 agent 绑定与路由。",
+                ],
+            },
+            {
+                "key": "target_config_path",
+                "label": "配置文件路径",
+                "prompt": "本次要写入哪份 OpenClaw 配置文件？",
+                "type": "path",
+                "required": True,
+                "default": target_config_paths[0],
+            },
+            {
+                "key": "workspace_root",
+                "label": "仓库 / 导出包路径",
+                "prompt": "把 workspace 指到哪个仓库或导出包路径？",
+                "type": "path",
+                "required": True,
+                "default": workspace_value,
+                "placeholder": "EXMACHINA_PACK_ROOT",
+            },
+            {
+                "key": "primary_model",
+                "label": "主模型",
+                "prompt": "主控体 / Lite 主入口使用哪个模型？",
+                "type": "text",
+                "required": True,
+                "default": "",
+                "placeholder": "OPENCLAW_PRIMARY_MODEL",
+            },
+        ],
+        "optional_questions": [
+            {
+                "key": "fast_model",
+                "label": "快速模型",
+                "prompt": "如果走 Full 模式，主控体快速模型是什么？",
+                "type": "text",
+                "required": False,
+                "default": "",
+                "placeholder": "OPENCLAW_FAST_MODEL",
+                "applies_to": ["full"],
+            },
+            {
+                "key": "support_model",
+                "label": "协作模型",
+                "prompt": "如果走 Full 模式，协作 agent 使用哪个模型？",
+                "type": "text",
+                "required": False,
+                "default": "",
+                "placeholder": "OPENCLAW_SUPPORT_MODEL",
+                "applies_to": ["full"],
+            },
+            {
+                "key": "host_supports_multi_agent",
+                "label": "宿主多 agent 能力",
+                "prompt": "宿主是否支持多 agent 绑定与外部路由？",
+                "type": "boolean",
+                "required": False,
+                "default": current_mode == "full",
+            },
+            {
+                "key": "extra_config_notes",
+                "label": "其它配置",
+                "prompt": "还有哪些渠道绑定、token、workspace 或风格配置需要一并记录？",
+                "type": "text",
+                "required": False,
+                "default": "",
+            },
+        ],
+        "confirmation_checks": [
+            "语言已确认，后续安装说明与交互默认使用该语言。",
+            "全连结指挥体 / 主控体显示名已确认。",
+            "安装模式已确认，且与宿主能力匹配。",
+            f"主连结体已确认：{primary_body.name}。",
+            f"协作连结体已确认：{support_names_text}。",
+            "目标 OpenClaw 配置路径与 workspace 路径已确认。",
+            "模型与额外配置项已确认或显式留空。",
+        ],
+        "mode_resolution_rules": [
+            "如果用户选择 full，但当前导出包是 lite，先重生成 full 包，再继续安装。",
+            "如果宿主不支持多 agent 绑定与路由，则强制退回 lite。",
+            "如果模型、配置路径或 workspace 路径未确认，则暂停安装。",
+        ],
+        "answers_template": {
+            "install_language": "zh-CN",
+            "conductor_name": "ExMachina 主控体",
+            "install_mode": current_mode,
+            "target_config_path": target_config_paths[0],
+            "workspace_root": workspace_value,
+            "primary_model": "",
+            "fast_model": "",
+            "support_model": "",
+            "host_supports_multi_agent": current_mode == "full",
+            "extra_config_notes": "",
+        },
+    }
+
+
+def _with_install_context_theme(theme: str, include_conductor_name: bool = False) -> str:
+    prefix_parts = [
+        "安装期约束：默认输出语言使用 {{OPENCLAW_INSTALL_LANGUAGE}}。",
+        "本次安装模式记为 {{OPENCLAW_INSTALL_MODE}}。",
+    ]
+    if include_conductor_name:
+        prefix_parts.append("全连结指挥体 / 主控体显示名使用 {{OPENCLAW_CONDUCTOR_NAME}}。")
+    return "".join(prefix_parts) + theme
 
 
 def _build_openclaw_prompt(
@@ -1402,6 +1622,19 @@ def _build_openclaw_prompt(
         "先装载 /openclaw-pack/protocols/ 下的绝对理性协议，再按『全连结指挥体 → 连结体 → 连结指挥体 → 子个体』结构工作，"
         f"然后执行任务：{task}。{dialogue_suffix}"
     )
+
+
+def _build_openclaw_prompt_with_install_intake(
+    repo: RepoReference | None,
+    task: str,
+    mode: str,
+    main_dialogue_contract: dict[str, object],
+) -> str:
+    intake_prefix = (
+        "开始安装前，先向用户完成 install/INTAKE.md 中的问询：语言、全连结指挥体显示名、安装模式、配置路径、模型和其它配置。"
+        "在答案确认前，不要导入 OpenClaw 配置。"
+    )
+    return intake_prefix + _build_openclaw_prompt(repo, task, mode, main_dialogue_contract)
 
 
 def _dedupe_names(candidates: list[str], primary_name: str) -> list[str]:

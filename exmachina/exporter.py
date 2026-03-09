@@ -1,7 +1,9 @@
 ﻿from __future__ import annotations
 
 import json
+import os
 import shutil
+import stat
 from pathlib import Path
 
 from .dialogue import (
@@ -19,6 +21,27 @@ from .models import (
     RationalityProtocol,
     RuntimeAgentSpec,
 )
+
+
+def _clear_readonly(path: str) -> None:
+    os.chmod(path, stat.S_IWRITE)
+
+
+def _handle_remove_readonly(function, path: str, excinfo) -> None:
+    _clear_readonly(path)
+    function(path)
+
+
+def _remove_tree(path: Path) -> None:
+    shutil.rmtree(path, onerror=_handle_remove_readonly)
+
+
+def _remove_file(path: Path) -> None:
+    try:
+        path.unlink()
+    except PermissionError:
+        _clear_readonly(str(path))
+        path.unlink()
 
 
 def write_plan_files(plan: MissionPlan, out_dir: str | Path) -> Path:
@@ -49,7 +72,7 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         target / "examples",
     ):
         if stale_dir.exists():
-            shutil.rmtree(stale_dir)
+            _remove_tree(stale_dir)
 
     for stale_file in (
         target / "manifest.json",
@@ -59,7 +82,7 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         target / "openclaw.settings.json",
     ):
         if stale_file.exists():
-            stale_file.unlink()
+            _remove_file(stale_file)
 
     conductor_dir = target / "conductor"
     link_bodies_dir = target / "link-bodies"
@@ -139,6 +162,10 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
             "settings_install_readme": "install/SETTINGS.md",
             "installer": "install/install_openclaw_settings.py",
         },
+        "openclaw_install_intake": {
+            "readme": "install/INTAKE.md",
+            "template": "install/intake.template.json",
+        },
         "openclaw_compat_bundle": {
             "install_readme": "install/compat/INSTALL.md",
             "install_plan": "install/compat/openclaw.agents.plan.json",
@@ -167,6 +194,8 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
             "subagents_dir": "subagents",
             "install_dir": "install",
             "compat_dir": "install/compat",
+            "install_intake": "install/INTAKE.md",
+            "install_intake_template": "install/intake.template.json",
             "runtime_dir": "runtime",
             "skills_dir": "skills",
             "workflow": "workflows/mission-loop.md",
@@ -197,11 +226,13 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         json.dumps(plan.openclaw_settings_bundle.to_dict(), ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
-    (target / "BOOTSTRAP.md").write_text(render_bootstrap(plan), encoding="utf-8")
+    (target / "BOOTSTRAP.md").write_text(render_bootstrap_with_install_intake(plan), encoding="utf-8")
     (target / "QUICKSTART.md").write_text(render_quickstart(plan), encoding="utf-8")
     (target / "README.md").write_text(render_pack_readme(plan), encoding="utf-8")
     (workflows_dir / "mission-loop.md").write_text(render_workflow(plan), encoding="utf-8")
     (examples_dir / "openclaw-prompt.md").write_text(plan.openclaw_install_prompt + "\n", encoding="utf-8")
+    (install_dir / "INTAKE.md").write_text(render_install_intake_readme(plan), encoding="utf-8")
+    (install_dir / "intake.template.json").write_text(render_install_intake_template(plan), encoding="utf-8")
     (install_dir / "SETTINGS.md").write_text(render_settings_install_readme(plan), encoding="utf-8")
     (runtime_dir / "README.md").write_text(render_runtime_readme(plan), encoding="utf-8")
     (install_dir / "install_openclaw_settings.py").write_text(render_settings_installer_script(plan), encoding="utf-8")
@@ -609,13 +640,99 @@ def render_bootstrap(plan: MissionPlan) -> str:
     return "\n".join(lines)
 
 
+def render_bootstrap_with_install_intake(plan: MissionPlan) -> str:
+    main_contract = _dialogue_contract_for_agent(plan, "exmachina-main")
+    if plan.mode == "lite":
+        lines = [
+            "# ExMachina · OpenClaw 自举入口",
+            "",
+            "这是 Lite 默认入口：目标是先把 ExMachina 配置载入 OpenClaw 设置，再在单个主控会话中完成装载和执行。",
+            "",
+            "## 当前模式",
+            "- 模式：lite",
+            "- 多 agent 绑定：不需要",
+            "- 外部路由：不需要",
+            "",
+            "## 安装前必须先问清",
+            "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+            "- 在 `install/intake.template.json` 中记录答案，未确认前不要导入任何 settings patch。",
+            "- 如果用户选择 full，而当前导出包是 lite，先回到源码重生成 full 包。",
+            "",
+            "## 你只需要做的事",
+            "1. 先完成 `install/INTAKE.md` 的问询，并确认答案。",
+            "2. 读取 `openclaw.settings.json` 与 `install/SETTINGS.md`，把 ExMachina 配置导入 OpenClaw 设置。",
+            "3. 读取 `manifest.json`，确认当前任务、主连结体和协作链。",
+            "4. 读取 `protocols/` 下的 4 份协议，再读 `conductor/00_全连结指挥体.md`。",
+            "5. 读取主连结体、主连结指挥体，并把协作连结体当作内联参考规则按需消费。",
+            "6. 读取 `runtime/task-board.json`，由 `exmachina-main` 单会话推进任务。",
+            "",
+            "## 当前任务",
+            f"- 标题：{plan.mission_title}",
+            f"- 主连结体：{plan.primary_link_body.name}",
+            f"- 协作连结体：{_body_names(plan.support_link_bodies)}",
+            "",
+        ]
+        _extend_dialogue_contract_section(lines, main_contract)
+        lines.extend(["", "## 启动语", plan.openclaw_install_prompt, ""])
+        return "\n".join(lines)
+
+    lines = [
+        "# ExMachina · OpenClaw 自举入口",
+        "",
+        "你现在要把此仓库作为一个理性多智能体覆盖层加载。",
+        "在这里，OpenClaw 会被组织成一个由多个连结体协作的结构化工作流。",
+        "",
+        "## 当前模式",
+        f"- 模式：{plan.mode}",
+        f"- 是否要求多 agent 绑定：{'是' if plan.openclaw_install_plan.requires_multi_agent_binding else '否'}",
+        f"- 是否要求外部路由：{'是' if plan.runtime_topology.requires_external_routing else '否'}",
+        "",
+        "## 第一原则",
+        "- 先问清安装参数，再导入配置。",
+        "- 先加载协议，再加载角色。",
+        "- 先区分事实与假设，再进行决策。",
+        "- 先做可逆动作，再做不可逆动作。",
+        "- 先输出证据，再输出结论。",
+        "",
+        "## 安装前必须先问清",
+        "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+        "- 在 `install/intake.template.json` 中记录答案，未确认前不要导入任何 settings patch。",
+        "- 如果宿主能力与用户所选模式不匹配，先收束模式再继续。",
+        "",
+        "## 加载顺序",
+        "1. 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+        "2. 在 `install/intake.template.json` 中记录答案，并确认安装模式与宿主能力匹配。",
+        "3. 读取 `manifest.json`，理解项目名、本体结构、协议索引与编排依据。",
+        "4. 读取 `protocols/00_绝对理性协议.md`。",
+        "5. 读取 `protocols/01_证据分级协议.md`。",
+        "6. 读取 `protocols/02_冲突裁决协议.md`。",
+        "7. 读取 `protocols/03_输出契约.md`。",
+        "8. 读取 `conductor/00_全连结指挥体.md` 作为顶层调度规则。",
+        "9. 读取主连结体文件，再读取其对应的连结指挥体文件。",
+        "10. 根据连结体文件中列出的成员子个体，装载 `subagents/` 下对应规则。",
+        "11. 对协作连结体重复上述步骤。",
+        "12. 按 `workflows/mission-loop.md` 的节奏执行任务。",
+        "",
+        "## 当前任务",
+        f"- 标题：{plan.mission_title}",
+        f"- 原始任务：{plan.task}",
+        f"- 主连结体：{plan.primary_link_body.name}",
+        f"- 主连结指挥体：{plan.primary_link_body.link_conductor.name}",
+        f"- 协作连结体：{_body_names(plan.support_link_bodies)}",
+        "",
+    ]
+    _extend_dialogue_contract_section(lines, main_contract)
+    lines.extend(["", "## 启动语", plan.openclaw_install_prompt, ""])
+    return "\n".join(lines)
+
+
 def render_pack_readme(plan: MissionPlan) -> str:
     lines = [
         "# ExMachina OpenClaw Pack",
         "",
         "这是一个可直接放入远程仓库并供 OpenClaw 读取的协作包。",
         "项目名为 ExMachina，用于为 OpenClaw 提供 settings-first 的协议化多智能体协作包。",
-        "首次使用请先读 `QUICKSTART.md`，再按需深入 `BOOTSTRAP.md`、`manifest.json` 与 `runtime/README.md`。",
+        "首次使用请先读 `install/INTAKE.md` 与 `QUICKSTART.md`，再按需深入 `BOOTSTRAP.md`、`manifest.json` 与 `runtime/README.md`。",
         f"默认导出模式：{plan.mode}",
         f"多 agent 绑定要求：{'需要' if plan.openclaw_install_plan.requires_multi_agent_binding else '不需要'}",
         f"外部路由要求：{'需要' if plan.runtime_topology.requires_external_routing else '不需要'}",
@@ -641,6 +758,8 @@ def render_pack_readme(plan: MissionPlan) -> str:
         "- `link-body-conductors/`：各连结体的内部指挥规则",
         "- `subagents/`：成员子个体规则",
         "- `openclaw.settings.json`：首选 OpenClaw 设置导入模板",
+        "- `install/INTAKE.md`：安装前问询清单与阻断规则",
+        "- `install/intake.template.json`：安装问询答案模板",
         "- `install/`：settings-first 说明与设置合并脚本",
         "- `install/compat/`：仅在需要兼容旧 workspace 安装流时生成",
         "- `QUICKSTART.md`：面向首次接入者的最短上手路径",
@@ -660,12 +779,18 @@ def render_install_readme(plan: MissionPlan) -> str:
             "",
             f"摘要：{plan.openclaw_install_plan.summary}",
             "",
+            "## 安装前先问清",
+            "1. 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式和其它配置。",
+            "2. 将答案记录到 `install/intake.template.json`，未确认前不要导入 settings patch。",
+            "3. 如果用户选择 full，而当前导出包是 lite，先重生成 full 导出包。",
+            "",
             "## 最简安装路径",
             "1. 将当前仓库作为 OpenClaw workspace 打开，或直接把仓库链接交给 OpenClaw。",
             "2. 读取仓库根目录 `BOOTSTRAP.md`。",
-            "3. 运行 `python -m exmachina validate-assets`，确认资产引用完整。",
-            "4. 读取 `openclaw-pack/BOOTSTRAP.md` 与 `openclaw-pack/runtime/README.md`。",
-            "5. 让 `exmachina-main` 作为默认入口，在单会话内装载主连结体与协作链说明并执行任务。",
+            "3. 先完成 `install/INTAKE.md` 的问询与答案确认。",
+            "4. 运行 `python -m exmachina validate-assets`，确认资产引用完整。",
+            "5. 读取 `openclaw-pack/BOOTSTRAP.md` 与 `openclaw-pack/runtime/README.md`。",
+            "6. 让 `exmachina-main` 作为默认入口，在单会话内装载主连结体与协作链说明并执行任务。",
             "",
             "## 生成内容",
             "- `openclaw.agents.plan.json`：Lite 单 agent 兼容安装计划",
@@ -683,9 +808,10 @@ def render_install_readme(plan: MissionPlan) -> str:
     minimal_path = [
         "1. 将当前仓库作为 OpenClaw workspace 打开，或直接把仓库链接交给 OpenClaw。",
         "2. 读取仓库根目录 `BOOTSTRAP.md`。",
-        "3. 运行 `python -m exmachina validate-assets`，确认引用完整。",
-        "4. 读取 `install/compat/openclaw.agents.plan.json`，按其中的 agents / binding_plans 创建多 agent。",
-        "5. 让 `exmachina-main` 作为默认入口重新读取 `openclaw-pack/BOOTSTRAP.md` 并进入执行。",
+        "3. 先完成 `install/INTAKE.md` 的问询与答案确认。",
+        "4. 运行 `python -m exmachina validate-assets`，确认引用完整。",
+        "5. 读取 `install/compat/openclaw.agents.plan.json`，按其中的 agents / binding_plans 创建多 agent。",
+        "6. 让 `exmachina-main` 作为默认入口重新读取 `openclaw-pack/BOOTSTRAP.md` 并进入执行。",
     ]
     generated_content = [
         "- `compat/openclaw.agents.plan.json`：多 agent 安装与绑定计划",
@@ -698,6 +824,11 @@ def render_install_readme(plan: MissionPlan) -> str:
         f"摘要：{plan.openclaw_install_plan.summary}",
         f"模式：{plan.openclaw_install_plan.mode}",
         f"是否要求多 agent 绑定：{'是' if plan.openclaw_install_plan.requires_multi_agent_binding else '否'}",
+        "",
+        "## 安装前先问清",
+        "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式和其它配置。",
+        "- 将答案记录到 `install/intake.template.json`，未确认前不要导入 settings patch。",
+        "- 如果宿主能力和用户所选模式不匹配，先收束模式再继续。",
         "",
         "## 最简安装路径",
     ]
@@ -712,6 +843,58 @@ def render_install_readme(plan: MissionPlan) -> str:
     return "\n".join(lines)
 
 
+def render_install_intake_readme(plan: MissionPlan) -> str:
+    intake = plan.openclaw_settings_bundle.install_intake
+    lines = [
+        "# OpenClaw 安装问询",
+        "",
+        f"摘要：{intake.get('summary', '')}",
+        f"阻断规则：{intake.get('blocking_rule', '')}",
+        "",
+        "## 必须先问清",
+    ]
+    for index, item in enumerate(intake.get("required_questions", []), start=1):
+        lines.append(f"{index}. {item['label']}：{item['prompt']}")
+        if item.get("default") not in (None, ""):
+            lines.append(f"   默认值：{item['default']}")
+        if item.get("placeholder"):
+            lines.append(f"   模板变量：`{{{{{item['placeholder']}}}}}`")
+        for note in item.get("notes", []):
+            lines.append(f"   说明：{note}")
+
+    optional_questions = intake.get("optional_questions", [])
+    if optional_questions:
+        lines.extend(["", "## 可选补充项"])
+        for index, item in enumerate(optional_questions, start=1):
+            lines.append(f"{index}. {item['label']}：{item['prompt']}")
+            if item.get("default") not in (None, ""):
+                lines.append(f"   默认值：{item['default']}")
+            if item.get("placeholder"):
+                lines.append(f"   模板变量：`{{{{{item['placeholder']}}}}}`")
+            if item.get("applies_to"):
+                lines.append(f"   适用模式：{', '.join(item['applies_to'])}")
+
+    lines.extend(["", "## 确认清单"])
+    lines.extend(f"- {item}" for item in intake.get("confirmation_checks", []))
+    lines.extend(["", "## 模式决议规则"])
+    lines.extend(f"- {item}" for item in intake.get("mode_resolution_rules", []))
+    lines.extend(
+        [
+            "",
+            "## 记录方式",
+            "- 把答案写入同目录 `intake.template.json`，或在运行安装脚本时通过 `--answers` 传入。",
+            "- 在答案未确认前，不要运行 `install/install_openclaw_settings.py`。",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def render_install_intake_template(plan: MissionPlan) -> str:
+    answers_template = plan.openclaw_settings_bundle.install_intake.get("answers_template", {})
+    return json.dumps(answers_template, ensure_ascii=False, indent=2) + "\n"
+
+
 def render_settings_install_readme(plan: MissionPlan) -> str:
     lines = [
         "# OpenClaw 设置导入指南",
@@ -719,6 +902,11 @@ def render_settings_install_readme(plan: MissionPlan) -> str:
         f"摘要：{plan.openclaw_settings_bundle.summary}",
         f"模式：{plan.openclaw_settings_bundle.mode}",
         f"是否支持直接导入：{'是' if plan.openclaw_settings_bundle.supports_direct_import else '否'}",
+        "",
+        "## 安装前先问清",
+        "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+        "- 把答案记录到 `install/intake.template.json`，或在安装脚本中通过 `--answers` / 显式参数传入。",
+        "- 在安装模式与当前导出包不一致时，不要继续写入配置，先重生成对应模式的 pack。",
         "",
         "## 目标配置路径",
     ]
@@ -736,6 +924,8 @@ def render_settings_install_readme(plan: MissionPlan) -> str:
         [
             "",
             "## 产物",
+            "- `install/INTAKE.md`：安装前问询清单",
+            "- `install/intake.template.json`：安装问询答案模板",
             "- `openclaw.settings.json`：OpenClaw 设置模板主文件",
             "- `install/install_openclaw_settings.py`：把 settings patch 合并进现有 OpenClaw 配置的帮助脚本",
             "- `QUICKSTART.md`：Lite / Full 路径的快速上手说明",
@@ -811,6 +1001,10 @@ def render_quickstart(plan: MissionPlan) -> str:
     if plan.mode == "lite":
         lines.extend(
             [
+                "## 安装前先问清",
+                "1. 先读 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式和其它配置。",
+                "2. 把答案写入 `install/intake.template.json`，未确认前不要导入配置。",
+                "",
                 "## Lite 最短路径",
                 "1. 先读 `openclaw.settings.json` 与 `install/SETTINGS.md`，把 ExMachina 设置导入 OpenClaw。",
                 "2. 再读 `manifest.json` 与 `BOOTSTRAP.md`，确认当前任务、主连结体和协作链。",
@@ -819,6 +1013,7 @@ def render_quickstart(plan: MissionPlan) -> str:
                 "5. 需要补位时再读协作连结体文档，但默认不创建额外 agent。",
                 "",
                 "## Lite 关键文件",
+                "- `install/INTAKE.md`：安装前问询清单",
                 "- `manifest.json`：主链路选择依据、知识交接、阶段分工",
                 "- `runtime/task-board.json`：单会话推进任务的主入口",
                 "- `runtime/README.md`：运行时任务板与状态文件说明",
@@ -827,6 +1022,10 @@ def render_quickstart(plan: MissionPlan) -> str:
     else:
         lines.extend(
             [
+                "## 安装前先问清",
+                "1. 先读 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式和其它配置。",
+                "2. 把答案写入 `install/intake.template.json`，未确认前不要导入配置。",
+                "",
                 "## Full 最短路径",
                 "1. 先读 `openclaw.settings.json` 与 `install/SETTINGS.md`，合并 agents / channels / bindings 模板。",
                 "2. 读 `install/compat/openclaw.agents.plan.json`，按 agents 和 binding_plans 创建完整多 agent。",
@@ -835,6 +1034,7 @@ def render_quickstart(plan: MissionPlan) -> str:
                 "5. 出现跨 agent 冲突或不可逆动作时，必须回到顶层主控体收束。",
                 "",
                 "## Full 关键文件",
+                "- `install/INTAKE.md`：安装前问询清单",
                 "- `install/compat/openclaw.agents.plan.json`：多 agent 安装和绑定清单",
                 "- `runtime/topology.json`：agent 拓扑、路由、分配和激活步骤",
                 "- `runtime/README.md`：运行时协作视图",
@@ -860,6 +1060,7 @@ def render_settings_installer_script(plan: MissionPlan) -> str:
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -868,6 +1069,16 @@ from pathlib import Path
 ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "model", "identity", "sandbox"}
 ALLOWED_SANDBOX_MODES = {"off", "non-main", "all"}
 ALLOWED_SANDBOX_SCOPES = {"session", "agent", "shared"}
+ANSWER_KEY_TO_VAR = {
+    "install_language": "OPENCLAW_INSTALL_LANGUAGE",
+    "conductor_name": "OPENCLAW_CONDUCTOR_NAME",
+    "install_mode": "OPENCLAW_INSTALL_MODE",
+    "workspace_root": "EXMACHINA_PACK_ROOT",
+    "primary_model": "OPENCLAW_PRIMARY_MODEL",
+    "fast_model": "OPENCLAW_FAST_MODEL",
+    "support_model": "OPENCLAW_SUPPORT_MODEL",
+}
+PLACEHOLDER_PATTERN = re.compile(r"{{([A-Z0-9_]+)}}")
 
 
 def merge_named_list(current: list, incoming: list, key: str) -> list:
@@ -951,10 +1162,91 @@ def validate_with_openclaw(config_path: Path) -> None:
     subprocess.run(["openclaw", "config", "validate"], check=True, env=env)
 
 
+def load_answers(answers_path: str | None) -> dict:
+    if not answers_path:
+        return {}
+    return json.loads(Path(answers_path).expanduser().resolve().read_text(encoding="utf-8"))
+
+
+def build_replacements(settings_bundle: dict, args: argparse.Namespace) -> dict[str, object]:
+    variable_specs = settings_bundle.get("template_variables", {})
+    replacements = {
+        name: spec.get("default", "")
+        for name, spec in variable_specs.items()
+        if isinstance(spec, dict)
+    }
+
+    for key, value in load_answers(args.answers).items():
+        normalized_key = ANSWER_KEY_TO_VAR.get(key, key)
+        if value is not None:
+            replacements[normalized_key] = value
+
+    cli_overrides = {
+        "OPENCLAW_INSTALL_LANGUAGE": args.language,
+        "OPENCLAW_CONDUCTOR_NAME": args.conductor_name,
+        "OPENCLAW_INSTALL_MODE": args.install_mode,
+        "EXMACHINA_PACK_ROOT": args.workspace_value,
+        "OPENCLAW_PRIMARY_MODEL": args.primary_model,
+        "OPENCLAW_FAST_MODEL": args.fast_model,
+        "OPENCLAW_SUPPORT_MODEL": args.support_model,
+    }
+    for key, value in cli_overrides.items():
+        if value is not None:
+            replacements[key] = value
+
+    return replacements
+
+
+def substitute_placeholders(payload: object, replacements: dict[str, object]) -> object:
+    if isinstance(payload, str):
+        return PLACEHOLDER_PATTERN.sub(
+            lambda match: str(replacements.get(match.group(1), match.group(0))),
+            payload,
+        )
+    if isinstance(payload, list):
+        return [substitute_placeholders(item, replacements) for item in payload]
+    if isinstance(payload, dict):
+        return {key: substitute_placeholders(value, replacements) for key, value in payload.items()}
+    return payload
+
+
+def collect_unresolved_placeholders(payload: object) -> list[str]:
+    unresolved = []
+    if isinstance(payload, str):
+        unresolved.extend(match.group(1) for match in PLACEHOLDER_PATTERN.finditer(payload))
+    elif isinstance(payload, list):
+        for item in payload:
+            unresolved.extend(collect_unresolved_placeholders(item))
+    elif isinstance(payload, dict):
+        for value in payload.values():
+            unresolved.extend(collect_unresolved_placeholders(value))
+    return sorted(set(unresolved))
+
+
+def validate_selected_mode(settings_bundle: dict, replacements: dict[str, object]) -> list[str]:
+    bundle_mode = str(settings_bundle.get("mode", "")).strip()
+    selected_mode = str(replacements.get("OPENCLAW_INSTALL_MODE", bundle_mode)).strip()
+    if not bundle_mode or not selected_mode or bundle_mode == selected_mode:
+        return []
+
+    return [
+        f"当前 settings bundle 是 {bundle_mode}，但安装问询选择了 {selected_mode}。",
+        "请先重生成对应模式的 pack，再继续安装。",
+    ]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Merge ExMachina OpenClaw settings template into an existing OpenClaw config.")
     parser.add_argument("--config", required=True, help="Target OpenClaw config path, e.g. ~/.openclaw/openclaw.json")
     parser.add_argument("--settings", default="openclaw.settings.json", help="Path to the exported ExMachina settings template")
+    parser.add_argument("--answers", help="Path to the install intake answers JSON")
+    parser.add_argument("--language", help="Preferred install/output language")
+    parser.add_argument("--conductor-name", help="Display name for the top conductor / main agent")
+    parser.add_argument("--mode", dest="install_mode", choices=("lite", "full"), help="Selected install mode from intake")
+    parser.add_argument("--workspace-value", help="Workspace path that should replace {{EXMACHINA_PACK_ROOT}}")
+    parser.add_argument("--primary-model", help="Model for the main entry agent")
+    parser.add_argument("--fast-model", help="Fast model for full-mode conductor")
+    parser.add_argument("--support-model", help="Model for full-mode support agents")
     args = parser.parse_args()
 
     config_path = Path(args.config).expanduser().resolve()
@@ -962,10 +1254,20 @@ def main() -> int:
 
     settings_bundle = json.loads(settings_path.read_text(encoding="utf-8"))
     patch = settings_bundle.get("settings_patch", {})
-    validation_errors = validate_patch(patch)
+    replacements = build_replacements(settings_bundle, args)
+
+    validation_errors = validate_selected_mode(settings_bundle, replacements)
+    validation_errors.extend(validate_patch(patch))
     if validation_errors:
         for item in validation_errors:
             print(item)
+        return 1
+
+    patch = substitute_placeholders(patch, replacements)
+    unresolved = collect_unresolved_placeholders(patch)
+    if unresolved:
+        for item in unresolved:
+            print(f"仍有未填充的模板变量：{item}")
         return 1
 
     backup_path = config_path.with_suffix(config_path.suffix + ".exmachina.bak")

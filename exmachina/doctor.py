@@ -162,6 +162,8 @@ def _build_pack_check(pack_root: Path) -> DoctorCheck:
         "QUICKSTART.md",
         "manifest.json",
         "openclaw.settings.json",
+        "install/INTAKE.md",
+        "install/intake.template.json",
         "install/SETTINGS.md",
         "runtime/README.md",
         "runtime/task-board.json",
@@ -205,11 +207,12 @@ def _build_pack_check(pack_root: Path) -> DoctorCheck:
 
     mode = next(iter(modes))
     settings_errors = _validate_settings_patch(settings_bundle)
+    settings_errors.extend(_validate_install_intake_bundle(settings_bundle))
     if settings_errors:
         return DoctorCheck(
             name="Generated Pack",
             status="fail",
-            summary="导出包中的 OpenClaw 设置补丁包含当前 schema 不接受的字段。",
+            summary="导出包中的 OpenClaw 设置 bundle 不完整或不符合当前 schema。",
             details=settings_errors,
         )
 
@@ -279,6 +282,30 @@ def _validate_settings_patch(settings_bundle: dict[str, Any]) -> list[str]:
             errors.append(f"agents.list[{index}] 包含未知字段：{', '.join(unknown_keys)}")
 
         errors.extend(_validate_sandbox(agent.get("sandbox"), f"agents.list[{index}].sandbox"))
+
+    return errors
+
+
+def _validate_install_intake_bundle(settings_bundle: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    intake = settings_bundle.get("install_intake", {})
+    template_variables = settings_bundle.get("template_variables", {})
+
+    if not intake:
+        return ["openclaw.settings.json 缺少 install_intake。"]
+    if not template_variables:
+        errors.append("openclaw.settings.json 缺少 template_variables。")
+
+    required_keys = {"install_language", "conductor_name", "install_mode"}
+    declared_keys = {item.get("key") for item in intake.get("required_questions", []) if isinstance(item, dict)}
+    missing_keys = sorted(required_keys - declared_keys)
+    if missing_keys:
+        errors.append(f"install_intake.required_questions 缺少关键问询项：{', '.join(missing_keys)}")
+
+    answers_template = intake.get("answers_template", {})
+    for key in required_keys:
+        if key not in answers_template:
+            errors.append(f"install_intake.answers_template 缺少字段：{key}")
 
     return errors
 

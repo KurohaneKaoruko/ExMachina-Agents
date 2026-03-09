@@ -337,6 +337,8 @@ class OpenClawSettingsBundle:
     target_config_paths: list[str]
     supports_direct_import: bool
     default_entry_agent_id: str
+    template_variables: dict[str, dict[str, object]]
+    install_intake: dict[str, object]
     dialogue_contracts: dict[str, dict[str, object]]
     settings_patch: dict[str, object]
     channels_template: dict[str, object]

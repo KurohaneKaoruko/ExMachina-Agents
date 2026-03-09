@@ -4,16 +4,23 @@
 模式：lite
 是否支持直接导入：是
 
+## 安装前先问清
+- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。
+- 把答案记录到 `install/intake.template.json`，或在安装脚本中通过 `--answers` / 显式参数传入。
+- 在安装模式与当前导出包不一致时，不要继续写入配置，先重生成对应模式的 pack。
+
 ## 目标配置路径
 - `~/.openclaw/openclaw.json`
 - `~/.clawdbot/clawdbot.json`
 
 ## 合并步骤
+- 先读取 `install/INTAKE.md`，问清语言、全连结指挥体显示名、安装模式和其它配置，再继续安装。
 - 将 `openclaw.settings.json` 中的 `settings_patch.agents` 合并进 OpenClaw 主配置。
 - 把 `workspace` 指向当前仓库或导出包所在路径。
 - 填入 `{{OPENCLAW_PRIMARY_MODEL}}` 后即可通过单个主控 agent 使用 Lite 模式。
 
 ## 使用说明
+- 安装前不要跳过问询；至少确认语言、全连结指挥体显示名、安装模式、配置路径和模型。
 - Lite 模式默认不要求 channels/accounts/bindings。
 - 如果 OpenClaw 宿主支持 WebUI 或默认入口，只需要一个主控 agent 即可。
 ## 对话口吻导入
@@ -41,6 +48,8 @@
 - 短句示例：已接收。当前主链路切换至 知识连结体。；观测完成。证据先行，结论后置。；该项仍有误差。暂不封口。；协作链以内联方式参考：理性连结体、校验连结体、文档连结体、安全连结体。；如果需要，本机会继续补正。
 
 ## 产物
+- `install/INTAKE.md`：安装前问询清单
+- `install/intake.template.json`：安装问询答案模板
 - `openclaw.settings.json`：OpenClaw 设置模板主文件
 - `install/install_openclaw_settings.py`：把 settings patch 合并进现有 OpenClaw 配置的帮助脚本
 - `QUICKSTART.md`：Lite / Full 路径的快速上手说明

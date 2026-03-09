@@ -55,8 +55,9 @@
 
 如果你的 OpenClaw 只支持“打开一个仓库 → 读取几个文件 → 在单会话里继续执行”，那就直接使用默认 `lite` 即可。
 
-在这种场景下，最关键的两个文件是：
+在这种场景下，最关键的几个文件是：
 
+- `install/INTAKE.md`：给 OpenClaw 的安装前问询清单；
 - `openclaw-pack/openclaw.settings.json`：给 OpenClaw 的设置导入模板；
 - `openclaw-pack/runtime/task-board.json`：给 OpenClaw 的最小执行任务板与顺序步骤。
 
@@ -71,6 +72,7 @@ python skills/scripts/regenerate_demo_pack.py
 真正给 OpenClaw 用的安装入口在：
 
 - 根目录 `BOOTSTRAP.md`
+- `install/INTAKE.md`
 - `openclaw-pack/openclaw.settings.json`
 - `openclaw-pack/install/SETTINGS.md`
 - `openclaw-pack/install/compat/INSTALL.md`

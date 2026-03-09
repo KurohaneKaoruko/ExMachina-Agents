@@ -6,6 +6,10 @@
 主连结体：知识连结体
 协作连结体：理性连结体、校验连结体、文档连结体、安全连结体
 
+## 安装前先问清
+1. 先读 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式和其它配置。
+2. 把答案写入 `install/intake.template.json`，未确认前不要导入配置。
+
 ## Lite 最短路径
 1. 先读 `openclaw.settings.json` 与 `install/SETTINGS.md`，把 ExMachina 设置导入 OpenClaw。
 2. 再读 `manifest.json` 与 `BOOTSTRAP.md`，确认当前任务、主连结体和协作链。
@@ -14,6 +18,7 @@
 5. 需要补位时再读协作连结体文档，但默认不创建额外 agent。
 
 ## Lite 关键文件
+- `install/INTAKE.md`：安装前问询清单
 - `manifest.json`：主链路选择依据、知识交接、阶段分工
 - `runtime/task-board.json`：单会话推进任务的主入口
 - `runtime/README.md`：运行时任务板与状态文件说明

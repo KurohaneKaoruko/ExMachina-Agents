@@ -488,6 +488,10 @@
     "settings_install_readme": "install/SETTINGS.md",
     "installer": "install/install_openclaw_settings.py"
   },
+  "openclaw_install_intake": {
+    "readme": "install/INTAKE.md",
+    "template": "install/intake.template.json"
+  },
   "openclaw_compat_bundle": {
     "install_readme": "install/compat/INSTALL.md",
     "install_plan": "install/compat/openclaw.agents.plan.json",
@@ -1049,6 +1053,8 @@
     "subagents_dir": "subagents",
     "install_dir": "install",
     "compat_dir": "install/compat",
+    "install_intake": "install/INTAKE.md",
+    "install_intake_template": "install/intake.template.json",
     "runtime_dir": "runtime",
     "skills_dir": "skills",
     "workflow": "workflows/mission-loop.md",

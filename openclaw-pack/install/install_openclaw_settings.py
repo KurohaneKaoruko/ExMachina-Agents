@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -11,6 +12,16 @@ from pathlib import Path
 ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "model", "identity", "sandbox"}
 ALLOWED_SANDBOX_MODES = {"off", "non-main", "all"}
 ALLOWED_SANDBOX_SCOPES = {"session", "agent", "shared"}
+ANSWER_KEY_TO_VAR = {
+    "install_language": "OPENCLAW_INSTALL_LANGUAGE",
+    "conductor_name": "OPENCLAW_CONDUCTOR_NAME",
+    "install_mode": "OPENCLAW_INSTALL_MODE",
+    "workspace_root": "EXMACHINA_PACK_ROOT",
+    "primary_model": "OPENCLAW_PRIMARY_MODEL",
+    "fast_model": "OPENCLAW_FAST_MODEL",
+    "support_model": "OPENCLAW_SUPPORT_MODEL",
+}
+PLACEHOLDER_PATTERN = re.compile(r"{{([A-Z0-9_]+)}}")
 
 
 def merge_named_list(current: list, incoming: list, key: str) -> list:
@@ -94,10 +105,91 @@ def validate_with_openclaw(config_path: Path) -> None:
     subprocess.run(["openclaw", "config", "validate"], check=True, env=env)
 
 
+def load_answers(answers_path: str | None) -> dict:
+    if not answers_path:
+        return {}
+    return json.loads(Path(answers_path).expanduser().resolve().read_text(encoding="utf-8"))
+
+
+def build_replacements(settings_bundle: dict, args: argparse.Namespace) -> dict[str, object]:
+    variable_specs = settings_bundle.get("template_variables", {})
+    replacements = {
+        name: spec.get("default", "")
+        for name, spec in variable_specs.items()
+        if isinstance(spec, dict)
+    }
+
+    for key, value in load_answers(args.answers).items():
+        normalized_key = ANSWER_KEY_TO_VAR.get(key, key)
+        if value is not None:
+            replacements[normalized_key] = value
+
+    cli_overrides = {
+        "OPENCLAW_INSTALL_LANGUAGE": args.language,
+        "OPENCLAW_CONDUCTOR_NAME": args.conductor_name,
+        "OPENCLAW_INSTALL_MODE": args.install_mode,
+        "EXMACHINA_PACK_ROOT": args.workspace_value,
+        "OPENCLAW_PRIMARY_MODEL": args.primary_model,
+        "OPENCLAW_FAST_MODEL": args.fast_model,
+        "OPENCLAW_SUPPORT_MODEL": args.support_model,
+    }
+    for key, value in cli_overrides.items():
+        if value is not None:
+            replacements[key] = value
+
+    return replacements
+
+
+def substitute_placeholders(payload: object, replacements: dict[str, object]) -> object:
+    if isinstance(payload, str):
+        return PLACEHOLDER_PATTERN.sub(
+            lambda match: str(replacements.get(match.group(1), match.group(0))),
+            payload,
+        )
+    if isinstance(payload, list):
+        return [substitute_placeholders(item, replacements) for item in payload]
+    if isinstance(payload, dict):
+        return {key: substitute_placeholders(value, replacements) for key, value in payload.items()}
+    return payload
+
+
+def collect_unresolved_placeholders(payload: object) -> list[str]:
+    unresolved = []
+    if isinstance(payload, str):
+        unresolved.extend(match.group(1) for match in PLACEHOLDER_PATTERN.finditer(payload))
+    elif isinstance(payload, list):
+        for item in payload:
+            unresolved.extend(collect_unresolved_placeholders(item))
+    elif isinstance(payload, dict):
+        for value in payload.values():
+            unresolved.extend(collect_unresolved_placeholders(value))
+    return sorted(set(unresolved))
+
+
+def validate_selected_mode(settings_bundle: dict, replacements: dict[str, object]) -> list[str]:
+    bundle_mode = str(settings_bundle.get("mode", "")).strip()
+    selected_mode = str(replacements.get("OPENCLAW_INSTALL_MODE", bundle_mode)).strip()
+    if not bundle_mode or not selected_mode or bundle_mode == selected_mode:
+        return []
+
+    return [
+        f"当前 settings bundle 是 {bundle_mode}，但安装问询选择了 {selected_mode}。",
+        "请先重生成对应模式的 pack，再继续安装。",
+    ]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Merge ExMachina OpenClaw settings template into an existing OpenClaw config.")
     parser.add_argument("--config", required=True, help="Target OpenClaw config path, e.g. ~/.openclaw/openclaw.json")
     parser.add_argument("--settings", default="openclaw.settings.json", help="Path to the exported ExMachina settings template")
+    parser.add_argument("--answers", help="Path to the install intake answers JSON")
+    parser.add_argument("--language", help="Preferred install/output language")
+    parser.add_argument("--conductor-name", help="Display name for the top conductor / main agent")
+    parser.add_argument("--mode", dest="install_mode", choices=("lite", "full"), help="Selected install mode from intake")
+    parser.add_argument("--workspace-value", help="Workspace path that should replace {{EXMACHINA_PACK_ROOT}}")
+    parser.add_argument("--primary-model", help="Model for the main entry agent")
+    parser.add_argument("--fast-model", help="Fast model for full-mode conductor")
+    parser.add_argument("--support-model", help="Model for full-mode support agents")
     args = parser.parse_args()
 
     config_path = Path(args.config).expanduser().resolve()
@@ -105,10 +197,20 @@ def main() -> int:
 
     settings_bundle = json.loads(settings_path.read_text(encoding="utf-8"))
     patch = settings_bundle.get("settings_patch", {})
-    validation_errors = validate_patch(patch)
+    replacements = build_replacements(settings_bundle, args)
+
+    validation_errors = validate_selected_mode(settings_bundle, replacements)
+    validation_errors.extend(validate_patch(patch))
     if validation_errors:
         for item in validation_errors:
             print(item)
+        return 1
+
+    patch = substitute_placeholders(patch, replacements)
+    unresolved = collect_unresolved_placeholders(patch)
+    if unresolved:
+        for item in unresolved:
+            print(f"仍有未填充的模板变量：{item}")
         return 1
 
     backup_path = config_path.with_suffix(config_path.suffix + ".exmachina.bak")
