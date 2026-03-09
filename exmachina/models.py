@@ -313,6 +313,39 @@ class OpenClawInstallPlan:
 
 
 @dataclass
+class OpenClawSettingsAgent:
+    agent_id: str
+    display_name: str
+    role: str
+    workspace: str
+    model: dict[str, str]
+    identity: dict[str, str]
+    sandbox: dict[str, str]
+    metadata: dict[str, object]
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class OpenClawSettingsBundle:
+    mode: str
+    format_name: str
+    summary: str
+    target_config_paths: list[str]
+    supports_direct_import: bool
+    default_entry_agent_id: str
+    settings_patch: dict[str, object]
+    channels_template: dict[str, object]
+    bindings_template: list[dict[str, object]]
+    merge_instructions: list[str]
+    usage_notes: list[str]
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
 class TopConductor:
     name: str
     english_alias: str
@@ -448,6 +481,7 @@ class MissionPlan:
     handoff_contracts: list[HandoffContract]
     resource_arbitration: ResourceArbitration
     openclaw_install_plan: OpenClawInstallPlan
+    openclaw_settings_bundle: OpenClawSettingsBundle
     runtime_topology: RuntimeTopology
     acceptance_criteria: list[str]
     workflow: list[str]
@@ -477,6 +511,7 @@ class MissionPlan:
             "handoff_contracts": [contract.to_dict() for contract in self.handoff_contracts],
             "resource_arbitration": self.resource_arbitration.to_dict(),
             "openclaw_install_plan": self.openclaw_install_plan.to_dict(),
+            "openclaw_settings_bundle": self.openclaw_settings_bundle.to_dict(),
             "runtime_topology": self.runtime_topology.to_dict(),
             "primary_link_body": self.primary_link_body.to_dict(),
             "support_link_bodies": [body.to_dict() for body in self.support_link_bodies],

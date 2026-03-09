@@ -57,7 +57,7 @@
 
 在这种场景下，最关键的两个文件是：
 
-- `openclaw-pack/manifest.json`：给 OpenClaw 的最小装载说明与快速启动提示；
+- `openclaw-pack/openclaw.settings.json`：给 OpenClaw 的设置导入模板；
 - `openclaw-pack/runtime/task-board.json`：给 OpenClaw 的最小执行任务板与顺序步骤。
 
 推荐安装步骤：
@@ -70,12 +70,14 @@ python skills/scripts/regenerate_demo_pack.py
 真正给 OpenClaw 用的安装入口在：
 
 - 根目录 `BOOTSTRAP.md`
+- `openclaw-pack/openclaw.settings.json`
+- `openclaw-pack/install/SETTINGS.md`
 - `openclaw-pack/install/INSTALL.md`
 - `openclaw-pack/install/openclaw.agents.plan.json`
 
 这三者组合起来的目标是：
 
-- 先把仓库自身变成一个可读取的 OpenClaw workspace；
+- 先把 ExMachina 多智能体配置载入 OpenClaw 设置；
 - 默认先给出一个 Lite 单 agent 可装载路径；
 - 在需要时再给出主控 agent、主连结体 agent 和协作 agent 的完整安装计划；
 - 最后让 OpenClaw 在安装完成后回到 `openclaw-pack/BOOTSTRAP.md` 进入工作流。
@@ -809,6 +811,16 @@ python -m exmachina export-pack \
   --task "让 OpenClaw 从仓库链接直接应用 ExMachina" \
   --repo "https://code.example.com/your-name/exmachina" \
   --out "dist/openclaw-pack"
+```
+
+### 只导出 OpenClaw 设置模板
+
+```bash
+python -m exmachina export-settings \
+  --mode lite \
+  --task "把 ExMachina 的多智能体配置载入 OpenClaw 设置" \
+  --repo "https://code.example.com/your-name/exmachina" \
+  --out "dist/openclaw-settings"
 ```
 
 ---

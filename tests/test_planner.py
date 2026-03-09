@@ -27,6 +27,9 @@ class PlannerTests(unittest.TestCase):
         self.assertFalse(plan.openclaw_install_plan.requires_multi_agent_binding)
         self.assertFalse(plan.runtime_topology.requires_external_routing)
         self.assertEqual(len(plan.openclaw_install_plan.agents), 1)
+        self.assertEqual(plan.openclaw_settings_bundle.mode, "lite")
+        self.assertTrue(plan.openclaw_settings_bundle.supports_direct_import)
+        self.assertEqual(plan.openclaw_settings_bundle.default_entry_agent_id, "exmachina-main")
 
     def test_plan_mission_builds_lite_runtime_topology_by_default(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -40,6 +43,7 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(len(plan.runtime_topology.agent_specs), 1)
         self.assertEqual(plan.runtime_topology.agent_specs[0].agent_id, "exmachina-main")
         self.assertTrue(plan.runtime_topology.agent_specs[0].recommended_skill)
+        self.assertIn("agents", plan.openclaw_settings_bundle.settings_patch)
 
     def test_plan_mission_builds_full_runtime_topology_when_requested(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -57,6 +61,8 @@ class PlannerTests(unittest.TestCase):
         self.assertTrue(plan.openclaw_install_plan.requires_multi_agent_binding)
         self.assertTrue(plan.runtime_topology.requires_external_routing)
         self.assertGreater(len(plan.openclaw_install_plan.agents), 1)
+        self.assertFalse(plan.openclaw_settings_bundle.supports_direct_import)
+        self.assertTrue(plan.openclaw_settings_bundle.bindings_template)
 
 
 if __name__ == "__main__":

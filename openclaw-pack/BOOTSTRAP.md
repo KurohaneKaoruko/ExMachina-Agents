@@ -1,6 +1,6 @@
 # ExMachina · OpenClaw 自举入口
 
-这是 Lite 默认入口：目标是在 **单个主控会话** 中完成装载和执行。
+这是 Lite 默认入口：目标是先把 ExMachina 配置载入 OpenClaw 设置，再在 **单个主控会话** 中完成装载和执行。
 
 ## 当前模式
 - 模式：lite
@@ -8,10 +8,11 @@
 - 外部路由：不需要
 
 ## 你只需要做的事
-1. 读取 `manifest.json`，确认当前任务、主连结体和协作链。
-2. 读取 `protocols/` 下的 4 份协议，再读取 `conductor/00_全连结指挥体.md`。
-3. 读取主连结体、主连结指挥体，并把协作连结体当作内联参考规则按需消费。
-4. 读取 `runtime/README.md` 与 `runtime/task-board.json`，由 `exmachina-main` 单会话推进任务。
+1. 读取 `openclaw.settings.json` 与 `install/SETTINGS.md`，把 ExMachina 配置导入 OpenClaw 设置。
+2. 读取 `manifest.json`，确认当前任务、主连结体和协作链。
+3. 读取 `protocols/` 下的 4 份协议，再读取 `conductor/00_全连结指挥体.md`。
+4. 读取主连结体、主连结指挥体，并把协作连结体当作内联参考规则按需消费。
+5. 读取 `runtime/task-board.json`，由 `exmachina-main` 单会话推进任务。
 
 ## 当前任务
 - 标题：沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层

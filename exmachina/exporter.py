@@ -49,6 +49,7 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         target / "manifest.json",
         target / "BOOTSTRAP.md",
         target / "README.md",
+        target / "openclaw.settings.json",
     ):
         if stale_file.exists():
             stale_file.unlink()
@@ -123,6 +124,11 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         "handoff_contracts": [contract.to_dict() for contract in plan.handoff_contracts],
         "resource_arbitration": plan.resource_arbitration.to_dict(),
         "openclaw_install_plan": plan.openclaw_install_plan.to_dict(),
+        "openclaw_settings_bundle": {
+            "path": "openclaw.settings.json",
+            "settings_install_readme": "install/SETTINGS.md",
+            "installer": "install/install_openclaw_settings.py",
+        },
         "runtime_topology": plan.runtime_topology.to_dict(),
         "skill_bindings": {
             body.name: body.recommended_skill for body in [plan.primary_link_body, *plan.support_link_bodies]
@@ -170,16 +176,22 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         }
 
     (target / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    (target / "openclaw.settings.json").write_text(
+        json.dumps(plan.openclaw_settings_bundle.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
     (target / "BOOTSTRAP.md").write_text(render_bootstrap(plan), encoding="utf-8")
     (target / "README.md").write_text(render_pack_readme(plan), encoding="utf-8")
     (workflows_dir / "mission-loop.md").write_text(render_workflow(plan), encoding="utf-8")
     (examples_dir / "openclaw-prompt.md").write_text(plan.openclaw_install_prompt + "\n", encoding="utf-8")
     (install_dir / "INSTALL.md").write_text(render_install_readme(plan), encoding="utf-8")
+    (install_dir / "SETTINGS.md").write_text(render_settings_install_readme(plan), encoding="utf-8")
     (runtime_dir / "README.md").write_text(render_runtime_readme(plan), encoding="utf-8")
     (install_dir / "openclaw.agents.plan.json").write_text(
         json.dumps(plan.openclaw_install_plan.to_dict(), ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    (install_dir / "install_openclaw_settings.py").write_text(render_settings_installer_script(plan), encoding="utf-8")
     runtime_agent_specs = {item.agent_id: item for item in plan.runtime_topology.agent_specs}
     mission_context = {
         "mission_title": plan.mission_title,
@@ -510,7 +522,7 @@ def render_bootstrap(plan: MissionPlan) -> str:
         lines = [
             "# ExMachina · OpenClaw 自举入口",
             "",
-            "这是 Lite 默认入口：目标是在 **单个主控会话** 中完成装载和执行。",
+            "这是 Lite 默认入口：目标是先把 ExMachina 配置载入 OpenClaw 设置，再在 **单个主控会话** 中完成装载和执行。",
             "",
             "## 当前模式",
             "- 模式：lite",
@@ -518,10 +530,11 @@ def render_bootstrap(plan: MissionPlan) -> str:
             "- 外部路由：不需要",
             "",
             "## 你只需要做的事",
-            "1. 读取 `manifest.json`，确认当前任务、主连结体和协作链。",
-            "2. 读取 `protocols/` 下的 4 份协议，再读取 `conductor/00_全连结指挥体.md`。",
-            "3. 读取主连结体、主连结指挥体，并把协作连结体当作内联参考规则按需消费。",
-            "4. 读取 `runtime/README.md` 与 `runtime/task-board.json`，由 `exmachina-main` 单会话推进任务。",
+            "1. 读取 `openclaw.settings.json` 与 `install/SETTINGS.md`，把 ExMachina 配置导入 OpenClaw 设置。",
+            "2. 读取 `manifest.json`，确认当前任务、主连结体和协作链。",
+            "3. 读取 `protocols/` 下的 4 份协议，再读取 `conductor/00_全连结指挥体.md`。",
+            "4. 读取主连结体、主连结指挥体，并把协作连结体当作内联参考规则按需消费。",
+            "5. 读取 `runtime/task-board.json`，由 `exmachina-main` 单会话推进任务。",
             "",
             "## 当前任务",
             f"- 标题：{plan.mission_title}",
@@ -582,7 +595,7 @@ def render_pack_readme(plan: MissionPlan) -> str:
         "# ExMachina OpenClaw Pack",
         "",
         "这是一个可直接放入远程仓库并供 OpenClaw 读取的协作包。",
-        "项目名为 ExMachina，用于为 OpenClaw 提供协议化、可装载的多智能体协作包。",
+        "项目名为 ExMachina，用于为 OpenClaw 提供 settings-first 的协议化多智能体协作包。",
         f"默认导出模式：{plan.mode}",
         f"多 agent 绑定要求：{'需要' if plan.openclaw_install_plan.requires_multi_agent_binding else '不需要'}",
         f"外部路由要求：{'需要' if plan.runtime_topology.requires_external_routing else '不需要'}",
@@ -597,7 +610,8 @@ def render_pack_readme(plan: MissionPlan) -> str:
         f"执行阶段：共 {len(plan.execution_stages)} 个阶段，详见 `manifest.json` 中的 `execution_stages`。",
         f"交接契约：共 {len(plan.handoff_contracts)} 份，详见 `manifest.json` 中的 `handoff_contracts`。",
         "资源仲裁：见 `manifest.json` 中的 `resource_arbitration`。",
-        "安装计划：见 `manifest.json` 中的 `openclaw_install_plan` 与 `install/INSTALL.md`。",
+        "设置导入：见 `openclaw.settings.json` 与 `install/SETTINGS.md`。",
+        "兼容安装计划：见 `manifest.json` 中的 `openclaw_install_plan` 与 `install/INSTALL.md`。",
         f"知识交接摘要：{plan.knowledge_handoff.summary}",
         "",
         "关键目录：",
@@ -606,7 +620,8 @@ def render_pack_readme(plan: MissionPlan) -> str:
         "- `link-bodies/`：连结体协议",
         "- `link-body-conductors/`：各连结体的内部指挥规则",
         "- `subagents/`：成员子个体规则",
-        "- `install/`：OpenClaw 安装计划、workspace 模板与 agent 方案",
+        "- `openclaw.settings.json`：首选 OpenClaw 设置导入模板",
+        "- `install/`：设置导入说明、兼容安装计划与辅助脚本",
         "- `workflows/mission-loop.md`：执行节奏",
         "- `manifest.json`：包含编排依据、知识交接、执行阶段、交接契约和资源仲裁",
         "",
@@ -672,6 +687,33 @@ def render_install_readme(plan: MissionPlan) -> str:
     return "\n".join(lines)
 
 
+def render_settings_install_readme(plan: MissionPlan) -> str:
+    lines = [
+        "# OpenClaw 设置导入指南",
+        "",
+        f"摘要：{plan.openclaw_settings_bundle.summary}",
+        f"模式：{plan.openclaw_settings_bundle.mode}",
+        f"是否支持直接导入：{'是' if plan.openclaw_settings_bundle.supports_direct_import else '否'}",
+        "",
+        "## 目标配置路径",
+    ]
+    lines.extend(f"- `{item}`" for item in plan.openclaw_settings_bundle.target_config_paths)
+    lines.extend(["", "## 合并步骤"])
+    lines.extend(f"- {item}" for item in plan.openclaw_settings_bundle.merge_instructions)
+    lines.extend(["", "## 使用说明"])
+    lines.extend(f"- {item}" for item in plan.openclaw_settings_bundle.usage_notes)
+    lines.extend(
+        [
+            "",
+            "## 产物",
+            "- `openclaw.settings.json`：OpenClaw 设置模板主文件",
+            "- `install/install_openclaw_settings.py`：把 settings patch 合并进现有 OpenClaw 配置的帮助脚本",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def render_runtime_readme(plan: MissionPlan) -> str:
     lines = [
         "# ExMachina Runtime",
@@ -716,6 +758,80 @@ def render_runtime_readme(plan: MissionPlan) -> str:
     lines.extend(f"- {item}" for item in plan.runtime_topology.coordination_rules)
     lines.append("")
     return "\n".join(lines)
+
+
+def render_settings_installer_script(plan: MissionPlan) -> str:
+    return """from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+
+def merge_named_list(current: list, incoming: list, key: str) -> list:
+    merged = []
+    seen = {}
+    for item in current + incoming:
+        if isinstance(item, dict) and key in item:
+            seen[item[key]] = item
+        else:
+            merged.append(item)
+    merged.extend(seen[name] for name in seen)
+    return merged
+
+
+def deep_merge(base: dict, patch: dict) -> dict:
+    merged = dict(base)
+    for key, value in patch.items():
+        if key == "bindings" and isinstance(value, list) and isinstance(merged.get(key), list):
+            merged[key] = merge_named_list(merged[key], value, "agentId")
+            continue
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            if key == "agents":
+                merged_agents = dict(merged[key])
+                patch_agents = value
+                for agent_key, agent_value in patch_agents.items():
+                    if agent_key == "list" and isinstance(agent_value, list) and isinstance(merged_agents.get(agent_key), list):
+                        merged_agents[agent_key] = merge_named_list(merged_agents[agent_key], agent_value, "id")
+                    elif isinstance(agent_value, dict) and isinstance(merged_agents.get(agent_key), dict):
+                        merged_agents[agent_key] = deep_merge(merged_agents[agent_key], agent_value)
+                    else:
+                        merged_agents[agent_key] = agent_value
+                merged[key] = merged_agents
+                continue
+            merged[key] = deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Merge ExMachina OpenClaw settings template into an existing OpenClaw config.")
+    parser.add_argument("--config", required=True, help="Target OpenClaw config path, e.g. ~/.openclaw/openclaw.json")
+    parser.add_argument("--settings", default="openclaw.settings.json", help="Path to the exported ExMachina settings template")
+    args = parser.parse_args()
+
+    config_path = Path(args.config).expanduser().resolve()
+    settings_path = Path(args.settings).expanduser().resolve()
+
+    settings_bundle = json.loads(settings_path.read_text(encoding="utf-8"))
+    patch = settings_bundle.get("settings_patch", {})
+
+    if config_path.exists():
+        current = json.loads(config_path.read_text(encoding="utf-8"))
+    else:
+        current = {}
+
+    merged = deep_merge(current, patch)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    print(f"已合并 ExMachina 设置到：{config_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
 
 
 def render_workflow(plan: MissionPlan) -> str:

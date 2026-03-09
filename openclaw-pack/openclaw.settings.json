@@ -1,0 +1,60 @@
+{
+  "mode": "lite",
+  "format_name": "openclaw-settings-template-v1",
+  "summary": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」生成的 OpenClaw 设置导入模板。",
+  "target_config_paths": [
+    "~/.openclaw/openclaw.json",
+    "~/.clawdbot/clawdbot.json"
+  ],
+  "supports_direct_import": true,
+  "default_entry_agent_id": "exmachina-main",
+  "settings_patch": {
+    "agents": {
+      "defaults": {
+        "workspace": "{{EXMACHINA_PACK_ROOT}}",
+        "model": {
+          "primary": "{{OPENCLAW_PRIMARY_MODEL}}"
+        },
+        "sandbox": {
+          "mode": "off"
+        }
+      },
+      "list": [
+        {
+          "id": "exmachina-main",
+          "name": "ExMachina 主控体",
+          "model": {
+            "primary": "{{OPENCLAW_PRIMARY_MODEL}}"
+          },
+          "identity": {
+            "theme": "你是 ExMachina 的主控体，以单会话方式承担主连结体 知识连结体，并按需内联参考协作链 理性连结体、校验连结体、文档连结体、安全连结体。"
+          },
+          "sandbox": {
+            "mode": "off"
+          },
+          "metadata": {
+            "mode": "lite",
+            "primary_link_body": "知识连结体",
+            "support_link_bodies": [
+              "理性连结体",
+              "校验连结体",
+              "文档连结体",
+              "安全连结体"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "channels_template": {},
+  "bindings_template": [],
+  "merge_instructions": [
+    "将 `openclaw.settings.json` 中的 `settings_patch.agents` 合并进 OpenClaw 主配置。",
+    "把 `workspace` 指向当前仓库或导出包所在路径。",
+    "填入 `{{OPENCLAW_PRIMARY_MODEL}}` 后即可通过单个主控 agent 使用 Lite 模式。"
+  ],
+  "usage_notes": [
+    "Lite 模式默认不要求 channels/accounts/bindings。",
+    "如果 OpenClaw 宿主支持 WebUI 或默认入口，只需要一个主控 agent 即可。"
+  ]
+}

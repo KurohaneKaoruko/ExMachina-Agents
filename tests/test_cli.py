@@ -7,6 +7,25 @@ from exmachina.cli import main
 
 
 class CliTests(unittest.TestCase):
+    def test_export_settings_writes_settings_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = Path(tmpdir) / "out"
+            exit_code = main(
+                [
+                    "export-settings",
+                    "--task",
+                    "把 ExMachina 的多智能体配置载入 OpenClaw 设置",
+                    "--out",
+                    str(output),
+                ]
+            )
+
+            self.assertEqual(exit_code, 0)
+            settings_bundle = json.loads((output / "openclaw.settings.json").read_text(encoding="utf-8"))
+            self.assertEqual(settings_bundle["mode"], "lite")
+            self.assertIn("settings_patch", settings_bundle)
+            self.assertTrue((output / "install" / "SETTINGS.md").exists())
+
     def test_build_command_exports_lite_pack_by_default(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             workspace = Path(tmpdir) / "workspace"
@@ -33,6 +52,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             manifest = json.loads((output / "openclaw-pack" / "manifest.json").read_text(encoding="utf-8"))
             mission = json.loads((output / "mission.json").read_text(encoding="utf-8"))
+            settings_bundle = json.loads((output / "openclaw-pack" / "openclaw.settings.json").read_text(encoding="utf-8"))
             runtime_spec = json.loads(
                 (output / "openclaw-pack" / "runtime" / "agents" / "exmachina-main" / "spec.json").read_text(
                     encoding="utf-8"
@@ -48,6 +68,10 @@ class CliTests(unittest.TestCase):
             self.assertEqual(manifest["mode"], "lite")
             self.assertFalse(manifest["compatibility"]["requires_multi_agent_binding"])
             self.assertFalse(manifest["compatibility"]["requires_external_routing"])
+            self.assertEqual(settings_bundle["mode"], "lite")
+            self.assertTrue(settings_bundle["supports_direct_import"])
+            self.assertIn("settings_patch", settings_bundle)
+            self.assertIn("openclaw_settings_bundle", manifest)
             self.assertIn("openclaw_directive", manifest)
             self.assertTrue(manifest["openclaw_directive"]["quick_start"])
             self.assertEqual(len(install_plan["agents"]), 1)
@@ -56,6 +80,8 @@ class CliTests(unittest.TestCase):
             self.assertTrue(task_board["ordered_execution_steps"])
             self.assertIn("single_session_brief", task_board)
             self.assertIn("recommended_skill", runtime_spec)
+            self.assertTrue((output / "openclaw-pack" / "install" / "SETTINGS.md").exists())
+            self.assertTrue((output / "openclaw-pack" / "install" / "install_openclaw_settings.py").exists())
             self.assertIn("## 工作流", child_doc)
             self.assertIn("## 输出契约", child_doc)
 
@@ -96,6 +122,7 @@ class CliTests(unittest.TestCase):
             self.assertTrue(manifest["compatibility"]["requires_external_routing"])
             self.assertGreater(len(install_plan["agents"]), 1)
             self.assertTrue(topology["routes"])
+            self.assertEqual(manifest["openclaw_settings_bundle"]["path"], "openclaw.settings.json")
 
 
 if __name__ == "__main__":

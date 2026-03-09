@@ -15,7 +15,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    for name in ("plan", "build", "export-pack"):
+    for name in ("plan", "build", "export-pack", "export-settings"):
         subparser = subparsers.add_parser(name)
         subparser.add_argument("--task", required=True, help="需要编排的大任务。")
         subparser.add_argument("--repo", help="远程仓库链接。")
@@ -71,6 +71,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "export-pack":
         export_openclaw_pack(plan, out_path)
         print(f"已导出 ExMachina 应用包：{out_path}")
+        return 0
+
+    if args.command == "export-settings":
+        export_openclaw_pack(plan, out_path)
+        print(f"已导出 ExMachina OpenClaw 设置包：{out_path}")
         return 0
 
     write_bundle(plan, out_path)

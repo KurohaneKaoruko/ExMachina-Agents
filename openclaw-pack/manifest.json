@@ -483,6 +483,11 @@
       "安装后由 `exmachina-main` 在单 agent 会话中内联承担主连结体 知识连结体 与协作链 理性连结体、校验连结体、文档连结体、安全连结体 的职责。"
     ]
   },
+  "openclaw_settings_bundle": {
+    "path": "openclaw.settings.json",
+    "settings_install_readme": "install/SETTINGS.md",
+    "installer": "install/install_openclaw_settings.py"
+  },
   "runtime_topology": {
     "mode": "lite",
     "controller_agent_id": "exmachina-main",

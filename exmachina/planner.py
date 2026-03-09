@@ -16,6 +16,7 @@ from .models import (
     OpenClawBindingPlan,
     OpenClawInstallAgent,
     OpenClawInstallPlan,
+    OpenClawSettingsBundle,
     RationalityProtocol,
     ResourceArbitration,
     RepoReference,
@@ -102,6 +103,14 @@ def plan_mission(
         support_bodies,
         mode,
     )
+    openclaw_settings_bundle = _build_openclaw_settings_bundle(
+        task=task,
+        repo=repo,
+        mode=mode,
+        primary_body=primary,
+        support_bodies=support_bodies,
+        top_conductor=top_conductor,
+    )
     runtime_topology = build_runtime_topology(
         mode=mode,
         mission_title=mission_title,
@@ -136,6 +145,7 @@ def plan_mission(
         handoff_contracts=handoff_contracts,
         resource_arbitration=resource_arbitration,
         openclaw_install_plan=openclaw_install_plan,
+        openclaw_settings_bundle=openclaw_settings_bundle,
         runtime_topology=runtime_topology,
         acceptance_criteria=acceptance_criteria,
         workflow=workflow,
@@ -1195,6 +1205,147 @@ def _build_openclaw_install_plan(
         binding_plans=binding_plans,
         install_steps=install_steps,
         self_bootstrap_steps=self_bootstrap_steps,
+    )
+
+
+def _build_openclaw_settings_bundle(
+    task: str,
+    repo: RepoReference | None,
+    mode: str,
+    primary_body: LinkBody,
+    support_bodies: list[LinkBody],
+    top_conductor: TopConductor,
+) -> OpenClawSettingsBundle:
+    workspace_value = "{{EXMACHINA_PACK_ROOT}}"
+    if repo:
+        workspace_value = repo.url
+
+    target_config_paths = ["~/.openclaw/openclaw.json", "~/.clawdbot/clawdbot.json"]
+    if mode == "lite":
+        settings_patch = {
+            "agents": {
+                "defaults": {
+                    "workspace": workspace_value,
+                    "model": {"primary": "{{OPENCLAW_PRIMARY_MODEL}}"},
+                    "sandbox": {"mode": "off"},
+                },
+                "list": [
+                    {
+                        "id": "exmachina-main",
+                        "name": "ExMachina 主控体",
+                        "model": {"primary": "{{OPENCLAW_PRIMARY_MODEL}}"},
+                        "identity": {
+                            "theme": (
+                                f"你是 ExMachina 的主控体，以单会话方式承担主连结体 {primary_body.name}，"
+                                f"并按需内联参考协作链 {('、'.join(body.name for body in support_bodies) if support_bodies else '无')}。"
+                            )
+                        },
+                        "sandbox": {"mode": "off"},
+                        "metadata": {
+                            "mode": "lite",
+                            "primary_link_body": primary_body.name,
+                            "support_link_bodies": [body.name for body in support_bodies],
+                        },
+                    }
+                ],
+            }
+        }
+        channels_template: dict[str, object] = {}
+        bindings_template: list[dict[str, object]] = []
+        merge_instructions = [
+            "将 `openclaw.settings.json` 中的 `settings_patch.agents` 合并进 OpenClaw 主配置。",
+            "把 `workspace` 指向当前仓库或导出包所在路径。",
+            "填入 `{{OPENCLAW_PRIMARY_MODEL}}` 后即可通过单个主控 agent 使用 Lite 模式。",
+        ]
+        usage_notes = [
+            "Lite 模式默认不要求 channels/accounts/bindings。",
+            "如果 OpenClaw 宿主支持 WebUI 或默认入口，只需要一个主控 agent 即可。",
+        ]
+    else:
+        settings_patch = {
+            "agents": {
+                "defaults": {
+                    "workspace": workspace_value,
+                    "model": {"primary": "{{OPENCLAW_FAST_MODEL}}"},
+                    "sandbox": {"mode": "agent"},
+                },
+                "list": [
+                    {
+                        "id": "exmachina-main",
+                        "name": "ExMachina 主控体",
+                        "model": {"primary": "{{OPENCLAW_FAST_MODEL}}"},
+                        "identity": {"theme": top_conductor.mission},
+                        "sandbox": {"mode": "off"},
+                        "metadata": {"mode": "full", "role": "conductor"},
+                    },
+                    {
+                        "id": "exmachina-primary",
+                        "name": f"ExMachina 主连结体 · {primary_body.name}",
+                        "model": {"primary": "{{OPENCLAW_PRIMARY_MODEL}}"},
+                        "identity": {"theme": primary_body.identity},
+                        "sandbox": {"mode": "agent"},
+                        "metadata": {"mode": "full", "role": "primary-link-body"},
+                    },
+                    *[
+                        {
+                            "id": f"exmachina-support-{index}",
+                            "name": f"ExMachina 协作连结体 · {body.name}",
+                            "model": {"primary": "{{OPENCLAW_SUPPORT_MODEL}}"},
+                            "identity": {"theme": body.identity},
+                            "sandbox": {"mode": "agent"},
+                            "metadata": {"mode": "full", "role": "support-link-body"},
+                        }
+                        for index, body in enumerate(support_bodies, start=1)
+                    ],
+                ],
+            }
+        }
+        channels_template = {
+            "discord": {
+                "enabled": True,
+                "accounts": {
+                    "main": {"name": "ExMachina 主控体", "token": "{{DISCORD_TOKEN_MAIN}}"}
+                },
+            }
+        }
+        for index, body in enumerate([primary_body, *support_bodies], start=1):
+            channels_template["discord"]["accounts"][f"agent-{index}"] = {
+                "name": body.name,
+                "token": f"{{{{DISCORD_TOKEN_{index}}}}}",
+            }
+        bindings_template = [
+            {"agentId": "exmachina-main", "match": {"channel": "discord", "accountId": "main"}},
+            {"agentId": "exmachina-primary", "match": {"channel": "discord", "accountId": "agent-1"}},
+            *[
+                {
+                    "agentId": f"exmachina-support-{index}",
+                    "match": {"channel": "discord", "accountId": f"agent-{index + 1}"},
+                }
+                for index, _ in enumerate(support_bodies, start=1)
+            ],
+        ]
+        merge_instructions = [
+            "将 `settings_patch.agents` 合并进 OpenClaw 主配置。",
+            "按需将 `channels_template` 与 `bindings_template` 合并进 OpenClaw 配置，并替换 token/model 占位符。",
+            "仅当宿主明确支持完整多 agent 绑定与路由时再启用 Full 模式。",
+        ]
+        usage_notes = [
+            "Full 模式需要宿主支持多个 agent、bindings 和跨 agent 路由。",
+            "如果宿主不支持，请退回 Lite 模式。",
+        ]
+
+    return OpenClawSettingsBundle(
+        mode=mode,
+        format_name="openclaw-settings-template-v1",
+        summary=f"围绕任务「{task}」生成的 OpenClaw 设置导入模板。",
+        target_config_paths=target_config_paths,
+        supports_direct_import=(mode == "lite"),
+        default_entry_agent_id="exmachina-main",
+        settings_patch=settings_patch,
+        channels_template=channels_template,
+        bindings_template=bindings_template,
+        merge_instructions=merge_instructions,
+        usage_notes=usage_notes,
     )
 
 
