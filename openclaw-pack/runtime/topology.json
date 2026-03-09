@@ -27,7 +27,7 @@
       "display_name": "ExMachina 主控体",
       "runtime_role": "single-agent-conductor",
       "source": "全连结指挥体",
-      "workspace_dir": "install/workspaces/exmachina-main",
+      "workspace_dir": "install/compat/workspaces/exmachina-main",
       "responsibilities": [
         "在单 agent 会话中装载协议、主连结体、协作链和运行时任务板。",
         "主责执行 知识连结体，并按需内联参考协作链：理性连结体、校验连结体、文档连结体、安全连结体。"

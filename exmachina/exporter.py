@@ -65,7 +65,8 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
     workflows_dir = target / "workflows"
     examples_dir = target / "examples"
     install_dir = target / "install"
-    install_workspaces_dir = install_dir / "workspaces"
+    install_compat_dir = install_dir / "compat"
+    install_workspaces_dir = install_compat_dir / "workspaces"
 
     for directory in (
         conductor_dir,
@@ -79,9 +80,11 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         workflows_dir,
         examples_dir,
         install_dir,
-        install_workspaces_dir,
     ):
         directory.mkdir(parents=True, exist_ok=True)
+    if plan.mode == "full":
+        install_compat_dir.mkdir(parents=True, exist_ok=True)
+        install_workspaces_dir.mkdir(parents=True, exist_ok=True)
 
     ordered_bodies = [plan.primary_link_body, *plan.support_link_bodies]
     unique_children: dict[str, ChildAgent] = {}
@@ -129,6 +132,11 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
             "settings_install_readme": "install/SETTINGS.md",
             "installer": "install/install_openclaw_settings.py",
         },
+        "openclaw_compat_bundle": {
+            "install_readme": "install/compat/INSTALL.md",
+            "install_plan": "install/compat/openclaw.agents.plan.json",
+            "workspace_root": "install/compat/workspaces/",
+        },
         "runtime_topology": plan.runtime_topology.to_dict(),
         "skill_bindings": {
             body.name: body.recommended_skill for body in [plan.primary_link_body, *plan.support_link_bodies]
@@ -151,6 +159,7 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
             "link_body_conductors_dir": "link-body-conductors",
             "subagents_dir": "subagents",
             "install_dir": "install",
+            "compat_dir": "install/compat",
             "runtime_dir": "runtime",
             "skills_dir": "skills",
             "workflow": "workflows/mission-loop.md",
@@ -184,14 +193,15 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
     (target / "README.md").write_text(render_pack_readme(plan), encoding="utf-8")
     (workflows_dir / "mission-loop.md").write_text(render_workflow(plan), encoding="utf-8")
     (examples_dir / "openclaw-prompt.md").write_text(plan.openclaw_install_prompt + "\n", encoding="utf-8")
-    (install_dir / "INSTALL.md").write_text(render_install_readme(plan), encoding="utf-8")
     (install_dir / "SETTINGS.md").write_text(render_settings_install_readme(plan), encoding="utf-8")
     (runtime_dir / "README.md").write_text(render_runtime_readme(plan), encoding="utf-8")
-    (install_dir / "openclaw.agents.plan.json").write_text(
-        json.dumps(plan.openclaw_install_plan.to_dict(), ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
     (install_dir / "install_openclaw_settings.py").write_text(render_settings_installer_script(plan), encoding="utf-8")
+    if plan.mode == "full":
+        (install_compat_dir / "INSTALL.md").write_text(render_install_readme(plan), encoding="utf-8")
+        (install_compat_dir / "openclaw.agents.plan.json").write_text(
+            json.dumps(plan.openclaw_install_plan.to_dict(), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
     runtime_agent_specs = {item.agent_id: item for item in plan.runtime_topology.agent_specs}
     mission_context = {
         "mission_title": plan.mission_title,
@@ -345,28 +355,29 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
             encoding="utf-8",
         )
 
-        workspace_dir = install_workspaces_dir / agent.agent_id
-        workspace_dir.mkdir(parents=True, exist_ok=True)
-        (workspace_dir / "AGENTS.md").write_text(render_workspace_agents_md(agent, plan), encoding="utf-8")
-        (workspace_dir / "SOUL.md").write_text(render_workspace_soul_md(agent), encoding="utf-8")
-        (workspace_dir / "TOOLS.md").write_text(render_workspace_tools_md(plan), encoding="utf-8")
-        (workspace_dir / "BOOTSTRAP.md").write_text(render_workspace_bootstrap_md(agent, plan), encoding="utf-8")
-        (workspace_dir / "RUNTIME.md").write_text(
-            render_workspace_runtime_md(agent, agent_spec, plan),
-            encoding="utf-8",
-        )
-        (workspace_dir / "runtime.spec.json").write_text(
-            json.dumps(agent_spec.to_dict(), ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        (workspace_dir / "runtime.queue.json").write_text(
-            json.dumps({"agent_id": agent.agent_id, "assignments": agent_assignments}, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        (workspace_dir / "runtime.routes.json").write_text(
-            json.dumps({"agent_id": agent.agent_id, "routes": agent_routes}, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        if plan.mode == "full":
+            workspace_dir = install_workspaces_dir / agent.agent_id
+            workspace_dir.mkdir(parents=True, exist_ok=True)
+            (workspace_dir / "AGENTS.md").write_text(render_workspace_agents_md(agent, plan), encoding="utf-8")
+            (workspace_dir / "SOUL.md").write_text(render_workspace_soul_md(agent), encoding="utf-8")
+            (workspace_dir / "TOOLS.md").write_text(render_workspace_tools_md(plan), encoding="utf-8")
+            (workspace_dir / "BOOTSTRAP.md").write_text(render_workspace_bootstrap_md(agent, plan), encoding="utf-8")
+            (workspace_dir / "RUNTIME.md").write_text(
+                render_workspace_runtime_md(agent, agent_spec, plan),
+                encoding="utf-8",
+            )
+            (workspace_dir / "runtime.spec.json").write_text(
+                json.dumps(agent_spec.to_dict(), ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            (workspace_dir / "runtime.queue.json").write_text(
+                json.dumps({"agent_id": agent.agent_id, "assignments": agent_assignments}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            (workspace_dir / "runtime.routes.json").write_text(
+                json.dumps({"agent_id": agent.agent_id, "routes": agent_routes}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
 
     return target
 
@@ -611,7 +622,7 @@ def render_pack_readme(plan: MissionPlan) -> str:
         f"交接契约：共 {len(plan.handoff_contracts)} 份，详见 `manifest.json` 中的 `handoff_contracts`。",
         "资源仲裁：见 `manifest.json` 中的 `resource_arbitration`。",
         "设置导入：见 `openclaw.settings.json` 与 `install/SETTINGS.md`。",
-        "兼容安装计划：见 `manifest.json` 中的 `openclaw_install_plan` 与 `install/INSTALL.md`。",
+        "兼容安装计划：见 `manifest.json` 中的 `openclaw_install_plan` 与 `install/compat/INSTALL.md`。",
         f"知识交接摘要：{plan.knowledge_handoff.summary}",
         "",
         "关键目录：",
@@ -621,7 +632,8 @@ def render_pack_readme(plan: MissionPlan) -> str:
         "- `link-body-conductors/`：各连结体的内部指挥规则",
         "- `subagents/`：成员子个体规则",
         "- `openclaw.settings.json`：首选 OpenClaw 设置导入模板",
-        "- `install/`：设置导入说明、兼容安装计划与辅助脚本",
+        "- `install/`：settings-first 说明与设置合并脚本",
+        "- `install/compat/`：仅在需要兼容旧 workspace 安装流时生成",
         "- `workflows/mission-loop.md`：执行节奏",
         "- `manifest.json`：包含编排依据、知识交接、执行阶段、交接契约和资源仲裁",
         "",
@@ -643,9 +655,9 @@ def render_install_readme(plan: MissionPlan) -> str:
             "5. 让 `exmachina-main` 作为默认入口，在单会话内装载主连结体与协作链说明并执行任务。",
             "",
             "## 生成内容",
-            "- `openclaw.agents.plan.json`：Lite 单 agent 安装计划",
-            "- `workspaces/exmachina-main/`：默认主控 workspace 引导文件模板",
+            "- `openclaw.agents.plan.json`：Lite 单 agent 兼容安装计划",
             "- `runtime/`：单会话可消费的任务板、上下文和主控运行时文件",
+            "- `install/compat/`：本模式默认不生成；仅在需要兼容旧 workspace 流程时启用",
             "",
             "## 说明",
             "- Lite 模式不要求多 agent 绑定。",
@@ -659,12 +671,12 @@ def render_install_readme(plan: MissionPlan) -> str:
         "1. 将当前仓库作为 OpenClaw workspace 打开，或直接把仓库链接交给 OpenClaw。",
         "2. 读取仓库根目录 `BOOTSTRAP.md`。",
         "3. 运行 `python -m exmachina validate-assets`，确认引用完整。",
-        "4. 读取 `install/openclaw.agents.plan.json`，按其中的 agents / binding_plans 创建多 agent。",
+        "4. 读取 `install/compat/openclaw.agents.plan.json`，按其中的 agents / binding_plans 创建多 agent。",
         "5. 让 `exmachina-main` 作为默认入口重新读取 `openclaw-pack/BOOTSTRAP.md` 并进入执行。",
     ]
     generated_content = [
-        "- `openclaw.agents.plan.json`：多 agent 安装与绑定计划",
-        "- `workspaces/<agent_id>/`：每个 agent 的 workspace 引导文件模板",
+        "- `compat/openclaw.agents.plan.json`：多 agent 安装与绑定计划",
+        "- `compat/workspaces/<agent_id>/`：每个 agent 的兼容 workspace 引导文件模板",
     ]
 
     lines = [
@@ -910,7 +922,7 @@ def render_workspace_tools_md(plan: MissionPlan) -> str:
         "推荐使用：",
         "- `python -m exmachina validate-assets`：校验当前仓库资产引用",
         "- `python skills/scripts/regenerate_demo_pack.py`：重生成示例包",
-        "- `openclaw-pack/install/openclaw.agents.plan.json`：查看安装计划",
+        "- `openclaw-pack/install/compat/openclaw.agents.plan.json`：查看兼容安装计划",
         "- `openclaw-pack/runtime/topology.json`：查看运行时拓扑、路由和任务板",
         "",
     ])

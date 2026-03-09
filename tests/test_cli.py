@@ -58,9 +58,6 @@ class CliTests(unittest.TestCase):
                     encoding="utf-8"
                 )
             )
-            install_plan = json.loads(
-                (output / "openclaw-pack" / "install" / "openclaw.agents.plan.json").read_text(encoding="utf-8")
-            )
             task_board = json.loads((output / "openclaw-pack" / "runtime" / "task-board.json").read_text(encoding="utf-8"))
             child_doc = next((output / "openclaw-pack" / "subagents").glob("*.md")).read_text(encoding="utf-8")
 
@@ -74,7 +71,6 @@ class CliTests(unittest.TestCase):
             self.assertIn("openclaw_settings_bundle", manifest)
             self.assertIn("openclaw_directive", manifest)
             self.assertTrue(manifest["openclaw_directive"]["quick_start"])
-            self.assertEqual(len(install_plan["agents"]), 1)
             self.assertEqual(runtime_spec["runtime_role"], "single-agent-conductor")
             self.assertIn("ordered_execution_steps", task_board)
             self.assertTrue(task_board["ordered_execution_steps"])
@@ -82,6 +78,9 @@ class CliTests(unittest.TestCase):
             self.assertIn("recommended_skill", runtime_spec)
             self.assertTrue((output / "openclaw-pack" / "install" / "SETTINGS.md").exists())
             self.assertTrue((output / "openclaw-pack" / "install" / "install_openclaw_settings.py").exists())
+            self.assertFalse((output / "openclaw-pack" / "install" / "workspaces").exists())
+            self.assertFalse((output / "openclaw-pack" / "install" / "compat" / "workspaces").exists())
+            self.assertFalse((output / "openclaw-pack" / "install" / "compat" / "openclaw.agents.plan.json").exists())
             self.assertIn("## 工作流", child_doc)
             self.assertIn("## 输出契约", child_doc)
 
@@ -113,7 +112,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             manifest = json.loads((output / "openclaw-pack" / "manifest.json").read_text(encoding="utf-8"))
             install_plan = json.loads(
-                (output / "openclaw-pack" / "install" / "openclaw.agents.plan.json").read_text(encoding="utf-8")
+                (output / "openclaw-pack" / "install" / "compat" / "openclaw.agents.plan.json").read_text(encoding="utf-8")
             )
             topology = json.loads((output / "openclaw-pack" / "runtime" / "topology.json").read_text(encoding="utf-8"))
 
@@ -123,6 +122,9 @@ class CliTests(unittest.TestCase):
             self.assertGreater(len(install_plan["agents"]), 1)
             self.assertTrue(topology["routes"])
             self.assertEqual(manifest["openclaw_settings_bundle"]["path"], "openclaw.settings.json")
+            self.assertEqual(manifest["openclaw_compat_bundle"]["install_plan"], "install/compat/openclaw.agents.plan.json")
+            self.assertTrue((output / "openclaw-pack" / "install" / "compat" / "workspaces" / "exmachina-main").exists())
+            self.assertFalse((output / "openclaw-pack" / "install" / "workspaces").exists())
 
 
 if __name__ == "__main__":

@@ -34,7 +34,8 @@ flowchart TD
 ### 模式说明
 
 - **Lite**：默认模式，只要求单个 `exmachina-main` 会话，主连结体与协作链以内联方式执行，不依赖外部多 agent 绑定与路由。
-- **Full**：显式高级模式，保留主控体、主连结体、协作连结体、多 workspace、handoff routes 与状态回流机制。
+- **Full**：显式高级模式，保留主控体、主连结体、协作连结体、兼容 workspace 模板、handoff routes 与状态回流机制。
+- **Compat**：`install/compat/` 只是旧 workspace 安装流的兼容层，不是默认入口。
 
 ```mermaid
 flowchart LR

@@ -17,7 +17,7 @@
 交接契约：共 3 份，详见 `manifest.json` 中的 `handoff_contracts`。
 资源仲裁：见 `manifest.json` 中的 `resource_arbitration`。
 设置导入：见 `openclaw.settings.json` 与 `install/SETTINGS.md`。
-兼容安装计划：见 `manifest.json` 中的 `openclaw_install_plan` 与 `install/INSTALL.md`。
+兼容安装计划：见 `manifest.json` 中的 `openclaw_install_plan` 与 `install/compat/INSTALL.md`。
 知识交接摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」输出可复用的知识交接，支撑下一轮任务继续推进。
 
 关键目录：
@@ -27,6 +27,7 @@
 - `link-body-conductors/`：各连结体的内部指挥规则
 - `subagents/`：成员子个体规则
 - `openclaw.settings.json`：首选 OpenClaw 设置导入模板
-- `install/`：设置导入说明、兼容安装计划与辅助脚本
+- `install/`：settings-first 说明与设置合并脚本
+- `install/compat/`：仅在需要兼容旧 workspace 安装流时生成
 - `workflows/mission-loop.md`：执行节奏
 - `manifest.json`：包含编排依据、知识交接、执行阶段、交接契约和资源仲裁

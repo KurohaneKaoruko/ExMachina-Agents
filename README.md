@@ -72,14 +72,16 @@ python skills/scripts/regenerate_demo_pack.py
 - 根目录 `BOOTSTRAP.md`
 - `openclaw-pack/openclaw.settings.json`
 - `openclaw-pack/install/SETTINGS.md`
-- `openclaw-pack/install/INSTALL.md`
-- `openclaw-pack/install/openclaw.agents.plan.json`
+- `openclaw-pack/install/compat/INSTALL.md`
+- `openclaw-pack/install/compat/openclaw.agents.plan.json`
+- `openclaw-pack/install/compat/`（仅兼容旧 workspace 流程时使用）
 
 这三者组合起来的目标是：
 
 - 先把 ExMachina 多智能体配置载入 OpenClaw 设置；
 - 默认先给出一个 Lite 单 agent 可装载路径；
 - 在需要时再给出主控 agent、主连结体 agent 和协作 agent 的完整安装计划；
+- 只有在必须兼容旧 workspace 安装流时，才使用 `install/compat/`；
 - 最后让 OpenClaw 在安装完成后回到 `openclaw-pack/BOOTSTRAP.md` 进入工作流。
 
 ---

@@ -440,10 +440,10 @@
     "summary": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」生成可直接供 OpenClaw 单 agent 装载的 Lite 安装计划。",
     "repo_install_mode": "repo-link-bootstrap-lite",
     "requires_multi_agent_binding": false,
+    "workspace_templates_compat_only": true,
     "workspace_entry_files": [
-      "AGENTS.md",
-      "SOUL.md",
-      "TOOLS.md",
+      "openclaw.settings.json",
+      "install/SETTINGS.md",
       "BOOTSTRAP.md"
     ],
     "agents": [
@@ -451,8 +451,8 @@
         "agent_id": "exmachina-main",
         "display_name": "ExMachina 主控体",
         "role": "single-agent-conductor",
-        "workspace_dir": "install/workspaces/exmachina-main",
-        "agent_dir": "install/workspaces/exmachina-main/agent",
+        "workspace_dir": "install/compat/workspaces/exmachina-main",
+        "agent_dir": "install/compat/workspaces/exmachina-main/agent",
         "session_strategy": "single-session",
         "source": "全连结指挥体",
         "responsibilities": [
@@ -488,6 +488,11 @@
     "settings_install_readme": "install/SETTINGS.md",
     "installer": "install/install_openclaw_settings.py"
   },
+  "openclaw_compat_bundle": {
+    "install_readme": "install/compat/INSTALL.md",
+    "install_plan": "install/compat/openclaw.agents.plan.json",
+    "workspace_root": "install/compat/workspaces/"
+  },
   "runtime_topology": {
     "mode": "lite",
     "controller_agent_id": "exmachina-main",
@@ -517,7 +522,7 @@
         "display_name": "ExMachina 主控体",
         "runtime_role": "single-agent-conductor",
         "source": "全连结指挥体",
-        "workspace_dir": "install/workspaces/exmachina-main",
+        "workspace_dir": "install/compat/workspaces/exmachina-main",
         "responsibilities": [
           "在单 agent 会话中装载协议、主连结体、协作链和运行时任务板。",
           "主责执行 知识连结体，并按需内联参考协作链：理性连结体、校验连结体、文档连结体、安全连结体。"
@@ -1043,6 +1048,7 @@
     "link_body_conductors_dir": "link-body-conductors",
     "subagents_dir": "subagents",
     "install_dir": "install",
+    "compat_dir": "install/compat",
     "runtime_dir": "runtime",
     "skills_dir": "skills",
     "workflow": "workflows/mission-loop.md"

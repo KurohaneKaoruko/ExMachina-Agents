@@ -292,6 +292,7 @@ class OpenClawInstallPlan:
     summary: str
     repo_install_mode: str
     requires_multi_agent_binding: bool
+    workspace_templates_compat_only: bool
     workspace_entry_files: list[str]
     agents: list[OpenClawInstallAgent]
     binding_plans: list[OpenClawBindingPlan]
@@ -304,6 +305,7 @@ class OpenClawInstallPlan:
             "summary": self.summary,
             "repo_install_mode": self.repo_install_mode,
             "requires_multi_agent_binding": self.requires_multi_agent_binding,
+            "workspace_templates_compat_only": self.workspace_templates_compat_only,
             "workspace_entry_files": self.workspace_entry_files,
             "agents": [agent.to_dict() for agent in self.agents],
             "binding_plans": [plan.to_dict() for plan in self.binding_plans],

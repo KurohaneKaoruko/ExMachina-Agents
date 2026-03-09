@@ -1058,6 +1058,7 @@ def _build_openclaw_install_plan(
     support_bodies: list[LinkBody],
     mode: str,
 ) -> OpenClawInstallPlan:
+    compat_workspace_root = "install/compat/workspaces"
     if mode == "lite":
         inline_support = "、".join(support_names) if support_names else "无额外协作连结体"
         agents = [
@@ -1065,8 +1066,8 @@ def _build_openclaw_install_plan(
                 agent_id="exmachina-main",
                 display_name="ExMachina 主控体",
                 role="single-agent-conductor",
-                workspace_dir="install/workspaces/exmachina-main",
-                agent_dir="install/workspaces/exmachina-main/agent",
+                workspace_dir=f"{compat_workspace_root}/exmachina-main",
+                agent_dir=f"{compat_workspace_root}/exmachina-main/agent",
                 session_strategy="single-session",
                 source="全连结指挥体",
                 responsibilities=[
@@ -1101,7 +1102,8 @@ def _build_openclaw_install_plan(
             summary=f"围绕任务「{task}」生成可直接供 OpenClaw 单 agent 装载的 Lite 安装计划。",
             repo_install_mode="repo-link-bootstrap-lite",
             requires_multi_agent_binding=False,
-            workspace_entry_files=["AGENTS.md", "SOUL.md", "TOOLS.md", "BOOTSTRAP.md"],
+            workspace_templates_compat_only=True,
+            workspace_entry_files=["openclaw.settings.json", "install/SETTINGS.md", "BOOTSTRAP.md"],
             agents=agents,
             binding_plans=binding_plans,
             install_steps=install_steps,
@@ -1113,8 +1115,8 @@ def _build_openclaw_install_plan(
             agent_id="exmachina-main",
             display_name="ExMachina 主控体",
             role="conductor",
-            workspace_dir="install/workspaces/exmachina-main",
-            agent_dir="install/workspaces/exmachina-main/agent",
+            workspace_dir=f"{compat_workspace_root}/exmachina-main",
+            agent_dir=f"{compat_workspace_root}/exmachina-main/agent",
             session_strategy="main-session",
             source="全连结指挥体",
             responsibilities=[
@@ -1128,8 +1130,8 @@ def _build_openclaw_install_plan(
             agent_id="exmachina-primary",
             display_name=f"ExMachina 主连结体 · {primary_body.name}",
             role="primary-link-body",
-            workspace_dir="install/workspaces/exmachina-primary",
-            agent_dir="install/workspaces/exmachina-primary/agent",
+            workspace_dir=f"{compat_workspace_root}/exmachina-primary",
+            agent_dir=f"{compat_workspace_root}/exmachina-primary/agent",
             session_strategy="isolated-primary-session",
             source=primary_body.name,
             responsibilities=[
@@ -1146,8 +1148,8 @@ def _build_openclaw_install_plan(
                 agent_id=f"exmachina-support-{index}",
                 display_name=f"ExMachina 协作连结体 · {body.name}",
                 role="support-link-body",
-                workspace_dir=f"install/workspaces/exmachina-support-{index}",
-                agent_dir=f"install/workspaces/exmachina-support-{index}/agent",
+                workspace_dir=f"{compat_workspace_root}/exmachina-support-{index}",
+                agent_dir=f"{compat_workspace_root}/exmachina-support-{index}/agent",
                 session_strategy="isolated-support-session",
                 source=body.name,
                 responsibilities=[
@@ -1185,13 +1187,13 @@ def _build_openclaw_install_plan(
     install_steps = [
         "将仓库作为 OpenClaw workspace 打开，先读取根目录 `BOOTSTRAP.md`。",
         "运行 `python -m exmachina validate-assets`，确认资产引用完整。",
-        "读取 `openclaw-pack/install/INSTALL.md` 和 `openclaw-pack/install/openclaw.agents.plan.json`。",
+        "读取 `openclaw-pack/install/compat/INSTALL.md` 和 `openclaw-pack/install/compat/openclaw.agents.plan.json`。",
         "按安装计划创建主控 agent、主连结体 agent 和协作 agent。",
         "让主控 agent 再次读取 `openclaw-pack/BOOTSTRAP.md` 并进入任务执行。",
     ]
     self_bootstrap_steps = [
         "若 OpenClaw 直接打开仓库，请优先读取根目录 `BOOTSTRAP.md`。",
-        "若检测到尚未配置多 agent，请根据 `openclaw.agents.plan.json` 生成隔离 workspace。",
+        "若检测到尚未配置多 agent，请根据 `install/compat/openclaw.agents.plan.json` 生成兼容 workspace。",
         "安装后由 `exmachina-main` 作为默认入口接收用户任务。",
     ]
 
@@ -1200,7 +1202,8 @@ def _build_openclaw_install_plan(
         summary=f"围绕任务「{task}」生成可直接供 OpenClaw 装载的主控 + 主链 + 协作 agent 安装计划。",
         repo_install_mode="repo-link-bootstrap",
         requires_multi_agent_binding=True,
-        workspace_entry_files=["AGENTS.md", "SOUL.md", "TOOLS.md", "BOOTSTRAP.md"],
+        workspace_templates_compat_only=True,
+        workspace_entry_files=["openclaw.settings.json", "install/SETTINGS.md", f"{compat_workspace_root}/"],
         agents=agents,
         binding_plans=binding_plans,
         install_steps=install_steps,

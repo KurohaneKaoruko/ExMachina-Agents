@@ -277,7 +277,7 @@ def _build_lite_runtime_topology(
             display_name="ExMachina 主控体",
             runtime_role="single-agent-conductor",
             source="全连结指挥体",
-            workspace_dir="install/workspaces/exmachina-main",
+            workspace_dir="install/compat/workspaces/exmachina-main",
             responsibilities=[
                 "在单 agent 会话中装载协议、主连结体、协作链和运行时任务板。",
                 f"主责执行 {primary_body.name}，并按需内联参考协作链：{('、'.join(inline_support_names) if inline_support_names else '无')}。",
