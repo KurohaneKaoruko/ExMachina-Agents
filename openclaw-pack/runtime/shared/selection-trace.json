@@ -1,0 +1,145 @@
+{
+  "primary_name": "知识连结体",
+  "primary_score": 13,
+  "primary_reasons": [
+    "知识连结体 综合得分最高，为 13 分。",
+    "命中关键词：知识、沉淀、术语、索引、规则。",
+    "命中高权重关键词：知识、沉淀、术语、索引。",
+    "加分依据：命中关键词 5 项 +10。",
+    "加分依据：工作区上下文 +1。",
+    "加分依据：高权重关键词 +2。"
+  ],
+  "support_names": [
+    "理性连结体",
+    "校验连结体",
+    "文档连结体",
+    "安全连结体"
+  ],
+  "support_reasons": [
+    "触发协作连结体 理性连结体：主连结体不是 理性连结体。",
+    "触发协作连结体 校验连结体：主连结体不是 校验连结体；存在测试上下文。",
+    "触发协作连结体 文档连结体：主连结体不是 文档连结体；任务命中关键词 文档、readme、说明、教程、示例、手册、迁移。",
+    "安全连结体 以 2 分进入协作链，补充主链路未覆盖的任务维度。"
+  ],
+  "scored_candidates": [
+    {
+      "name": "知识连结体",
+      "score": 13,
+      "matched_keywords": [
+        "知识",
+        "沉淀",
+        "术语",
+        "索引",
+        "规则"
+      ],
+      "matched_priority_keywords": [
+        "知识",
+        "沉淀",
+        "术语",
+        "索引"
+      ],
+      "bonus_reasons": [
+        "命中关键词 5 项 +10",
+        "工作区上下文 +1",
+        "高权重关键词 +2"
+      ]
+    },
+    {
+      "name": "文档连结体",
+      "score": 7,
+      "matched_keywords": [
+        "readme",
+        "示例"
+      ],
+      "matched_priority_keywords": [
+        "readme",
+        "示例"
+      ],
+      "bonus_reasons": [
+        "命中关键词 2 项 +4",
+        "工作区上下文 +1",
+        "高权重关键词 +2"
+      ]
+    },
+    {
+      "name": "安全连结体",
+      "score": 2,
+      "matched_keywords": [],
+      "matched_priority_keywords": [],
+      "bonus_reasons": [
+        "测试上下文 +1",
+        "工作区上下文 +1"
+      ]
+    },
+    {
+      "name": "集成连结体",
+      "score": 2,
+      "matched_keywords": [
+        "openclaw"
+      ],
+      "matched_priority_keywords": [],
+      "bonus_reasons": [
+        "命中关键词 1 项 +2"
+      ]
+    },
+    {
+      "name": "实作连结体",
+      "score": 1,
+      "matched_keywords": [],
+      "matched_priority_keywords": [],
+      "bonus_reasons": [
+        "工作区上下文 +1"
+      ]
+    },
+    {
+      "name": "校验连结体",
+      "score": 1,
+      "matched_keywords": [],
+      "matched_priority_keywords": [],
+      "bonus_reasons": [
+        "测试上下文 +1"
+      ]
+    },
+    {
+      "name": "理性连结体",
+      "score": 1,
+      "matched_keywords": [],
+      "matched_priority_keywords": [],
+      "bonus_reasons": [
+        "基础分 +1"
+      ]
+    },
+    {
+      "name": "研究连结体",
+      "score": 1,
+      "matched_keywords": [],
+      "matched_priority_keywords": [],
+      "bonus_reasons": [
+        "工作区上下文 +1"
+      ]
+    },
+    {
+      "name": "运维连结体",
+      "score": 1,
+      "matched_keywords": [],
+      "matched_priority_keywords": [],
+      "bonus_reasons": [
+        "测试上下文 +1"
+      ]
+    },
+    {
+      "name": "架构连结体",
+      "score": 0,
+      "matched_keywords": [],
+      "matched_priority_keywords": [],
+      "bonus_reasons": []
+    },
+    {
+      "name": "策划连结体",
+      "score": 0,
+      "matched_keywords": [],
+      "matched_priority_keywords": [],
+      "bonus_reasons": []
+    }
+  ]
+}

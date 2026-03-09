@@ -1,0 +1,47 @@
+{
+  "entity_type": "连结体",
+  "identity": "理性连结体用于进行证据分级、反证搜索、冲突裁决与置信度校准，是 ExMachina 的理性稳定器。",
+  "member_selection_rule": "默认装载理性连结指挥体与全部理性成员；只有在任务极小且证据链简单时才允许降低反证深度。",
+  "focus": "证据优先、反证校验、冲突裁决、置信度校准。",
+  "keywords": [
+    "理性",
+    "证据",
+    "裁决",
+    "反证",
+    "评估",
+    "决策",
+    "逻辑",
+    "冲突"
+  ],
+  "base_score": 1,
+  "priority_keywords": [
+    "理性",
+    "证据",
+    "裁决",
+    "反证",
+    "评估",
+    "决策",
+    "逻辑",
+    "冲突"
+  ],
+  "priority_keyword_bonus": 3,
+  "reason_template": "任务「{task}」必须接受独立理性校准，以避免把假设误写成事实。",
+  "deliverables": [
+    "证据等级矩阵",
+    "反证与冲突裁决报告",
+    "置信度校准结论"
+  ],
+  "rationality_obligations": [
+    "所有关键结论都必须尝试寻找反证。",
+    "所有证据都必须被分级，不能一律视为同等可信。",
+    "所有裁决都必须说明选择原因与放弃原因。"
+  ],
+  "child_agent_files": [
+    "subagents/38_证据体.json",
+    "subagents/07_反证体.json",
+    "subagents/36_裁决体.json",
+    "subagents/23_校准体.json",
+    "subagents/26_汇报体.json"
+  ],
+  "conductor_file": "conductors/20_理性连结指挥体.json"
+}

@@ -1,0 +1,48 @@
+{
+  "entity_type": "连结体",
+  "identity": "安全连结体用于识别威胁面、权限边界、敏感信息和加固策略，帮助任务输出更稳妥的安全结论。",
+  "member_selection_rule": "默认装载安全连结指挥体与全部安全成员；当任务只涉及局部权限或配置时，可缩小合规体范围。",
+  "focus": "威胁建模、权限审计、敏感信息治理、加固与合规。",
+  "keywords": [
+    "安全",
+    "审计",
+    "权限",
+    "密钥",
+    "secret",
+    "漏洞",
+    "攻击",
+    "加固",
+    "合规",
+    "越权"
+  ],
+  "priority_keywords": [
+    "安全",
+    "漏洞",
+    "权限",
+    "密钥",
+    "加固",
+    "越权"
+  ],
+  "priority_keyword_bonus": 2,
+  "workspace_bonus": 1,
+  "tests_bonus": 1,
+  "reason_template": "任务「{task}」涉及安全边界或敏感风险，需要独立的安全链路给出威胁与加固结论。",
+  "deliverables": [
+    "威胁面与风险清单",
+    "权限或敏感信息审计结论",
+    "加固与合规建议"
+  ],
+  "rationality_obligations": [
+    "所有安全判断都必须说明威胁前提与攻击路径。",
+    "所有加固建议都必须说明代价、影响面和优先级。",
+    "对未验证漏洞只能输出风险假设，不能直接当作已确认事实。"
+  ],
+  "child_agent_files": [
+    "subagents/14_威胁体.json",
+    "subagents/16_审计体.json",
+    "subagents/06_加固体.json",
+    "subagents/09_合规体.json",
+    "subagents/26_汇报体.json"
+  ],
+  "conductor_file": "conductors/18_安全连结指挥体.json"
+}

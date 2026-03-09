@@ -1,0 +1,894 @@
+﻿from __future__ import annotations
+
+import json
+import shutil
+from pathlib import Path
+
+from .models import (
+    ChildAgent,
+    LinkBody,
+    LinkConductor,
+    MissionPlan,
+    OpenClawInstallAgent,
+    RationalityProtocol,
+    RuntimeAgentSpec,
+)
+
+
+def write_plan_files(plan: MissionPlan, out_dir: str | Path) -> Path:
+    target = Path(out_dir)
+    target.mkdir(parents=True, exist_ok=True)
+
+    (target / "mission.json").write_text(
+        json.dumps(plan.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (target / "mission.md").write_text(render_markdown(plan), encoding="utf-8")
+    return target
+
+
+def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
+    target = Path(out_dir)
+
+    for stale_dir in (
+        target / "agents",
+        target / "conductor",
+        target / "install",
+        target / "link-bodies",
+        target / "link-body-conductors",
+        target / "subagents",
+        target / "protocols",
+        target / "runtime",
+        target / "workflows",
+        target / "examples",
+    ):
+        if stale_dir.exists():
+            shutil.rmtree(stale_dir)
+
+    for stale_file in (
+        target / "manifest.json",
+        target / "BOOTSTRAP.md",
+        target / "README.md",
+    ):
+        if stale_file.exists():
+            stale_file.unlink()
+
+    conductor_dir = target / "conductor"
+    link_bodies_dir = target / "link-bodies"
+    link_body_conductors_dir = target / "link-body-conductors"
+    subagents_dir = target / "subagents"
+    protocols_dir = target / "protocols"
+    runtime_dir = target / "runtime"
+    runtime_shared_dir = runtime_dir / "shared"
+    runtime_agents_dir = runtime_dir / "agents"
+    workflows_dir = target / "workflows"
+    examples_dir = target / "examples"
+    install_dir = target / "install"
+    install_workspaces_dir = install_dir / "workspaces"
+
+    for directory in (
+        conductor_dir,
+        link_bodies_dir,
+        link_body_conductors_dir,
+        subagents_dir,
+        protocols_dir,
+        runtime_dir,
+        runtime_shared_dir,
+        runtime_agents_dir,
+        workflows_dir,
+        examples_dir,
+        install_dir,
+        install_workspaces_dir,
+    ):
+        directory.mkdir(parents=True, exist_ok=True)
+
+    ordered_bodies = [plan.primary_link_body, *plan.support_link_bodies]
+    unique_children: dict[str, ChildAgent] = {}
+    for body in ordered_bodies:
+        for child in body.child_agents:
+            unique_children.setdefault(child.name, child)
+    child_file_map = {
+        child.name: f"subagents/{index:02d}_{child.name}.md"
+        for index, child in enumerate(unique_children.values(), start=40)
+    }
+
+    protocol_paths = {
+        "rationality": "protocols/00_绝对理性协议.md",
+        "evidence": "protocols/01_证据分级协议.md",
+        "conflict": "protocols/02_冲突裁决协议.md",
+        "output_contract": "protocols/03_输出契约.md",
+    }
+    manifest = {
+        "project_name": "ExMachina",
+        "pack_name": "ExMachina OpenClaw Pack",
+        "mission_title": plan.mission_title,
+        "ontology": {
+            "conductor": "单一顶层调度体",
+            "link_body": "由一个连结指挥体和多个子个体组成的任务协作单元",
+            "link_conductor": "连结体内部的协调中枢",
+            "subagent": "承担单一职责的实际智能体",
+        },
+        "rationality_protocol": {
+            "name": plan.rationality_protocol.name,
+            "paths": protocol_paths,
+        },
+        "selection_trace": plan.selection_trace.to_dict(),
+        "knowledge_handoff": plan.knowledge_handoff.to_dict(),
+        "execution_stages": [stage.to_dict() for stage in plan.execution_stages],
+        "handoff_contracts": [contract.to_dict() for contract in plan.handoff_contracts],
+        "resource_arbitration": plan.resource_arbitration.to_dict(),
+        "openclaw_install_plan": plan.openclaw_install_plan.to_dict(),
+        "runtime_topology": plan.runtime_topology.to_dict(),
+        "conductor": {
+            "name": plan.conductor_name,
+            "path": "conductor/00_全连结指挥体.md",
+        },
+        "primary_link_body": _manifest_body_item(plan.primary_link_body, 10, 20, child_file_map),
+        "support_link_bodies": [
+            _manifest_body_item(body, 11 + index, 21 + index, child_file_map)
+            for index, body in enumerate(plan.support_link_bodies)
+        ],
+        "repo": plan.repo.to_dict() if plan.repo else None,
+        "workflow": plan.workflow,
+        "paths": {
+            "protocols_dir": "protocols",
+            "conductor_dir": "conductor",
+            "link_bodies_dir": "link-bodies",
+            "link_body_conductors_dir": "link-body-conductors",
+            "subagents_dir": "subagents",
+            "install_dir": "install",
+            "runtime_dir": "runtime",
+            "workflow": "workflows/mission-loop.md",
+        },
+    }
+
+    (target / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    (target / "BOOTSTRAP.md").write_text(render_bootstrap(plan), encoding="utf-8")
+    (target / "README.md").write_text(render_pack_readme(plan), encoding="utf-8")
+    (workflows_dir / "mission-loop.md").write_text(render_workflow(plan), encoding="utf-8")
+    (examples_dir / "openclaw-prompt.md").write_text(plan.openclaw_install_prompt + "\n", encoding="utf-8")
+    (install_dir / "INSTALL.md").write_text(render_install_readme(plan), encoding="utf-8")
+    (runtime_dir / "README.md").write_text(render_runtime_readme(plan), encoding="utf-8")
+    (install_dir / "openclaw.agents.plan.json").write_text(
+        json.dumps(plan.openclaw_install_plan.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    runtime_agent_specs = {item.agent_id: item for item in plan.runtime_topology.agent_specs}
+    mission_context = {
+        "mission_title": plan.mission_title,
+        "task": plan.task,
+        "primary_link_body": plan.primary_link_body.name,
+        "support_link_bodies": [body.name for body in plan.support_link_bodies],
+        "acceptance_criteria": plan.acceptance_criteria,
+        "workflow": plan.workflow,
+        "activation_steps": plan.runtime_topology.activation_steps,
+    }
+    task_board = {
+        "controller_agent_id": plan.runtime_topology.controller_agent_id,
+        "coordination_mode": plan.runtime_topology.coordination_mode,
+        "assignments": [assignment.to_dict() for assignment in plan.runtime_topology.assignments],
+        "routes": [route.to_dict() for route in plan.runtime_topology.routes],
+    }
+    (runtime_dir / "topology.json").write_text(
+        json.dumps(plan.runtime_topology.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (runtime_shared_dir / "mission-context.json").write_text(
+        json.dumps(mission_context, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (runtime_shared_dir / "selection-trace.json").write_text(
+        json.dumps(plan.selection_trace.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (runtime_shared_dir / "knowledge-handoff.json").write_text(
+        json.dumps(plan.knowledge_handoff.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (runtime_shared_dir / "resource-arbitration.json").write_text(
+        json.dumps(plan.resource_arbitration.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (runtime_dir / "task-board.json").write_text(
+        json.dumps(task_board, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (conductor_dir / "00_全连结指挥体.md").write_text(render_conductor(plan), encoding="utf-8")
+    (protocols_dir / "00_绝对理性协议.md").write_text(render_rationality_protocol(plan.rationality_protocol), encoding="utf-8")
+    (protocols_dir / "01_证据分级协议.md").write_text(render_evidence_protocol(plan.rationality_protocol), encoding="utf-8")
+    (protocols_dir / "02_冲突裁决协议.md").write_text(render_conflict_protocol(plan.rationality_protocol), encoding="utf-8")
+    (protocols_dir / "03_输出契约.md").write_text(render_output_contract(plan.rationality_protocol), encoding="utf-8")
+
+    for index, body in enumerate(ordered_bodies, start=10):
+        filename = f"{index:02d}_{body.name}.md"
+        (link_bodies_dir / filename).write_text(render_link_body(body, child_file_map), encoding="utf-8")
+
+    for index, body in enumerate(ordered_bodies, start=20):
+        filename = f"{index:02d}_{body.link_conductor.name}.md"
+        (link_body_conductors_dir / filename).write_text(render_link_body_conductor(body.name, body.link_conductor), encoding="utf-8")
+
+    for index, child in enumerate(unique_children.values(), start=40):
+        filename = f"{index:02d}_{child.name}.md"
+        (subagents_dir / filename).write_text(render_child_agent(child), encoding="utf-8")
+
+    for agent in plan.openclaw_install_plan.agents:
+        runtime_agent_dir = runtime_agents_dir / agent.agent_id
+        runtime_agent_dir.mkdir(parents=True, exist_ok=True)
+        (runtime_agent_dir / "inbox").mkdir(parents=True, exist_ok=True)
+        (runtime_agent_dir / "outbox").mkdir(parents=True, exist_ok=True)
+        (runtime_agent_dir / "inbox" / ".gitkeep").write_text("", encoding="utf-8")
+        (runtime_agent_dir / "outbox" / ".gitkeep").write_text("", encoding="utf-8")
+        agent_spec = runtime_agent_specs[agent.agent_id]
+        agent_assignments = [
+            assignment.to_dict()
+            for assignment in plan.runtime_topology.assignments
+            if assignment.agent_id == agent.agent_id
+        ]
+        agent_routes = [
+            route.to_dict()
+            for route in plan.runtime_topology.routes
+            if route.source_agent_id == agent.agent_id or route.target_agent_id == agent.agent_id
+        ]
+        (runtime_agent_dir / "spec.json").write_text(
+            json.dumps(agent_spec.to_dict(), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        (runtime_agent_dir / "queue.json").write_text(
+            json.dumps({"agent_id": agent.agent_id, "assignments": agent_assignments}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        (runtime_agent_dir / "routes.json").write_text(
+            json.dumps({"agent_id": agent.agent_id, "routes": agent_routes}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        (runtime_agent_dir / "status.json").write_text(
+            json.dumps(
+                {
+                    "agent_id": agent.agent_id,
+                    "state": "pending",
+                    "current_stage": None,
+                    "assignments": [
+                        {
+                            "assignment_id": item["assignment_id"],
+                            "stage_name": item["stage_name"],
+                            "status": "pending",
+                        }
+                        for item in agent_assignments
+                    ],
+                    "last_report": None,
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        workspace_dir = install_workspaces_dir / agent.agent_id
+        workspace_dir.mkdir(parents=True, exist_ok=True)
+        (workspace_dir / "AGENTS.md").write_text(render_workspace_agents_md(agent, plan), encoding="utf-8")
+        (workspace_dir / "SOUL.md").write_text(render_workspace_soul_md(agent), encoding="utf-8")
+        (workspace_dir / "TOOLS.md").write_text(render_workspace_tools_md(plan), encoding="utf-8")
+        (workspace_dir / "BOOTSTRAP.md").write_text(render_workspace_bootstrap_md(agent, plan), encoding="utf-8")
+        (workspace_dir / "RUNTIME.md").write_text(
+            render_workspace_runtime_md(agent, agent_spec, plan),
+            encoding="utf-8",
+        )
+        (workspace_dir / "runtime.spec.json").write_text(
+            json.dumps(agent_spec.to_dict(), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        (workspace_dir / "runtime.queue.json").write_text(
+            json.dumps({"agent_id": agent.agent_id, "assignments": agent_assignments}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        (workspace_dir / "runtime.routes.json").write_text(
+            json.dumps({"agent_id": agent.agent_id, "routes": agent_routes}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+    return target
+
+
+def write_bundle(plan: MissionPlan, out_dir: str | Path) -> Path:
+    target = write_plan_files(plan, out_dir)
+    export_openclaw_pack(plan, target / "openclaw-pack")
+    return target
+
+
+def render_markdown(plan: MissionPlan) -> str:
+    lines = [
+        f"# {plan.mission_title}",
+        "",
+        "## 项目名",
+        "- ExMachina",
+        "",
+        "## 任务概览",
+        f"- 原始任务：{plan.task}",
+        f"- 指挥体：{plan.conductor_name}",
+        f"- 主连结体：{plan.primary_link_body.name}",
+        f"- 协作连结体：{_body_names(plan.support_link_bodies)}",
+    ]
+
+    if plan.repo:
+        lines.append(f"- 远程仓库：{plan.repo.url}")
+    if plan.workspace:
+        lines.append(f"- 工作区：{plan.workspace.root}")
+        if plan.workspace.detected_languages:
+            lines.append(f"- 识别语言：{'、'.join(plan.workspace.detected_languages)}")
+        if plan.workspace.notable_paths:
+            lines.append(f"- 关键路径：{'、'.join(plan.workspace.notable_paths[:8])}")
+
+    lines.extend([
+        "",
+        "## 绝对理性协议",
+        f"- 协议名：{plan.rationality_protocol.name}",
+        f"- 使命：{plan.rationality_protocol.mission}",
+        "- 认识论规则：",
+    ])
+    lines.extend(f"  - {item}" for item in plan.rationality_protocol.epistemic_rules)
+    lines.append("- 决策规则：")
+    lines.extend(f"  - {item}" for item in plan.rationality_protocol.decision_rules)
+    lines.append("- 行动规则：")
+    lines.extend(f"  - {item}" for item in plan.rationality_protocol.action_rules)
+
+    lines.extend([
+        "",
+        "## 全连结指挥体",
+        f"- 使命：{plan.conductor_mission}",
+        "- 原则：",
+    ])
+    lines.extend(f"  - {item}" for item in plan.conductor_principles)
+
+    lines.extend(["", "## 资源仲裁"])
+    lines.append(f"- 摘要：{plan.resource_arbitration.summary}")
+    lines.append("- 优先级槽位：")
+    for slot in plan.resource_arbitration.priority_slots:
+        lines.append(
+            f"  - {slot.priority} / {slot.owner_body}：{slot.objective}（原因：{slot.reason}；可后置：{'是' if slot.deferrable else '否'}）"
+        )
+    lines.append("- 争用规则：")
+    lines.extend(f"  - {item}" for item in plan.resource_arbitration.contention_rules)
+    lines.append("- 升级规则：")
+    lines.extend(f"  - {item}" for item in plan.resource_arbitration.escalation_rules)
+    lines.append("- 可后置工作：")
+    lines.extend(f"  - {item}" for item in plan.resource_arbitration.deferred_work)
+
+    lines.extend(["", "## OpenClaw 安装计划"])
+    lines.append(f"- 摘要：{plan.openclaw_install_plan.summary}")
+    lines.append(f"- 安装模式：{plan.openclaw_install_plan.repo_install_mode}")
+    lines.append(f"- workspace 入口文件：{'、'.join(plan.openclaw_install_plan.workspace_entry_files)}")
+    lines.append("- 计划安装的 agent：")
+    for agent in plan.openclaw_install_plan.agents:
+        lines.append(
+            f"  - {agent.agent_id} / {agent.display_name}：{agent.role}，workspace=`{agent.workspace_dir}`，agentDir=`{agent.agent_dir}`"
+        )
+    lines.append("- 绑定建议：")
+    lines.extend(
+        f"  - {binding.target_agent_id}：{binding.binding_mode}（{binding.match_hint}）"
+        for binding in plan.openclaw_install_plan.binding_plans
+    )
+
+    lines.extend(["", "## 执行阶段"])
+    for stage in plan.execution_stages:
+        lines.append(f"### {stage.name}")
+        lines.append(f"- 目标：{stage.goal}")
+        lines.append(f"- 主责连结体：{stage.owner_body}")
+        lines.append(f"- 协作连结体：{'、'.join(stage.support_bodies) if stage.support_bodies else '无'}")
+        lines.append("- 阶段交付：")
+        lines.extend(f"  - {item}" for item in stage.deliverables)
+        lines.append("- 出关检查：")
+        lines.extend(f"  - {item}" for item in stage.exit_checks)
+
+    lines.extend(["", "## 交接契约"])
+    for contract in plan.handoff_contracts:
+        lines.append(f"### {contract.name}")
+        lines.append(f"- 交付方阶段：{contract.producer_stage}")
+        lines.append(f"- 接收方阶段：{contract.consumer_stage}")
+        lines.append(f"- 交付连结体：{contract.producer_body}")
+        lines.append(f"- 接收连结体：{'、'.join(contract.consumer_bodies)}")
+        lines.append("- 交接内容：")
+        lines.extend(f"  - {item}" for item in contract.payload)
+        lines.append("- 验收条件：")
+        lines.extend(f"  - {item}" for item in contract.acceptance_checks)
+
+    lines.extend(["", "## 连结体编排"])
+    lines.extend(["", "## 编排依据"])
+    lines.append(f"- 主连结体选择：{plan.selection_trace.primary_name}（{plan.selection_trace.primary_score} 分）")
+    lines.append("- 主连结体依据：")
+    lines.extend(f"  - {item}" for item in plan.selection_trace.primary_reasons)
+    if plan.selection_trace.support_names:
+        lines.append(f"- 协作连结体：{'、'.join(plan.selection_trace.support_names)}")
+        lines.append("- 协作触发依据：")
+        lines.extend(f"  - {item}" for item in plan.selection_trace.support_reasons)
+    lines.append("- 候选评分：")
+    for candidate in plan.selection_trace.scored_candidates:
+        detail_parts = []
+        if candidate.matched_keywords:
+            detail_parts.append(f"关键词={'、'.join(candidate.matched_keywords)}")
+        if candidate.matched_priority_keywords:
+            detail_parts.append(f"高权重={'、'.join(candidate.matched_priority_keywords)}")
+        if candidate.bonus_reasons:
+            detail_parts.append(f"加分={'；'.join(candidate.bonus_reasons)}")
+        suffix = f"（{'；'.join(detail_parts)}）" if detail_parts else ""
+        lines.append(f"  - {candidate.name}：{candidate.score} 分{suffix}")
+
+    lines.extend(["", "## 知识交接"])
+    lines.append(f"- 摘要：{plan.knowledge_handoff.summary}")
+    lines.append("- 持续保留：")
+    lines.extend(f"  - {item}" for item in plan.knowledge_handoff.carry_forward)
+    lines.append("- 关键决策：")
+    lines.extend(f"  - {item}" for item in plan.knowledge_handoff.decisions)
+    lines.append("- 未决问题：")
+    lines.extend(f"  - {item}" for item in plan.knowledge_handoff.open_questions)
+    lines.append("- 后续更新：")
+    lines.extend(f"  - {item}" for item in plan.knowledge_handoff.next_updates)
+
+    lines.extend(_render_link_body_section(plan.primary_link_body, primary=True))
+    for body in plan.support_link_bodies:
+        lines.extend(_render_link_body_section(body, primary=False))
+
+    lines.extend(["", "## 验收标准"])
+    lines.extend(f"- {item}" for item in plan.acceptance_criteria)
+    lines.extend(["", "## 工作流"])
+    lines.extend(f"- {item}" for item in plan.workflow)
+    lines.extend(["", "## OpenClaw 引导语", plan.openclaw_install_prompt, ""])
+    return "\n".join(lines)
+
+
+def render_bootstrap(plan: MissionPlan) -> str:
+    lines = [
+        "# ExMachina · OpenClaw 自举入口",
+        "",
+        "你现在要把此仓库作为一个理性多智能体覆盖层加载。",
+        "在这里，OpenClaw 会被组织成一个由多个连结体协作的结构化工作流。",
+        "",
+        "## 第一原则",
+        "- 先加载协议，再加载角色。",
+        "- 先区分事实与假设，再进行决策。",
+        "- 先做可逆动作，再做不可逆动作。",
+        "- 先输出证据，再输出结论。",
+        "",
+        "## 加载顺序",
+        "1. 读取 `manifest.json`，理解项目名、本体结构、协议索引与编排依据。",
+        "2. 读取 `protocols/00_绝对理性协议.md`。",
+        "3. 读取 `protocols/01_证据分级协议.md`。",
+        "4. 读取 `protocols/02_冲突裁决协议.md`。",
+        "5. 读取 `protocols/03_输出契约.md`。",
+        "6. 读取 `conductor/00_全连结指挥体.md` 作为顶层调度规则。",
+        "7. 读取主连结体文件，再读取其对应的连结指挥体文件。",
+        "8. 根据连结体文件中列出的成员子个体，装载 `subagents/` 下对应规则。",
+        "9. 对协作连结体重复上述步骤。",
+        "10. 按 `workflows/mission-loop.md` 的节奏执行任务。",
+        "",
+        "## 当前任务",
+        f"- 标题：{plan.mission_title}",
+        f"- 原始任务：{plan.task}",
+        f"- 主连结体：{plan.primary_link_body.name}",
+        f"- 主连结指挥体：{plan.primary_link_body.link_conductor.name}",
+        f"- 协作连结体：{_body_names(plan.support_link_bodies)}",
+        "",
+        "## 启动语",
+        plan.openclaw_install_prompt,
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def render_pack_readme(plan: MissionPlan) -> str:
+    return "\n".join([
+        "# ExMachina OpenClaw Pack",
+        "",
+        "这是一个可直接放入远程仓库并供 OpenClaw 读取的协作包。",
+        "项目名为 ExMachina，用于为 OpenClaw 提供协议化、可装载的多智能体协作包。",
+        "",
+        f"当前任务：{plan.mission_title}",
+        f"主连结体：{plan.primary_link_body.name}",
+        f"主连结指挥体：{plan.primary_link_body.link_conductor.name}",
+        f"协作连结体：{_body_names(plan.support_link_bodies)}",
+        f"理性协议：{plan.rationality_protocol.name}",
+        "编排依据：见 `manifest.json` 中的 `selection_trace`。",
+        "知识交接：见 `manifest.json` 中的 `knowledge_handoff`。",
+        f"执行阶段：共 {len(plan.execution_stages)} 个阶段，详见 `manifest.json` 中的 `execution_stages`。",
+        f"交接契约：共 {len(plan.handoff_contracts)} 份，详见 `manifest.json` 中的 `handoff_contracts`。",
+        "资源仲裁：见 `manifest.json` 中的 `resource_arbitration`。",
+        "安装计划：见 `manifest.json` 中的 `openclaw_install_plan` 与 `install/INSTALL.md`。",
+        f"知识交接摘要：{plan.knowledge_handoff.summary}",
+        "",
+        "关键目录：",
+        "- `protocols/`：绝对理性协议、证据分级、冲突裁决、输出契约",
+        "- `conductor/`：全连结指挥体规则",
+        "- `link-bodies/`：连结体协议",
+        "- `link-body-conductors/`：各连结体的内部指挥规则",
+        "- `subagents/`：成员子个体规则",
+        "- `install/`：OpenClaw 安装计划、workspace 模板与 agent 方案",
+        "- `workflows/mission-loop.md`：执行节奏",
+        "- `manifest.json`：包含编排依据、知识交接、执行阶段、交接契约和资源仲裁",
+        "",
+    ])
+
+
+def render_install_readme(plan: MissionPlan) -> str:
+    lines = [
+        "# OpenClaw 安装指南",
+        "",
+        f"摘要：{plan.openclaw_install_plan.summary}",
+        "",
+        "## 最简安装路径",
+        "1. 将当前仓库作为 OpenClaw workspace 打开，或直接把仓库链接交给 OpenClaw。",
+        "2. 读取仓库根目录 `BOOTSTRAP.md`。",
+        "3. 运行 `python -m exmachina validate-assets`，确认引用完整。",
+        "4. 读取 `install/openclaw.agents.plan.json`，按其中的 agents / binding_plans 创建多 agent。",
+        "5. 让 `exmachina-main` 作为默认入口重新读取 `openclaw-pack/BOOTSTRAP.md` 并进入执行。",
+        "",
+        "## 生成内容",
+        "- `openclaw.agents.plan.json`：多 agent 安装与绑定计划",
+        "- `workspaces/<agent_id>/`：每个 agent 的 workspace 引导文件模板",
+        "",
+        "## 安装步骤",
+    ]
+    lines.extend(f"- {item}" for item in plan.openclaw_install_plan.install_steps)
+    lines.extend(["", "## 自举步骤"])
+    lines.extend(f"- {item}" for item in plan.openclaw_install_plan.self_bootstrap_steps)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_runtime_readme(plan: MissionPlan) -> str:
+    lines = [
+        "# ExMachina Runtime",
+        "",
+        "这一层不再只是角色说明，而是给 OpenClaw 多 workspace 协作使用的运行时拓扑。",
+        f"主控体：{plan.runtime_topology.controller_agent_id}",
+        f"协调模式：{plan.runtime_topology.coordination_mode}",
+        "",
+        "## 关键文件",
+        "- `topology.json`：完整 agent 拓扑、路由、任务分配与激活步骤",
+        "- `shared/mission-context.json`：全局任务上下文与验收标准",
+        "- `shared/selection-trace.json`：主链与协作链选择依据",
+        "- `shared/knowledge-handoff.json`：知识交接与后续维护输入",
+        "- `shared/resource-arbitration.json`：资源仲裁与升级规则",
+        "- `task-board.json`：运行时任务板",
+        "- `agents/<agent_id>/`：每个 agent 的 spec / queue / routes / status / inbox / outbox",
+        "",
+        "## 启动步骤",
+    ]
+    lines.extend(f"- {item}" for item in plan.runtime_topology.activation_steps)
+    lines.extend(["", "## 协调规则"])
+    lines.extend(f"- {item}" for item in plan.runtime_topology.coordination_rules)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_workflow(plan: MissionPlan) -> str:
+    lines = ["# Mission Loop", ""]
+    lines.extend(["## 资源仲裁", ""])
+    lines.append(f"- 摘要：{plan.resource_arbitration.summary}")
+    lines.append("- 优先级槽位：")
+    for slot in plan.resource_arbitration.priority_slots:
+        lines.append(f"  - {slot.priority} / {slot.owner_body}：{slot.objective}")
+    lines.append("")
+    lines.extend(["## 执行阶段", ""])
+    for stage in plan.execution_stages:
+        lines.append(f"### {stage.name}")
+        lines.append(f"- 目标：{stage.goal}")
+        lines.append(f"- 主责连结体：{stage.owner_body}")
+        lines.append(f"- 协作连结体：{'、'.join(stage.support_bodies) if stage.support_bodies else '无'}")
+        lines.append("- 出关检查：")
+        lines.extend(f"  - {item}" for item in stage.exit_checks)
+        lines.append("")
+    lines.extend(["## 交接契约", ""])
+    for contract in plan.handoff_contracts:
+        lines.append(f"### {contract.name}")
+        lines.append(f"- 交付连结体：{contract.producer_body}")
+        lines.append(f"- 接收连结体：{'、'.join(contract.consumer_bodies)}")
+        lines.append("- 验收条件：")
+        lines.extend(f"  - {item}" for item in contract.acceptance_checks)
+        lines.append("")
+    lines.extend(["## 工作流", ""])
+    lines.extend(f"{index}. {step}" for index, step in enumerate(plan.workflow, start=1))
+    lines.extend(["", "## 验收标准"])
+    lines.extend(f"- {item}" for item in plan.acceptance_criteria)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_workspace_agents_md(agent: OpenClawInstallAgent, plan: MissionPlan) -> str:
+    lines = [
+        f"# {agent.display_name}",
+        "",
+        f"角色：{agent.role}",
+        f"来源：{agent.source}",
+        f"Session 策略：{agent.session_strategy}",
+        "",
+        "## 你负责的事",
+    ]
+    lines.extend(f"- {item}" for item in agent.responsibilities)
+    lines.extend(["", "## 你要交接给谁"])
+    lines.extend(f"- {item}" for item in agent.handoff_targets)
+    lines.extend([
+        "",
+        "## 工作要求",
+        "- 先读取同目录的 `BOOTSTRAP.md`。",
+        "- 再读取同目录的 `RUNTIME.md`、`runtime.spec.json`、`runtime.queue.json`、`runtime.routes.json`。",
+        "- 再根据需要读取仓库根目录 `openclaw-pack/manifest.json`。",
+        "- 所有输出必须遵守绝对理性协议和统一输出契约。",
+        "",
+    ])
+    return "\n".join(lines)
+
+
+def render_workspace_soul_md(agent: OpenClawInstallAgent) -> str:
+    lines = [
+        f"# {agent.display_name} · SOUL",
+        "",
+        f"你是 `{agent.agent_id}`，负责 `{agent.source}` 对应的工作面。",
+        "你应保持边界清晰、证据优先、输出结构化，并把不确定性显式写出来。",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def render_workspace_tools_md(plan: MissionPlan) -> str:
+    return "\n".join([
+        "# TOOLS",
+        "",
+        "推荐使用：",
+        "- `python -m exmachina validate-assets`：校验当前仓库资产引用",
+        "- `python skills/exmachina-project-maintainer/scripts/regenerate_demo_pack.py`：重生成示例包",
+        "- `openclaw-pack/install/openclaw.agents.plan.json`：查看安装计划",
+        "- `openclaw-pack/runtime/topology.json`：查看运行时拓扑、路由和任务板",
+        "",
+    ])
+
+
+def render_workspace_bootstrap_md(agent: OpenClawInstallAgent, plan: MissionPlan) -> str:
+    lines = [
+        f"# {agent.display_name} · BOOTSTRAP",
+        "",
+        f"你当前是 `{agent.agent_id}`。先完成以下启动流程：",
+        "1. 读取同目录 `AGENTS.md`、`SOUL.md`、`TOOLS.md`。",
+        "2. 读取同目录 `RUNTIME.md`、`runtime.spec.json`、`runtime.queue.json`、`runtime.routes.json`。",
+        "3. 读取仓库根目录 `openclaw-pack/manifest.json` 与 `openclaw-pack/runtime/topology.json`。",
+        f"4. 聚焦你的来源角色：{agent.source}。",
+        "5. 按 runtime routes 与 handoff_targets 交接，不要越过主控体擅自改全局边界。",
+        "",
+        f"主任务：{plan.task}",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def render_workspace_runtime_md(
+    agent: OpenClawInstallAgent,
+    runtime_agent_spec: RuntimeAgentSpec,
+    plan: MissionPlan,
+) -> str:
+    lines = [
+        f"# {agent.display_name} · RUNTIME",
+        "",
+        f"运行时角色：{runtime_agent_spec.runtime_role}",
+        f"来源：{runtime_agent_spec.source}",
+        f"Inbox：`{runtime_agent_spec.inbox_path}`",
+        f"Outbox：`{runtime_agent_spec.outbox_path}`",
+        f"Status：`{runtime_agent_spec.status_path}`",
+        "",
+        "## 你当前要做的事",
+    ]
+    lines.extend(f"- {item}" for item in runtime_agent_spec.responsibilities)
+    lines.extend(["", "## 运行时要求"])
+    lines.extend(f"- {item}" for item in runtime_agent_spec.coordination_rules)
+    lines.extend([
+        "",
+        "## 任务来源",
+        "- 先消费 `runtime.queue.json` 中分配给你的 assignment。",
+        "- 输出必须通过 `runtime.routes.json` 中的 route 进行 handoff 或状态回报。",
+        "- 若发现阻塞、冲突或不可逆风险，立即升级给主控体。",
+        "",
+        f"主任务：{plan.task}",
+        "",
+    ])
+    return "\n".join(lines)
+
+
+def render_rationality_protocol(protocol: RationalityProtocol) -> str:
+    lines = [
+        f"# {protocol.name}",
+        "",
+        f"使命：{protocol.mission}",
+        "",
+        "## 认识论规则",
+    ]
+    lines.extend(f"- {item}" for item in protocol.epistemic_rules)
+    lines.extend(["", "## 决策规则"])
+    lines.extend(f"- {item}" for item in protocol.decision_rules)
+    lines.extend(["", "## 行动规则"])
+    lines.extend(f"- {item}" for item in protocol.action_rules)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_evidence_protocol(protocol: RationalityProtocol) -> str:
+    lines = ["# 证据分级协议", "", "## 证据等级"]
+    for tier in protocol.evidence_tiers:
+        lines.append(f"- {tier['tier']} / {tier['name']}：{tier['description']}")
+    lines.extend(["", "## 禁止行为"])
+    lines.extend(f"- {item}" for item in protocol.anti_patterns)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_conflict_protocol(protocol: RationalityProtocol) -> str:
+    lines = ["# 冲突裁决协议", "", "## 冲突规则"]
+    lines.extend(f"- {item}" for item in protocol.disagreement_rules)
+    lines.extend(["", "## 升级规则"])
+    lines.extend(f"- {item}" for item in protocol.escalation_rules)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_output_contract(protocol: RationalityProtocol) -> str:
+    lines = ["# 输出契约", "", "## 必需输出字段"]
+    lines.extend(f"- {item}" for item in protocol.output_contract)
+    lines.extend(["", "## 置信度等级"])
+    for item in protocol.confidence_scale:
+        lines.append(f"- {item['level']}：{item['meaning']}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_conductor(plan: MissionPlan) -> str:
+    lines = [
+        f"# {plan.conductor_name}",
+        "",
+        f"使命：{plan.conductor_mission}",
+        "",
+        "## 绝对理性约束",
+        f"- 你必须先加载《{plan.rationality_protocol.name}》。",
+        "- 你不得把假设伪装成事实。",
+        "- 你必须要求每个连结体输出证据、结论、风险、置信度和下一步验证。",
+        "- 当多个连结体出现冲突结论时，必须交给理性连结体或显式执行冲突裁决协议。",
+        "",
+        "## 你必须做的事",
+        "- 先确认任务边界、输入、风险、未知量和验收标准。",
+        f"- 将主任务派发给主连结体 {plan.primary_link_body.name}。",
+        f"- 根据需要拉起协作连结体：{_body_names(plan.support_link_bodies)}。",
+        "- 汇总所有连结指挥体、子个体与连结体的结果，给出最终交付、风险和下一步建议。",
+        "",
+        "## 原则",
+    ]
+    lines.extend(f"- {item}" for item in plan.conductor_principles)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_link_body(body: LinkBody, child_file_map: dict[str, str]) -> str:
+    lines = [
+        f"# {body.name}",
+        "",
+        f"实体类型：{body.entity_type}",
+        f"身份说明：{body.identity}",
+        f"焦点：{body.focus}",
+        f"派发原因：{body.reason}",
+        f"成员选择规则：{body.member_selection_rule}",
+        f"内部连结指挥体：{body.link_conductor.name}",
+        f"成员数量：{len(body.child_agents)}",
+        "",
+        "## 理性义务",
+    ]
+    lines.extend(f"- {item}" for item in body.rationality_obligations)
+    lines.extend(["", "## 交付物"])
+    lines.extend(f"- {item}" for item in body.deliverables)
+    lines.extend([
+        "",
+        "## 内部结构",
+        f"- 连结指挥体：{body.link_conductor.name}",
+        "- 子个体定义集中存放在 `subagents/` 中，本文件只保留引用关系。",
+        "- 成员子个体引用：",
+    ])
+    lines.extend(
+        f"  - {child.name}：`{child_file_map[child.name]}`"
+        for child in body.child_agents
+    )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_link_body_conductor(body_name: str, conductor: LinkConductor) -> str:
+    lines = [
+        f"# {conductor.name}",
+        "",
+        f"所属连结体：{body_name}",
+        f"职责：{conductor.mission}",
+        "",
+        "## 主要职责",
+    ]
+    lines.extend(f"- {item}" for item in conductor.duties)
+    lines.extend([
+        "",
+        "## 额外理性责任",
+        "- 强制成员区分事实、推断、假设和决策。",
+        "- 发现证据冲突时必须触发反证或升级裁决。",
+        "- 不允许成员跳过验证直接宣告终局结论。",
+        "",
+        "## 检查项",
+    ])
+    lines.extend(f"- {item}" for item in conductor.checks)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_child_agent(child: ChildAgent) -> str:
+    lines = [
+        f"# {child.name}",
+        "",
+        f"职责：{child.mission}",
+        "",
+        "## 输出",
+    ]
+    lines.extend(f"- {item}" for item in child.outputs)
+    lines.extend([
+        "",
+        "## 理性要求",
+        "- 输出时必须区分事实、推断和结论。",
+        "- 证据不足时必须显式输出未知与下一步验证。",
+        "",
+        "## 检查项",
+    ])
+    lines.extend(f"- {item}" for item in child.checks)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _body_names(bodies: list[LinkBody]) -> str:
+    if not bodies:
+        return "无"
+    return "、".join(body.name for body in bodies)
+
+
+def _manifest_body_item(
+    body: LinkBody,
+    body_index: int,
+    conductor_index: int,
+    child_file_map: dict[str, str],
+) -> dict:
+    return {
+        "name": body.name,
+        "path": f"link-bodies/{body_index:02d}_{body.name}.md",
+        "rationality_obligations": body.rationality_obligations,
+        "link_conductor": {
+            "name": body.link_conductor.name,
+            "path": f"link-body-conductors/{conductor_index:02d}_{body.link_conductor.name}.md",
+        },
+        "member_agents": [child.name for child in body.child_agents],
+        "member_agent_files": [
+            {
+                "name": child.name,
+                "path": child_file_map[child.name],
+            }
+            for child in body.child_agents
+        ],
+    }
+
+
+def _render_link_body_section(body: LinkBody, primary: bool) -> list[str]:
+    prefix = "主" if primary else "协作"
+    lines = [
+        f"### {prefix}连结体：{body.name}",
+        f"- 实体类型：{body.entity_type}",
+        f"- 身份说明：{body.identity}",
+        f"- 焦点：{body.focus}",
+        f"- 派发原因：{body.reason}",
+        f"- 成员选择规则：{body.member_selection_rule}",
+        f"- 内部连结指挥体：{body.link_conductor.name}",
+        f"- 成员数量：{len(body.child_agents)}",
+        "- 理性义务：",
+    ]
+    lines.extend(f"  - {item}" for item in body.rationality_obligations)
+    lines.append("- 连结指挥体职责：")
+    lines.extend(f"  - {item}" for item in body.link_conductor.duties)
+    lines.append("- 交付物：")
+    lines.extend(f"  - {item}" for item in body.deliverables)
+    lines.append("- 成员子个体：")
+    for child in body.child_agents:
+        lines.append(f"  - {child.name}：{child.mission}")
+    return lines

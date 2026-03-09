@@ -1,0 +1,45 @@
+{
+  "entity_type": "连结体",
+  "identity": "研究连结体用于补齐现状、澄清上下文、比对既有实现与替代方案，为后续规划、架构或实作提供可靠起点。",
+  "member_selection_rule": "默认装载研究连结指挥体与全部研究成员；当上下文已经充分时，可弱化溯源体或假设体。",
+  "focus": "现状梳理、上下文补齐、既有实现比对、假设澄清。",
+  "keywords": [
+    "调研",
+    "分析",
+    "梳理",
+    "定位",
+    "理解",
+    "探索",
+    "上下文",
+    "现状"
+  ],
+  "priority_keywords": [
+    "调研",
+    "梳理",
+    "定位",
+    "理解",
+    "探索",
+    "上下文"
+  ],
+  "priority_keyword_bonus": 2,
+  "workspace_bonus": 1,
+  "reason_template": "任务「{task}」需要先补齐现状与上下文，再决定后续拆解或实施路线。",
+  "deliverables": [
+    "现状扫描摘要",
+    "既有方案与替代方案比对",
+    "关键假设与缺口清单"
+  ],
+  "rationality_obligations": [
+    "必须区分已经确认的现状与仍待验证的猜测。",
+    "引用既有实现、文档或日志时必须给出来源路径或依据。",
+    "输出替代方案时必须说明适用边界与放弃原因。"
+  ],
+  "child_agent_files": [
+    "subagents/27_溯源体.json",
+    "subagents/25_比对体.json",
+    "subagents/01_上下文体.json",
+    "subagents/04_假设体.json",
+    "subagents/26_汇报体.json"
+  ],
+  "conductor_file": "conductors/11_研究连结指挥体.json"
+}

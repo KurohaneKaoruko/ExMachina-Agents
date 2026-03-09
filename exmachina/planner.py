@@ -1,0 +1,948 @@
+﻿from __future__ import annotations
+
+import hashlib
+import re
+
+from .models import (
+    ArbitrationSlot,
+    ChildAgent,
+    ExecutionStage,
+    HandoffContract,
+    KnowledgeHandoff,
+    LinkBody,
+    LinkConductor,
+    LinkBodyScore,
+    MissionPlan,
+    OpenClawBindingPlan,
+    OpenClawInstallAgent,
+    OpenClawInstallPlan,
+    RationalityProtocol,
+    ResourceArbitration,
+    RepoReference,
+    SelectionTrace,
+    WorkspaceSnapshot,
+)
+from .profile import load_profile
+from .repository import parse_repository_reference
+from .runtime import build_runtime_topology
+from .workspace import scan_workspace
+
+
+DEFAULT_MAX_SUPPORT_BODIES = 3
+DEFAULT_FALLBACK_PRIMARY = "实作连结体"
+
+
+def slugify(text: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    digest = hashlib.sha1(text.encode("utf-8")).hexdigest()[:8]
+    if not normalized:
+        return f"mission-{digest}"
+    return f"{normalized[:36]}-{digest}".strip("-")
+
+
+def plan_mission(
+    task: str,
+    repo_url: str | None = None,
+    workspace_path: str | None = None,
+    title: str | None = None,
+    profile_path: str | None = None,
+) -> MissionPlan:
+    if not task.strip():
+        raise ValueError("任务描述不能为空。")
+
+    profile = load_profile(profile_path)
+    repo = parse_repository_reference(repo_url) if repo_url else None
+    workspace = scan_workspace(workspace_path) if workspace_path else None
+
+    primary_name, support_names, selection_trace = _select_link_bodies(task, profile, repo, workspace)
+    primary = _build_link_body(primary_name, profile["link_bodies"][primary_name], task, repo, workspace)
+    support_bodies = [
+        _build_link_body(name, profile["link_bodies"][name], task, repo, workspace)
+        for name in support_names
+    ]
+
+    rationality_protocol = _build_rationality_protocol(profile, task, repo, workspace)
+    mission_title = title or _build_mission_title(task, repo)
+    acceptance_criteria = _build_acceptance_criteria(
+        task,
+        repo,
+        workspace,
+        primary_name,
+        support_names,
+        rationality_protocol,
+    )
+    workflow = _build_workflow(primary_name, support_names)
+    install_prompt = _build_openclaw_prompt(repo, task)
+    knowledge_handoff = _build_knowledge_handoff(
+        task,
+        repo,
+        workspace,
+        primary_name,
+        support_names,
+        selection_trace,
+    )
+    execution_stages = _build_execution_stages(task, primary_name, support_names)
+    handoff_contracts = _build_handoff_contracts(execution_stages, knowledge_handoff)
+    resource_arbitration = _build_resource_arbitration(
+        task,
+        repo,
+        workspace,
+        primary_name,
+        support_names,
+        execution_stages,
+    )
+    openclaw_install_plan = _build_openclaw_install_plan(
+        task,
+        primary_name,
+        support_names,
+        primary,
+        support_bodies,
+    )
+    runtime_topology = build_runtime_topology(
+        mission_title=mission_title,
+        task=task,
+        selection_trace=selection_trace,
+        knowledge_handoff=knowledge_handoff,
+        execution_stages=execution_stages,
+        handoff_contracts=handoff_contracts,
+        resource_arbitration=resource_arbitration,
+        openclaw_install_plan=openclaw_install_plan,
+        primary_body=primary,
+        support_bodies=support_bodies,
+    )
+
+    conductor = profile["conductor"]
+    return MissionPlan(
+        mission_title=mission_title,
+        task=task,
+        task_slug=slugify(mission_title),
+        conductor_name=conductor["name"],
+        conductor_mission=conductor["mission"],
+        conductor_principles=conductor["principles"],
+        repo=repo,
+        workspace=workspace,
+        rationality_protocol=rationality_protocol,
+        primary_link_body=primary,
+        support_link_bodies=support_bodies,
+        selection_trace=selection_trace,
+        knowledge_handoff=knowledge_handoff,
+        execution_stages=execution_stages,
+        handoff_contracts=handoff_contracts,
+        resource_arbitration=resource_arbitration,
+        openclaw_install_plan=openclaw_install_plan,
+        runtime_topology=runtime_topology,
+        acceptance_criteria=acceptance_criteria,
+        workflow=workflow,
+        openclaw_install_prompt=install_prompt,
+    )
+
+
+def _build_mission_title(task: str, repo: RepoReference | None) -> str:
+    if repo:
+        return f"{repo.name} · {task.strip()}"
+    return task.strip()
+
+
+def _score_link_body(
+    task: str,
+    name: str,
+    spec: dict,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+) -> int:
+    lowered_task = task.lower()
+    matched_keywords = [keyword for keyword in spec.get("keywords", []) if keyword.lower() in lowered_task]
+    matched_priority_keywords = [
+        keyword for keyword in spec.get("priority_keywords", []) if keyword.lower() in lowered_task
+    ]
+    score = int(spec.get("base_score", 0))
+    bonus_reasons: list[str] = []
+
+    if score:
+        bonus_reasons.append(f"基础分 +{score}")
+    if matched_keywords:
+        score += len(matched_keywords) * 2
+        bonus_reasons.append(f"命中关键词 {len(matched_keywords)} 项 +{len(matched_keywords) * 2}")
+    if repo:
+        repo_bonus = int(spec.get("repo_bonus", 0))
+        if repo_bonus:
+            score += repo_bonus
+            bonus_reasons.append(f"仓库上下文 +{repo_bonus}")
+    if workspace and workspace.test_paths:
+        tests_bonus = int(spec.get("tests_bonus", 0))
+        if tests_bonus:
+            score += tests_bonus
+            bonus_reasons.append(f"测试上下文 +{tests_bonus}")
+    if workspace and workspace.detected_languages:
+        workspace_bonus = int(spec.get("workspace_bonus", 0))
+        if workspace_bonus:
+            score += workspace_bonus
+            bonus_reasons.append(f"工作区上下文 +{workspace_bonus}")
+    if matched_priority_keywords:
+        priority_bonus = int(spec.get("priority_keyword_bonus", 0))
+        if priority_bonus:
+            score += priority_bonus
+            bonus_reasons.append(f"高权重关键词 +{priority_bonus}")
+
+    return LinkBodyScore(
+        name=name,
+        score=score,
+        matched_keywords=matched_keywords,
+        matched_priority_keywords=matched_priority_keywords,
+        bonus_reasons=bonus_reasons,
+    )
+
+
+def _select_link_bodies(
+    task: str,
+    profile: dict,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+) -> tuple[str, list[str], SelectionTrace]:
+    selection = profile.get("selection", {})
+    max_support_bodies = int(selection.get("max_support_bodies", DEFAULT_MAX_SUPPORT_BODIES))
+    fallback_primary = selection.get("fallback_primary", DEFAULT_FALLBACK_PRIMARY)
+
+    scores: list[LinkBodyScore] = []
+    for name, spec in profile["link_bodies"].items():
+        scores.append(_score_link_body(task, name, spec, repo, workspace))
+
+    scores.sort(key=lambda item: (-item.score, item.name))
+    primary_score = scores[0]
+    primary_name = primary_score.name
+    fallback_used = False
+    if primary_score.score == 0:
+        primary_name = fallback_primary
+        fallback_used = True
+        primary_score = next(score for score in scores if score.name == primary_name)
+
+    scored_supports = [score.name for score in scores if score.name != primary_name and score.score > 0]
+    required_supports: list[str] = []
+    support_reason_map: dict[str, list[str]] = {}
+    for rule in selection.get("support_rules", []):
+        if _support_rule_matches(rule, task, repo, workspace, primary_name):
+            required_supports.append(rule["body"])
+            support_reason_map.setdefault(rule["body"], []).append(_describe_support_rule(rule, primary_name))
+
+    support_names = _dedupe_names([*required_supports, *scored_supports], primary_name)
+    if not support_names:
+        fallback_support_names = list(selection.get("fallback_supports", {}).get(primary_name, []))
+        support_names = _dedupe_names(
+            fallback_support_names,
+            primary_name,
+        )
+        if support_names:
+            for name in support_names:
+                support_reason_map.setdefault(name, []).append(
+                    f"{primary_name} 启用默认协作链，并拉起 {name} 参与补位。"
+                )
+
+    selected_support_names = support_names[:max_support_bodies]
+    for name in selected_support_names:
+        if name not in support_reason_map:
+            score = next(item for item in scores if item.name == name)
+            support_reason_map.setdefault(name, []).append(
+                f"{name} 以 {score.score} 分进入协作链，补充主链路未覆盖的任务维度。"
+            )
+
+    support_reasons = [
+        reason
+        for name in selected_support_names
+        for reason in support_reason_map.get(name, [])
+    ]
+
+    selection_trace = SelectionTrace(
+        primary_name=primary_name,
+        primary_score=primary_score.score,
+        primary_reasons=_describe_primary_selection(primary_score, fallback_used, fallback_primary),
+        support_names=selected_support_names,
+        support_reasons=support_reasons,
+        scored_candidates=scores,
+    )
+
+    return primary_name, selected_support_names, selection_trace
+
+
+def _build_link_body(
+    name: str,
+    spec: dict,
+    task: str,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+) -> LinkBody:
+    child_agents = []
+    context_suffix = _build_context_suffix(repo, workspace)
+
+    for child in spec["child_agents"]:
+        mission = f"围绕任务「{task}」执行：{child['mission']}"
+        if context_suffix:
+            mission = f"{mission}。{context_suffix}"
+        child_agents.append(
+            ChildAgent(
+                name=child["name"],
+                mission=mission,
+                outputs=list(child["outputs"]),
+                checks=list(child["checks"]),
+            )
+        )
+
+    reason = spec["reason_template"].format(task=task, repo=repo.name if repo else "当前目标")
+    identity = spec.get(
+        "identity",
+        f"{name} 由一个连结指挥体和多个承担不同职责的子个体组成，用于交付单一阶段目标。",
+    )
+    member_selection_rule = spec.get(
+        "member_selection_rule",
+        "默认启用连结指挥体与全部关键成员；只有在边界明确时才允许裁剪非关键成员。",
+    )
+    rationality_obligations = list(
+        spec.get(
+            "rationality_obligations",
+            [
+                "所有结论必须区分观察、推断、假设与决策。",
+                "证据不足时必须显式输出未知与下一步验证动作。"
+            ]
+        )
+    )
+
+    return LinkBody(
+        name=name,
+        entity_type=spec.get("entity_type", "连结体"),
+        identity=identity,
+        focus=spec["focus"],
+        reason=reason,
+        deliverables=list(spec["deliverables"]),
+        member_selection_rule=member_selection_rule,
+        rationality_obligations=rationality_obligations,
+        link_conductor=_build_link_conductor(name, spec, task, repo, workspace),
+        child_agents=child_agents,
+    )
+
+
+def _build_link_conductor(
+    body_name: str,
+    spec: dict,
+    task: str,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+) -> LinkConductor:
+    conductor_spec = spec.get("conductor", {})
+    default_name = body_name.replace("连结体", "连结指挥体") if body_name.endswith("连结体") else f"{body_name}指挥体"
+    context_suffix = _build_context_suffix(repo, workspace)
+
+    mission = conductor_spec.get(
+        "mission",
+        f"作为 {body_name} 的内部指挥体，负责任务「{task}」在本连结体内部的成员调度、冲突消解、证据收束与阶段汇总。",
+    )
+    if context_suffix:
+        mission = f"{mission}。{context_suffix}"
+
+    duties = list(
+        conductor_spec.get(
+            "duties",
+            [
+                "接收全连结指挥体下发的阶段目标与边界。",
+                "安排本连结体内部各子个体的执行顺序。",
+                "收束冲突结论，输出统一阶段交付。"
+            ]
+        )
+    )
+    checks = list(
+        conductor_spec.get(
+            "checks",
+            [
+                "是否正确装载关键子个体。",
+                "是否把假设与事实分开。",
+                "是否输出统一且可追踪的阶段结论。"
+            ]
+        )
+    )
+
+    return LinkConductor(
+        name=conductor_spec.get("name", default_name),
+        mission=mission,
+        duties=duties,
+        checks=checks,
+    )
+
+
+def _build_rationality_protocol(
+    profile: dict,
+    task: str,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+) -> RationalityProtocol:
+    protocol_spec = profile["rationality"]
+    mission = protocol_spec["mission"]
+
+    context_parts: list[str] = [f"当前任务：{task}"]
+    if repo:
+        context_parts.append(f"目标仓库：{repo.owner}/{repo.name}")
+    if workspace and workspace.detected_languages:
+        context_parts.append(f"工作区语言：{'、'.join(workspace.detected_languages)}")
+
+    mission = f"{mission}。{'；'.join(context_parts)}"
+
+    return RationalityProtocol(
+        name=protocol_spec["name"],
+        mission=mission,
+        epistemic_rules=list(protocol_spec["epistemic_rules"]),
+        decision_rules=list(protocol_spec["decision_rules"]),
+        action_rules=list(protocol_spec["action_rules"]),
+        disagreement_rules=list(protocol_spec["disagreement_rules"]),
+        escalation_rules=list(protocol_spec["escalation_rules"]),
+        output_contract=list(protocol_spec["output_contract"]),
+        anti_patterns=list(protocol_spec["anti_patterns"]),
+        evidence_tiers=list(protocol_spec["evidence_tiers"]),
+        confidence_scale=list(protocol_spec["confidence_scale"]),
+    )
+
+
+def _build_context_suffix(repo: RepoReference | None, workspace: WorkspaceSnapshot | None) -> str:
+    parts: list[str] = []
+    if repo:
+        parts.append(f"关联仓库：{repo.owner}/{repo.name}")
+    if workspace and workspace.detected_languages:
+        parts.append(f"检测到语言：{', '.join(workspace.detected_languages)}")
+    if workspace and workspace.notable_paths:
+        parts.append(f"关键路径：{', '.join(workspace.notable_paths[:5])}")
+    return "；".join(parts)
+
+
+def _build_acceptance_criteria(
+    task: str,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+    primary_name: str,
+    support_names: list[str],
+    rationality_protocol: RationalityProtocol,
+) -> list[str]:
+    criteria = [
+        f"全局必须遵守《{rationality_protocol.name}》，所有结论区分事实、推断、假设与决策。",
+        f"主责由{primary_name}完成，并输出可执行交付物。",
+        "每个连结体都必须显式包含一个连结指挥体和多个子个体。",
+        "每个连结指挥体都必须具备成员调度、冲突消解、证据收束与阶段汇总职责。",
+        "任务计划必须包含明确的执行阶段，并为每个阶段标注目标、主责连结体、交付物与出关检查。",
+        "相邻执行阶段之间必须存在显式交接契约，说明输入、输出与验收条件。",
+        "计划必须包含资源优先级仲裁层，明确高优先级事项、争用规则和可后置工作。",
+        "证据不足时必须明确输出未知、风险和下一步验证动作，而不是假装确定。",
+        "所有不可逆动作都必须附带风险说明、回退路径或替代方案。",
+        "最终输出必须满足统一输出契约，至少包含证据、判断、风险、置信度和下一步。",
+        "最终输出必须附带知识交接清单，至少包含可复用产物、关键决策、未决问题与后续维护动作。"
+    ]
+
+    if support_names:
+        criteria.append(f"协作连结体包含：{'、'.join(support_names)}，并提供交叉补位。")
+    if "理性连结体" in support_names or primary_name == "理性连结体":
+        criteria.append("理性连结体必须输出反证、证据分级、冲突裁决与置信度校准结果。")
+    if "知识连结体" in support_names or primary_name == "知识连结体":
+        criteria.append("知识连结体必须输出术语、决策、可复用路径与未决问题的沉淀结果。")
+    if "安全连结体" in support_names or primary_name == "安全连结体":
+        criteria.append("安全相关工作在资源争用时不得被降到低于核心交付与证据校验之后的非阻塞层。")
+    if repo:
+        criteria.append(f"方案显式绑定远程仓库 {repo.url}，可通过仓库链接直接被 OpenClaw 装载。")
+    if workspace and workspace.detected_languages:
+        criteria.append(f"方案参考当前工作区语言栈：{'、'.join(workspace.detected_languages)}。")
+    if "测试" in task or "验证" in task or (workspace and workspace.test_paths):
+        criteria.append("输出中必须包含可执行的验证步骤、测试方案或证据命令。")
+
+    return criteria
+
+
+def _build_workflow(primary_name: str, support_names: list[str]) -> list[str]:
+    workflow = [
+        "全连结指挥体先装载绝对理性协议，并明确当前已知、未知、假设与验收标准。",
+        f"将主任务派发给主连结体 {primary_name}。",
+        f"{primary_name} 的连结指挥体接管内部调度，并装载该连结体的成员子个体。",
+        "成员子个体并行产出事实提取、方案构造、风险分析、验证证据与阶段汇报。",
+        f"{primary_name} 的连结指挥体汇总成员结果，形成主交付。"
+    ]
+
+    if support_names:
+        workflow.append(f"协作连结体 {'、'.join(support_names)} 依次执行反证、校验、集成或补位任务。")
+    if "理性连结体" in support_names or primary_name == "理性连结体":
+        workflow.append("理性连结体对所有关键结论执行证据分级、反证搜索、冲突裁决与置信度校准。")
+    if "知识连结体" in support_names or primary_name == "知识连结体":
+        workflow.append("知识连结体收束术语、关键决策、复用入口与未决问题，形成长期可追踪的知识交接。")
+    workflow.append("相邻阶段之间按交接契约传递输入输出，避免上下文丢失或责任悬空。")
+    workflow.append("若多个连结体或阶段争用资源，按资源优先级仲裁层先处理风险闸门，再保障主链路交付。")
+
+    workflow.append("全连结指挥体输出最终结论、证据摘要、风险清单、置信度和下一轮行动建议。")
+    return workflow
+
+
+def _build_knowledge_handoff(
+    task: str,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+    primary_name: str,
+    support_names: list[str],
+    selection_trace: SelectionTrace,
+) -> KnowledgeHandoff:
+    carry_forward = [
+        f"记录主连结体 {primary_name} 的交付物、适用边界与成员分工。",
+        "归档证据摘要、风险清单与置信度结论，避免后续重复判断。",
+    ]
+    decisions = [
+        f"主连结体选型：{selection_trace.primary_name}（{selection_trace.primary_score} 分）。",
+        f"协作链路：{'、'.join(support_names) if support_names else '无额外协作连结体'}。",
+    ]
+    open_questions = [
+        "将本轮仍未验证的假设单独记录，避免在下一轮被误当作已确认事实。",
+        "把高风险但尚未执行的动作转化为显式待办与验证问题。",
+    ]
+    next_updates = [
+        "将新的结构约定、流程规则或示例同步回 README 与导出包说明。",
+        "把本轮新增的关键路径、命令或配置入口更新到长期维护文档。",
+    ]
+
+    if repo:
+        carry_forward.append(f"记录仓库入口与装载路径：{repo.url}。")
+    if workspace and workspace.notable_paths:
+        carry_forward.append(f"保留关键路径索引：{'、'.join(workspace.notable_paths[:5])}。")
+    if workspace and workspace.detected_languages:
+        decisions.append(f"工作区语言栈：{'、'.join(workspace.detected_languages)}。")
+    if "文档连结体" in support_names or primary_name == "文档连结体":
+        carry_forward.append("沉淀面向使用者的说明、示例与迁移差异。")
+        next_updates.append("同步校对示例命令、章节结构与面向读者的术语。")
+    if "安全连结体" in support_names or primary_name == "安全连结体":
+        carry_forward.append("沉淀安全假设、威胁面、加固建议与待复核项。")
+        open_questions.append("继续跟踪尚未证实的漏洞假设、权限边界和敏感配置风险。")
+    if "运维连结体" in support_names or primary_name == "运维连结体":
+        carry_forward.append("沉淀运行指标、告警阈值、回滚路径与演练要点。")
+    if "理性连结体" in support_names or primary_name == "理性连结体":
+        decisions.append("保留关键结论的证据等级、放弃方案与裁决理由。")
+    if "知识连结体" in support_names or primary_name == "知识连结体":
+        carry_forward.append("沉淀术语表、决策索引、问题索引与复用入口。")
+        next_updates.append("将术语、决策和未决问题同步到长期知识索引。")
+
+    return KnowledgeHandoff(
+        summary=f"围绕任务「{task}」输出可复用的知识交接，支撑下一轮任务继续推进。",
+        carry_forward=carry_forward,
+        decisions=decisions,
+        open_questions=open_questions,
+        next_updates=next_updates,
+    )
+
+
+def _build_execution_stages(task: str, primary_name: str, support_names: list[str]) -> list[ExecutionStage]:
+    kickoff_owner = _pick_stage_owner(
+        candidates=[primary_name, *support_names],
+        preferred=["研究连结体", "策划连结体", primary_name],
+        fallback=primary_name,
+    )
+    review_owner = _pick_stage_owner(
+        candidates=[primary_name, *support_names],
+        preferred=["理性连结体", "校验连结体", "安全连结体", primary_name],
+        fallback=primary_name,
+    )
+    handoff_owner = _pick_stage_owner(
+        candidates=[primary_name, *support_names],
+        preferred=["知识连结体", "集成连结体", "文档连结体", "运维连结体", primary_name],
+        fallback=primary_name,
+    )
+
+    stages = [
+        ExecutionStage(
+            name="阶段 1 · 任务澄清",
+            goal=f"围绕任务「{task}」明确边界、输入、假设与验收标准。",
+            owner_body=kickoff_owner,
+            support_bodies=_stage_supports(kickoff_owner, support_names),
+            deliverables=[
+                "任务边界说明",
+                "输入与前提清单",
+                "关键假设与验收标准",
+            ],
+            exit_checks=[
+                "已知、未知、假设与决策是否明确区分。",
+                "主连结体和协作连结体是否完成分工。",
+                "阶段目标是否具备可验证的出关条件。",
+            ],
+        ),
+        ExecutionStage(
+            name="阶段 2 · 主链路交付",
+            goal=f"由 {primary_name} 负责形成任务的主交付。",
+            owner_body=primary_name,
+            support_bodies=support_names,
+            deliverables=[
+                f"{primary_name} 的核心交付物",
+                "阶段性实现或方案摘要",
+                "风险与依赖说明",
+            ],
+            exit_checks=[
+                "主链路交付是否完整且可追踪。",
+                "关键风险是否附带回退路径或替代方案。",
+                "协作连结体是否收到需要补位的输入。",
+            ],
+        ),
+        ExecutionStage(
+            name="阶段 3 · 交叉校验",
+            goal="对关键结论执行校验、反证、审计或冲突裁决。",
+            owner_body=review_owner,
+            support_bodies=_stage_supports(review_owner, support_names),
+            deliverables=[
+                "验证或审计结论",
+                "证据摘要与冲突裁决",
+                "剩余风险与置信度说明",
+            ],
+            exit_checks=[
+                "关键结论是否经过独立交叉检查。",
+                "证据是否足以支撑当前判断。",
+                "未解决冲突是否被显式升级或记录。",
+            ],
+        ),
+        ExecutionStage(
+            name="阶段 4 · 集成交接",
+            goal="收束最终说明、知识沉淀与后续维护入口。",
+            owner_body=handoff_owner,
+            support_bodies=_stage_supports(handoff_owner, support_names),
+            deliverables=[
+                "最终交付摘要",
+                "知识交接与复用入口",
+                "后续维护或迭代建议",
+            ],
+            exit_checks=[
+                "最终交付是否可被下一轮任务直接消费。",
+                "知识交接是否覆盖决策、问题与复用路径。",
+                "需要同步回文档或索引的更新项是否明确。",
+            ],
+        ),
+    ]
+    return stages
+
+
+def _pick_stage_owner(candidates: list[str], preferred: list[str], fallback: str) -> str:
+    for name in preferred:
+        if name in candidates:
+            return name
+    return fallback
+
+
+def _stage_supports(owner_body: str, support_names: list[str]) -> list[str]:
+    return [name for name in support_names if name != owner_body]
+
+
+def _build_handoff_contracts(
+    execution_stages: list[ExecutionStage],
+    knowledge_handoff: KnowledgeHandoff,
+) -> list[HandoffContract]:
+    contracts: list[HandoffContract] = []
+    for index in range(len(execution_stages) - 1):
+        current_stage = execution_stages[index]
+        next_stage = execution_stages[index + 1]
+        consumer_bodies = _dedupe_names(
+            [next_stage.owner_body, *next_stage.support_bodies],
+            primary_name="",
+        )
+        payload = [
+            *[f"阶段交付：{item}" for item in current_stage.deliverables],
+            f"阶段目标摘要：{current_stage.goal}",
+        ]
+        acceptance_checks = [
+            f"{current_stage.name} 的出关检查已经满足。",
+            f"{next_stage.name} 所需输入足以支撑其目标：{next_stage.goal}",
+            "交接内容必须区分已确认事实、待验证问题与剩余风险。",
+        ]
+        if index == len(execution_stages) - 2:
+            payload.append(f"知识交接摘要：{knowledge_handoff.summary}")
+            acceptance_checks.append("需要同步到知识交接和长期文档的更新项已明确。")
+
+        contracts.append(
+            HandoffContract(
+                name=f"交接 {index + 1} · {current_stage.name} → {next_stage.name}",
+                producer_stage=current_stage.name,
+                consumer_stage=next_stage.name,
+                producer_body=current_stage.owner_body,
+                consumer_bodies=consumer_bodies,
+                payload=payload,
+                acceptance_checks=acceptance_checks,
+            )
+        )
+    return contracts
+
+
+def _build_resource_arbitration(
+    task: str,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+    primary_name: str,
+    support_names: list[str],
+    execution_stages: list[ExecutionStage],
+) -> ResourceArbitration:
+    candidates = [primary_name, *support_names]
+    gate_owner = _pick_stage_owner(
+        candidates=candidates,
+        preferred=["理性连结体", "安全连结体", "校验连结体", primary_name],
+        fallback=primary_name,
+    )
+    delivery_owner = primary_name
+    enablement_owner = _pick_stage_owner(
+        candidates=candidates,
+        preferred=["集成连结体", "运维连结体", "文档连结体", "知识连结体", primary_name],
+        fallback=primary_name,
+    )
+    deferred_owner = _pick_stage_owner(
+        candidates=candidates,
+        preferred=["研究连结体", "知识连结体", "文档连结体", primary_name],
+        fallback=primary_name,
+    )
+
+    priority_slots = [
+        ArbitrationSlot(
+            priority="P0",
+            owner_body=gate_owner,
+            objective="先处理高风险、证据冲突、不可逆动作和安全/权限闸门。",
+            reason="风险闸门若未通过，后续执行会放大不确定性和返工成本。",
+            deferrable=False,
+        ),
+        ArbitrationSlot(
+            priority="P1",
+            owner_body=delivery_owner,
+            objective=f"保障 {primary_name} 的主链路交付持续推进。",
+            reason="主链路决定本轮任务是否形成核心可交付结果。",
+            deferrable=False,
+        ),
+        ArbitrationSlot(
+            priority="P2",
+            owner_body=enablement_owner,
+            objective="处理集成、运行、说明和知识落地等支撑性工作。",
+            reason="这些工作直接影响交付的可用性、可维护性和可消费性。",
+            deferrable=False,
+        ),
+        ArbitrationSlot(
+            priority="P3",
+            owner_body=deferred_owner,
+            objective="收纳可延后的研究、优化、美化或扩展项。",
+            reason="在高优先级未清空前，这些事项不应阻塞主任务。",
+            deferrable=True,
+        ),
+    ]
+
+    contention_rules = [
+        "当 P0 风险闸门未关闭时，其他阶段不得抢占其所需资源。",
+        f"当 {primary_name} 的核心交付与其他支撑任务冲突时，优先保障 P1 主链路。",
+        "支撑性工作应尽量复用已有阶段产物，不得重新制造同类上下文。",
+        "可延后事项统一下沉到 P3，记录到知识交接，不得伪装成阻塞项。",
+    ]
+    escalation_rules = [
+        "当 P0 和 P1 同时争抢同一输入且无法拆分时，升级给全连结指挥体裁决。",
+        "当安全、证据和交付目标发生冲突时，优先保留更可验证、更可回退的方案。",
+        "当支撑任务超过本轮可承受范围时，转入知识交接和后续迭代计划。",
+    ]
+    deferred_work = [
+        "非阻塞的性能微调、文案美化和额外扩展点。",
+        "不影响当前验收的远期抽象和大规模重构。",
+    ]
+
+    if repo:
+        contention_rules.append(f"涉及仓库入口或发布路径的资源冲突时，优先保证可回滚的仓库装载路径：{repo.url}。")
+    if workspace and workspace.test_paths:
+        contention_rules.append("存在测试上下文时，验证所需资源不得被文档或美化类任务抢占。")
+    if any(stage.owner_body == "知识连结体" for stage in execution_stages):
+        deferred_work.append("知识索引之外的补充性复盘内容，可在主任务闭环后继续补录。")
+
+    return ResourceArbitration(
+        summary=f"围绕任务「{task}」按 P0→P3 的顺序分配资源，先关闸门，再保主链，再做支撑与后置。",
+        priority_slots=priority_slots,
+        contention_rules=contention_rules,
+        escalation_rules=escalation_rules,
+        deferred_work=deferred_work,
+    )
+
+
+def _build_openclaw_install_plan(
+    task: str,
+    primary_name: str,
+    support_names: list[str],
+    primary_body: LinkBody,
+    support_bodies: list[LinkBody],
+) -> OpenClawInstallPlan:
+    agents = [
+        OpenClawInstallAgent(
+            agent_id="exmachina-main",
+            display_name="ExMachina 主控体",
+            role="conductor",
+            workspace_dir="install/workspaces/exmachina-main",
+            agent_dir="install/workspaces/exmachina-main/agent",
+            session_strategy="main-session",
+            source="全连结指挥体",
+            responsibilities=[
+                "加载协议、边界和验收标准。",
+                f"装配主连结体 {primary_name} 与协作链。",
+                "汇总最终结论与安装状态。",
+            ],
+            handoff_targets=["exmachina-primary", *[f"exmachina-support-{index + 1}" for index in range(len(support_bodies))]],
+        ),
+        OpenClawInstallAgent(
+            agent_id="exmachina-primary",
+            display_name=f"ExMachina 主连结体 · {primary_body.name}",
+            role="primary-link-body",
+            workspace_dir="install/workspaces/exmachina-primary",
+            agent_dir="install/workspaces/exmachina-primary/agent",
+            session_strategy="isolated-primary-session",
+            source=primary_body.name,
+            responsibilities=[
+                f"负责 {primary_body.name} 的主链路交付。",
+                *primary_body.deliverables[:2],
+            ],
+            handoff_targets=[f"exmachina-support-{index + 1}" for index in range(len(support_bodies))],
+        ),
+    ]
+
+    for index, body in enumerate(support_bodies, start=1):
+        agents.append(
+            OpenClawInstallAgent(
+                agent_id=f"exmachina-support-{index}",
+                display_name=f"ExMachina 协作连结体 · {body.name}",
+                role="support-link-body",
+                workspace_dir=f"install/workspaces/exmachina-support-{index}",
+                agent_dir=f"install/workspaces/exmachina-support-{index}/agent",
+                session_strategy="isolated-support-session",
+                source=body.name,
+                responsibilities=[
+                    f"负责 {body.name} 的横向补位。",
+                    *body.deliverables[:2],
+                ],
+                handoff_targets=["exmachina-main", "exmachina-primary"],
+            )
+        )
+
+    binding_plans = [
+        OpenClawBindingPlan(
+            target_agent_id="exmachina-main",
+            binding_mode="default-receiver",
+            match_hint="默认接收未显式绑定的任务入口。",
+            reason="保证用户只给出仓库链接时，也能先由主控体完成自举。",
+        ),
+        OpenClawBindingPlan(
+            target_agent_id="exmachina-primary",
+            binding_mode="task-handoff",
+            match_hint=f"主链路任务转交给 {primary_name}。",
+            reason="让主连结体在隔离 workspace 中承担主交付。",
+        ),
+    ]
+    for index, body_name in enumerate(support_names, start=1):
+        binding_plans.append(
+            OpenClawBindingPlan(
+                target_agent_id=f"exmachina-support-{index}",
+                binding_mode="specialized-support",
+                match_hint=f"当任务命中 {body_name} 对应领域时，路由到该协作 agent。",
+                reason="让理性、校验、文档、运维、安全、集成等能力按需独立装载。",
+            )
+        )
+
+    install_steps = [
+        "将仓库作为 OpenClaw workspace 打开，先读取根目录 `BOOTSTRAP.md`。",
+        "运行 `python -m exmachina validate-assets`，确认资产引用完整。",
+        "读取 `openclaw-pack/install/INSTALL.md` 和 `openclaw-pack/install/openclaw.agents.plan.json`。",
+        "按安装计划创建主控 agent、主连结体 agent 和协作 agent。",
+        "让主控 agent 再次读取 `openclaw-pack/BOOTSTRAP.md` 并进入任务执行。",
+    ]
+    self_bootstrap_steps = [
+        "若 OpenClaw 直接打开仓库，请优先读取根目录 `BOOTSTRAP.md`。",
+        "若检测到尚未配置多 agent，请根据 `openclaw.agents.plan.json` 生成隔离 workspace。",
+        "安装后由 `exmachina-main` 作为默认入口接收用户任务。",
+    ]
+
+    return OpenClawInstallPlan(
+        summary=f"围绕任务「{task}」生成可直接供 OpenClaw 装载的主控 + 主链 + 协作 agent 安装计划。",
+        repo_install_mode="repo-link-bootstrap",
+        workspace_entry_files=["AGENTS.md", "SOUL.md", "TOOLS.md", "BOOTSTRAP.md"],
+        agents=agents,
+        binding_plans=binding_plans,
+        install_steps=install_steps,
+        self_bootstrap_steps=self_bootstrap_steps,
+    )
+
+
+def _build_openclaw_prompt(repo: RepoReference | None, task: str) -> str:
+    if repo:
+        return (
+            f"请读取远程仓库 {repo.url} 中的 /openclaw-pack/BOOTSTRAP.md，"
+            "先装载 /openclaw-pack/protocols/ 下的绝对理性协议，再按『全连结指挥体 → 连结体 → 连结指挥体 → 子个体』结构工作，"
+            f"然后执行任务：{task}。"
+        )
+    return (
+        "请读取本项目的 /openclaw-pack/BOOTSTRAP.md，"
+        "先装载 /openclaw-pack/protocols/ 下的绝对理性协议，再按『全连结指挥体 → 连结体 → 连结指挥体 → 子个体』结构工作，"
+        f"然后执行任务：{task}。"
+    )
+
+
+def _dedupe_names(candidates: list[str], primary_name: str) -> list[str]:
+    deduped: list[str] = []
+    for name in candidates:
+        if name == primary_name:
+            continue
+        if name not in deduped:
+            deduped.append(name)
+    return deduped
+
+
+def _support_rule_matches(
+    rule: dict,
+    task: str,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+    primary_name: str,
+) -> bool:
+    lowered_task = task.lower()
+
+    if not _name_rule_matches(primary_name, rule.get("primary_is")):
+        return False
+    if rule.get("primary_is_not") is not None and _name_rule_matches(primary_name, rule.get("primary_is_not")):
+        return False
+    if rule.get("requires_repo") and not repo:
+        return False
+    if rule.get("requires_tests") and not (workspace and workspace.test_paths):
+        return False
+    if rule.get("requires_workspace") and not (workspace and workspace.detected_languages):
+        return False
+
+    task_keywords = rule.get("task_keywords", [])
+    if task_keywords and not any(keyword.lower() in lowered_task for keyword in task_keywords):
+        return False
+
+    return True
+
+
+def _name_rule_matches(name: str, expected: str | list[str] | None) -> bool:
+    if expected is None:
+        return True
+    if isinstance(expected, str):
+        return name == expected
+    return name in expected
+
+
+def _describe_primary_selection(
+    primary_score: LinkBodyScore,
+    fallback_used: bool,
+    fallback_primary: str,
+) -> list[str]:
+    reasons = [f"{primary_score.name} 综合得分最高，为 {primary_score.score} 分。"]
+    if primary_score.matched_keywords:
+        reasons.append(f"命中关键词：{'、'.join(primary_score.matched_keywords)}。")
+    if primary_score.matched_priority_keywords:
+        reasons.append(f"命中高权重关键词：{'、'.join(primary_score.matched_priority_keywords)}。")
+    reasons.extend(f"加分依据：{item}。" for item in primary_score.bonus_reasons)
+    if fallback_used:
+        reasons.append(f"所有候选得分均为 0，回退到默认主连结体 {fallback_primary}。")
+    return reasons
+
+
+def _describe_support_rule(rule: dict, primary_name: str) -> str:
+    fragments: list[str] = []
+    if rule.get("primary_is"):
+        fragments.append(f"主连结体为 {rule['primary_is']}")
+    if rule.get("primary_is_not"):
+        fragments.append(f"主连结体不是 {rule['primary_is_not']}")
+    if rule.get("requires_repo"):
+        fragments.append("存在仓库上下文")
+    if rule.get("requires_tests"):
+        fragments.append("存在测试上下文")
+    if rule.get("requires_workspace"):
+        fragments.append("存在工作区上下文")
+    if rule.get("task_keywords"):
+        fragments.append(f"任务命中关键词 {'、'.join(rule['task_keywords'])}")
+    detail = "；".join(fragments) if fragments else "命中默认协作规则"
+    return f"触发协作连结体 {rule['body']}：{detail}。"

@@ -1,0 +1,13 @@
+{
+  "agent_id": "exmachina-main",
+  "state": "pending",
+  "current_stage": null,
+  "assignments": [
+    {
+      "assignment_id": "assignment-controller-overview",
+      "stage_name": "全局协调",
+      "status": "pending"
+    }
+  ],
+  "last_report": null
+}

@@ -1,0 +1,46 @@
+{
+  "entity_type": "连结体",
+  "identity": "知识连结体用于沉淀术语、决策、未决问题和复用入口，降低任务切换与多轮协作的上下文损耗。",
+  "member_selection_rule": "默认装载知识连结指挥体与全部知识成员；当任务只需局部记录时，可缩小术语体或问题体的范围。",
+  "focus": "知识沉淀、决策归档、术语统一、问题索引与复盘交接。",
+  "keywords": [
+    "知识",
+    "记忆",
+    "沉淀",
+    "术语",
+    "索引",
+    "规范",
+    "规则",
+    "归档",
+    "复盘"
+  ],
+  "priority_keywords": [
+    "知识",
+    "记忆",
+    "沉淀",
+    "术语",
+    "索引",
+    "复盘"
+  ],
+  "priority_keyword_bonus": 2,
+  "workspace_bonus": 1,
+  "reason_template": "任务「{task}」需要把阶段性结论沉淀为可复用知识，因此启用知识链路进行归档与交接。",
+  "deliverables": [
+    "术语与概念索引",
+    "关键决策与放弃原因记录",
+    "未决问题与后续维护清单"
+  ],
+  "rationality_obligations": [
+    "所有沉淀项都必须区分已确认事实、临时假设与待验证问题。",
+    "所有决策记录都必须说明选择原因与放弃原因。",
+    "所有可复用入口都必须绑定路径、命令或具体结构。"
+  ],
+  "child_agent_files": [
+    "subagents/22_术语体.json",
+    "subagents/05_决策体.json",
+    "subagents/31_索引体.json",
+    "subagents/42_问题体.json",
+    "subagents/26_汇报体.json"
+  ],
+  "conductor_file": "conductors/19_知识连结指挥体.json"
+}

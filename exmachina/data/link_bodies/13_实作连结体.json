@@ -1,0 +1,35 @@
+{
+  "entity_type": "连结体",
+  "identity": "实作连结体用于完成最小可行实现，由一个实作连结指挥体和多个实作子个体组成。",
+  "member_selection_rule": "默认装载实作连结指挥体与全部实作成员；若仅做探索性原型，可降低审核体和回归体的执行强度。",
+  "focus": "脚手架、编码实现、最小可行交付与回归收敛。",
+  "keywords": [
+    "实现",
+    "开发",
+    "编写",
+    "修复",
+    "重构",
+    "代码",
+    "build"
+  ],
+  "workspace_bonus": 1,
+  "reason_template": "任务「{task}」可以直接进入实现阶段，由实作链路完成最小可行交付。",
+  "deliverables": [
+    "最小可行实现",
+    "关键用法入口",
+    "必要测试或验证说明"
+  ],
+  "rationality_obligations": [
+    "任何代码修改都必须有明确入口和影响面说明。",
+    "实现前必须先确认最小可行解，而不是直接过度设计。",
+    "不可逆修改必须附带回退方式。"
+  ],
+  "child_agent_files": [
+    "subagents/03_侦查体.json",
+    "subagents/34_编码体.json",
+    "subagents/11_回归体.json",
+    "subagents/15_审核体.json",
+    "subagents/26_汇报体.json"
+  ],
+  "conductor_file": "conductors/13_实作连结指挥体.json"
+}

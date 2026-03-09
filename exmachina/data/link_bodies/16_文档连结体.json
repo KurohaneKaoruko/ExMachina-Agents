@@ -1,0 +1,45 @@
+{
+  "entity_type": "连结体",
+  "identity": "文档连结体用于整理对外说明、上手引导、示例和迁移信息，确保结构与文档描述保持一致。",
+  "member_selection_rule": "默认装载文档连结指挥体与全部文档成员；当任务只涉及局部修订时，可缩小示例体或迁移体范围。",
+  "focus": "文档盘点、信息架构、示例编写、校订与迁移说明。",
+  "keywords": [
+    "文档",
+    "readme",
+    "说明",
+    "教程",
+    "示例",
+    "guide",
+    "手册",
+    "迁移"
+  ],
+  "priority_keywords": [
+    "文档",
+    "readme",
+    "教程",
+    "示例",
+    "手册",
+    "迁移"
+  ],
+  "priority_keyword_bonus": 2,
+  "workspace_bonus": 1,
+  "reason_template": "任务「{task}」需要把结构、用法和示例整理成稳定的文档输出，因此优先启用文档链路。",
+  "deliverables": [
+    "文档信息架构",
+    "面向使用者的说明与示例",
+    "迁移或更新说明"
+  ],
+  "rationality_obligations": [
+    "文档描述必须与当前结构、命令和导出产物一致。",
+    "所有示例都必须可执行或明确标注前置条件。",
+    "面向读者的结论必须区分已实现能力与规划能力。"
+  ],
+  "child_agent_files": [
+    "subagents/29_盘点体.json",
+    "subagents/33_结构体.json",
+    "subagents/30_示例体.json",
+    "subagents/24_校订体.json",
+    "subagents/26_汇报体.json"
+  ],
+  "conductor_file": "conductors/16_文档连结指挥体.json"
+}

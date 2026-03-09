@@ -1,0 +1,34 @@
+{
+  "entity_type": "连结体",
+  "identity": "校验连结体用于生成验证证据，由一个校验连结指挥体和多个校验子个体组成。",
+  "member_selection_rule": "默认装载校验连结指挥体与全部校验成员；若任务只需快速冒烟，可缩减证据沉淀的范围。",
+  "focus": "复现、断言、回归、证据沉淀与可验证交付。",
+  "keywords": [
+    "测试",
+    "验证",
+    "检查",
+    "调试",
+    "质量",
+    "qa"
+  ],
+  "tests_bonus": 1,
+  "reason_template": "任务「{task}」对正确性要求高，需要独立的校验链路提供证据。",
+  "deliverables": [
+    "验证矩阵",
+    "回归结果",
+    "问题证据清单"
+  ],
+  "rationality_obligations": [
+    "所有验证必须对应明确断言。",
+    "所有失败必须给出复现路径和定位线索。",
+    "证据沉淀必须可追踪到具体判断。"
+  ],
+  "child_agent_files": [
+    "subagents/13_复现体.json",
+    "subagents/21_断言体.json",
+    "subagents/11_回归体.json",
+    "subagents/38_证据体.json",
+    "subagents/26_汇报体.json"
+  ],
+  "conductor_file": "conductors/14_校验连结指挥体.json"
+}

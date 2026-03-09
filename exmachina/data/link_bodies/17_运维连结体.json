@@ -1,0 +1,49 @@
+{
+  "entity_type": "连结体",
+  "identity": "运维连结体用于规划发布后的运行稳定性，包括监控、告警、回滚、演练与运行风险收束。",
+  "member_selection_rule": "默认装载运维连结指挥体与全部运维成员；当任务只涉及局部运行风险时，可缩小演练或回滚范围。",
+  "focus": "运行稳定性、监控告警、回滚预案、演练与风险收束。",
+  "keywords": [
+    "上线",
+    "发布",
+    "部署",
+    "运行",
+    "监控",
+    "告警",
+    "回滚",
+    "事故",
+    "稳定性",
+    "容量",
+    "性能"
+  ],
+  "priority_keywords": [
+    "监控",
+    "告警",
+    "回滚",
+    "事故",
+    "稳定性",
+    "性能"
+  ],
+  "priority_keyword_bonus": 2,
+  "repo_bonus": 1,
+  "tests_bonus": 1,
+  "reason_template": "任务「{task}」涉及运行期行为与交付风险，需要在上线前明确观测、告警和回退策略。",
+  "deliverables": [
+    "监控与告警方案",
+    "回滚或降级预案",
+    "运行风险与演练清单"
+  ],
+  "rationality_obligations": [
+    "所有运行风险都必须绑定观测点与触发条件。",
+    "所有发布策略都必须附带回滚或降级路径。",
+    "所有稳定性判断都必须说明证据来源与覆盖范围。"
+  ],
+  "child_agent_files": [
+    "subagents/37_观测体.json",
+    "subagents/10_告警体.json",
+    "subagents/12_回滚体.json",
+    "subagents/28_演练体.json",
+    "subagents/26_汇报体.json"
+  ],
+  "conductor_file": "conductors/17_运维连结指挥体.json"
+}
