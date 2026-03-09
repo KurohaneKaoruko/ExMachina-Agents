@@ -1,6 +1,8 @@
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
 from exmachina.cli import main
@@ -64,6 +66,7 @@ class CliTests(unittest.TestCase):
             task_board = json.loads((output / "openclaw-pack" / "runtime" / "task-board.json").read_text(encoding="utf-8"))
             child_doc = next((output / "openclaw-pack" / "subagents").glob("*.md")).read_text(encoding="utf-8")
             bootstrap_doc = (output / "openclaw-pack" / "BOOTSTRAP.md").read_text(encoding="utf-8")
+            quickstart_doc = (output / "openclaw-pack" / "QUICKSTART.md").read_text(encoding="utf-8")
             prompt_doc = (output / "openclaw-pack" / "examples" / "openclaw-prompt.md").read_text(encoding="utf-8")
 
             self.assertEqual(mission["mode"], "lite")
@@ -86,10 +89,13 @@ class CliTests(unittest.TestCase):
             self.assertFalse((output / "openclaw-pack" / "install" / "workspaces").exists())
             self.assertFalse((output / "openclaw-pack" / "install" / "compat" / "workspaces").exists())
             self.assertFalse((output / "openclaw-pack" / "install" / "compat" / "openclaw.agents.plan.json").exists())
+            self.assertEqual(manifest["paths"]["quickstart"], "QUICKSTART.md")
             self.assertIn("## 工作流", child_doc)
             self.assertIn("## 对话口吻", child_doc)
             self.assertIn("## 输出契约", child_doc)
             self.assertIn("## 对话口吻契约", bootstrap_doc)
+            self.assertIn("## Lite 最短路径", quickstart_doc)
+            self.assertIn("python -m exmachina doctor", quickstart_doc)
             self.assertIn("分层口吻", prompt_doc)
             self.assertIn("优先词汇", bootstrap_doc)
             self.assertIn("已接收", prompt_doc)
@@ -129,6 +135,7 @@ class CliTests(unittest.TestCase):
             workspace_bootstrap = (
                 output / "openclaw-pack" / "install" / "compat" / "workspaces" / "exmachina-main" / "BOOTSTRAP.md"
             ).read_text(encoding="utf-8")
+            quickstart_doc = (output / "openclaw-pack" / "QUICKSTART.md").read_text(encoding="utf-8")
 
             self.assertEqual(manifest["mode"], "full")
             self.assertTrue(manifest["compatibility"]["requires_multi_agent_binding"])
@@ -141,6 +148,48 @@ class CliTests(unittest.TestCase):
             self.assertFalse((output / "openclaw-pack" / "install" / "workspaces").exists())
             self.assertIn("## 对话口吻契约", workspace_bootstrap)
             self.assertIn("优先词汇", workspace_bootstrap)
+            self.assertIn("## Full 最短路径", quickstart_doc)
+            self.assertIn("openclaw.agents.plan.json", quickstart_doc)
+
+    def test_doctor_command_outputs_json_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir) / "workspace"
+            output = Path(tmpdir) / "pack"
+            workspace.mkdir()
+            (workspace / "README.md").write_text("# demo\n", encoding="utf-8")
+            (workspace / "tests").mkdir()
+            (workspace / "tests" / "test_sample.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
+
+            build_code = main(
+                [
+                    "export-pack",
+                    "--task",
+                    "为 OpenClaw 增加快速上手与诊断入口",
+                    "--workspace",
+                    str(workspace),
+                    "--out",
+                    str(output),
+                ]
+            )
+            self.assertEqual(build_code, 0)
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "doctor",
+                        "--workspace",
+                        str(workspace),
+                        "--pack",
+                        str(output),
+                        "--json",
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            report = json.loads(stdout.getvalue())
+            self.assertEqual(report["overall_status"], "pass")
+            self.assertTrue(any(item["name"] == "Generated Pack" for item in report["checks"]))
 
 
 if __name__ == "__main__":

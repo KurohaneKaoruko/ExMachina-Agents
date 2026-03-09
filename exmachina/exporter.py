@@ -54,6 +54,7 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
     for stale_file in (
         target / "manifest.json",
         target / "BOOTSTRAP.md",
+        target / "QUICKSTART.md",
         target / "README.md",
         target / "openclaw.settings.json",
     ):
@@ -169,6 +170,7 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
             "runtime_dir": "runtime",
             "skills_dir": "skills",
             "workflow": "workflows/mission-loop.md",
+            "quickstart": "QUICKSTART.md",
         },
     }
     if plan.mode == "lite":
@@ -196,6 +198,7 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         encoding="utf-8",
     )
     (target / "BOOTSTRAP.md").write_text(render_bootstrap(plan), encoding="utf-8")
+    (target / "QUICKSTART.md").write_text(render_quickstart(plan), encoding="utf-8")
     (target / "README.md").write_text(render_pack_readme(plan), encoding="utf-8")
     (workflows_dir / "mission-loop.md").write_text(render_workflow(plan), encoding="utf-8")
     (examples_dir / "openclaw-prompt.md").write_text(plan.openclaw_install_prompt + "\n", encoding="utf-8")
@@ -612,6 +615,7 @@ def render_pack_readme(plan: MissionPlan) -> str:
         "",
         "这是一个可直接放入远程仓库并供 OpenClaw 读取的协作包。",
         "项目名为 ExMachina，用于为 OpenClaw 提供 settings-first 的协议化多智能体协作包。",
+        "首次使用请先读 `QUICKSTART.md`，再按需深入 `BOOTSTRAP.md`、`manifest.json` 与 `runtime/README.md`。",
         f"默认导出模式：{plan.mode}",
         f"多 agent 绑定要求：{'需要' if plan.openclaw_install_plan.requires_multi_agent_binding else '不需要'}",
         f"外部路由要求：{'需要' if plan.runtime_topology.requires_external_routing else '不需要'}",
@@ -639,6 +643,7 @@ def render_pack_readme(plan: MissionPlan) -> str:
         "- `openclaw.settings.json`：首选 OpenClaw 设置导入模板",
         "- `install/`：settings-first 说明与设置合并脚本",
         "- `install/compat/`：仅在需要兼容旧 workspace 安装流时生成",
+        "- `QUICKSTART.md`：面向首次接入者的最短上手路径",
         "- `workflows/mission-loop.md`：执行节奏",
         "- `manifest.json`：包含编排依据、知识交接、执行阶段、交接契约和资源仲裁",
         "",
@@ -733,6 +738,7 @@ def render_settings_install_readme(plan: MissionPlan) -> str:
             "## 产物",
             "- `openclaw.settings.json`：OpenClaw 设置模板主文件",
             "- `install/install_openclaw_settings.py`：把 settings patch 合并进现有 OpenClaw 配置的帮助脚本",
+            "- `QUICKSTART.md`：Lite / Full 路径的快速上手说明",
             "",
         ]
     )
@@ -763,6 +769,7 @@ def render_runtime_readme(plan: MissionPlan) -> str:
     lines.extend(
         [
         "## 关键文件",
+        "- `../QUICKSTART.md`：首次接入时的最短安装与执行路径",
         "- `topology.json`：完整 agent 拓扑、路由、任务分配与激活步骤",
         "- `shared/mission-context.json`：全局任务上下文与验收标准",
         "- `shared/selection-trace.json`：主链与协作链选择依据",
@@ -787,6 +794,63 @@ def render_runtime_readme(plan: MissionPlan) -> str:
         heading="## 主控体对话口吻",
     )
     lines.append("")
+    return "\n".join(lines)
+
+
+def render_quickstart(plan: MissionPlan) -> str:
+    lines = [
+        "# ExMachina Quickstart",
+        "",
+        "这份文档只保留首次接入所需的最短路径。",
+        f"当前模式：{plan.mode}",
+        f"当前任务：{plan.mission_title}",
+        f"主连结体：{plan.primary_link_body.name}",
+        f"协作连结体：{_body_names(plan.support_link_bodies)}",
+        "",
+    ]
+    if plan.mode == "lite":
+        lines.extend(
+            [
+                "## Lite 最短路径",
+                "1. 先读 `openclaw.settings.json` 与 `install/SETTINGS.md`，把 ExMachina 设置导入 OpenClaw。",
+                "2. 再读 `manifest.json` 与 `BOOTSTRAP.md`，确认当前任务、主连结体和协作链。",
+                "3. 读 `protocols/` 与 `conductor/00_全连结指挥体.md`，先加载协议，再进入角色规则。",
+                "4. 读 `runtime/task-board.json`，由 `exmachina-main` 在单会话内按顺序推进任务。",
+                "5. 需要补位时再读协作连结体文档，但默认不创建额外 agent。",
+                "",
+                "## Lite 关键文件",
+                "- `manifest.json`：主链路选择依据、知识交接、阶段分工",
+                "- `runtime/task-board.json`：单会话推进任务的主入口",
+                "- `runtime/README.md`：运行时任务板与状态文件说明",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "## Full 最短路径",
+                "1. 先读 `openclaw.settings.json` 与 `install/SETTINGS.md`，合并 agents / channels / bindings 模板。",
+                "2. 读 `install/compat/openclaw.agents.plan.json`，按 agents 和 binding_plans 创建完整多 agent。",
+                "3. 让 `exmachina-main` 回到 `BOOTSTRAP.md`，再读 `runtime/topology.json` 与 `runtime/README.md`。",
+                "4. 按 `workflows/mission-loop.md` 推进阶段，不要跳过交接契约。",
+                "5. 出现跨 agent 冲突或不可逆动作时，必须回到顶层主控体收束。",
+                "",
+                "## Full 关键文件",
+                "- `install/compat/openclaw.agents.plan.json`：多 agent 安装和绑定清单",
+                "- `runtime/topology.json`：agent 拓扑、路由、分配和激活步骤",
+                "- `runtime/README.md`：运行时协作视图",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "## 自检命令",
+            "```bash",
+            "python -m exmachina validate-assets",
+            "python -m exmachina doctor",
+            "```",
+            "",
+        ]
+    )
     return "\n".join(lines)
 
 

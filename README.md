@@ -64,6 +64,7 @@
 
 ```bash
 python -m exmachina validate-assets
+python -m exmachina doctor
 python skills/scripts/regenerate_demo_pack.py
 ```
 
@@ -823,6 +824,14 @@ python -m exmachina export-settings \
   --task "把 ExMachina 的多智能体配置载入 OpenClaw 设置" \
   --repo "https://code.example.com/your-name/exmachina" \
   --out "dist/openclaw-settings"
+```
+
+### 做启动前诊断
+
+```bash
+python -m exmachina doctor \
+  --workspace "." \
+  --pack "openclaw-pack"
 ```
 
 ---

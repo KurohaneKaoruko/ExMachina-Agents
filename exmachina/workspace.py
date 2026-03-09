@@ -1,5 +1,6 @@
 ﻿from __future__ import annotations
 
+import os
 from collections import Counter
 from pathlib import Path
 
@@ -40,6 +41,21 @@ NOTABLE_NAMES = {
     "src"
 }
 
+IGNORED_DIR_NAMES = {
+    ".git",
+    ".hg",
+    ".svn",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "node_modules",
+    "dist",
+    "build",
+    ".next",
+}
+PRIORITY_DIR_NAMES = {"src", "app", "lib", "server", "client", "backend", "frontend", "tests", "test", "exmachina"}
+MAX_SCANNED_FILES = 600
+
 
 def scan_workspace(path: str | Path) -> WorkspaceSnapshot:
     root = Path(path).resolve()
@@ -54,31 +70,43 @@ def scan_workspace(path: str | Path) -> WorkspaceSnapshot:
     languages = Counter()
 
     files_seen = 0
-    for entry in root.rglob("*"):
-        if files_seen >= 200:
+    for current_root, dirnames, filenames in os.walk(root):
+        dirnames[:] = [name for name in dirnames if name not in IGNORED_DIR_NAMES]
+        dirnames.sort(key=lambda name: (name not in PRIORITY_DIR_NAMES, name))
+        current_path = Path(current_root)
+        relative_dir = current_path.relative_to(root)
+
+        for dirname in dirnames:
+            relative_path = (relative_dir / dirname) if relative_dir != Path(".") else Path(dirname)
+            relative_str = str(relative_path).replace("\\", "/")
+            if dirname.lower() in {"tests", "test"} and relative_str not in test_paths:
+                test_paths.append(relative_str)
+            if dirname in NOTABLE_NAMES and relative_str not in notable_paths:
+                notable_paths.append(relative_str)
+
+        for filename in sorted(filenames):
+            if files_seen >= MAX_SCANNED_FILES:
+                break
+
+            entry = current_path / filename
+            files_seen += 1
+            relative_name = str(entry.relative_to(root)).replace("\\", "/")
+            if filename in NOTABLE_NAMES and relative_name not in notable_paths:
+                notable_paths.append(relative_name)
+
+            suffix = entry.suffix.lower()
+            language = EXTENSION_LANGUAGE_MAP.get(suffix)
+            if language:
+                languages[language] += 1
+
+            lowered = relative_name.lower()
+            if "/tests/" in lowered or lowered.startswith("tests/") or lowered.startswith("test/"):
+                parent = str(entry.parent.relative_to(root)).replace("\\", "/")
+                if parent not in test_paths:
+                    test_paths.append(parent)
+
+        if files_seen >= MAX_SCANNED_FILES:
             break
-        if entry.is_dir():
-            if entry.name.lower() in {"tests", "test"}:
-                test_paths.append(str(entry.relative_to(root)))
-            if entry.name in NOTABLE_NAMES and entry.name not in notable_paths:
-                notable_paths.append(str(entry.relative_to(root)))
-            continue
-
-        files_seen += 1
-        if entry.name in NOTABLE_NAMES and str(entry.relative_to(root)) not in notable_paths:
-            notable_paths.append(str(entry.relative_to(root)))
-
-        suffix = entry.suffix.lower()
-        language = EXTENSION_LANGUAGE_MAP.get(suffix)
-        if language:
-            languages[language] += 1
-
-        relative_name = str(entry.relative_to(root))
-        lowered = relative_name.lower().replace("\\", "/")
-        if "/tests/" in lowered or lowered.startswith("tests/") or lowered.startswith("test/"):
-            parent = str(entry.parent.relative_to(root))
-            if parent not in test_paths:
-                test_paths.append(parent)
 
     detected_languages = [language for language, _ in languages.most_common(5)]
 

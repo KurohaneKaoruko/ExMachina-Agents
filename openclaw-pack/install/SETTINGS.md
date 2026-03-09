@@ -43,3 +43,4 @@
 ## 产物
 - `openclaw.settings.json`：OpenClaw 设置模板主文件
 - `install/install_openclaw_settings.py`：把 settings patch 合并进现有 OpenClaw 配置的帮助脚本
+- `QUICKSTART.md`：Lite / Full 路径的快速上手说明

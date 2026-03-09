@@ -1,8 +1,10 @@
 ﻿from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
+from .doctor import render_doctor_report, run_doctor
 from .exporter import export_openclaw_pack, write_bundle, write_plan_files
 from .planner import plan_mission
 from .validator import validate_profile_assets
@@ -33,6 +35,12 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser = subparsers.add_parser("validate-assets")
     validate_parser.add_argument("--profile", help="要校验的 JSON 画像入口，默认使用内置 default_profile.json。")
 
+    doctor_parser = subparsers.add_parser("doctor")
+    doctor_parser.add_argument("--profile", help="要诊断的 JSON 画像入口，默认使用内置 default_profile.json。")
+    doctor_parser.add_argument("--workspace", help="要扫描的工作区目录，默认当前目录。")
+    doctor_parser.add_argument("--pack", help="要检查的导出包目录，默认使用 <workspace>/openclaw-pack。")
+    doctor_parser.add_argument("--json", action="store_true", help="以 JSON 输出诊断结果。")
+
     return parser
 
 
@@ -52,6 +60,14 @@ def main(argv: list[str] | None = None) -> int:
         for item in result.errors:
             print(item)
         return 1
+
+    if args.command == "doctor":
+        report = run_doctor(profile_path=args.profile, workspace_path=args.workspace, pack_path=args.pack)
+        if args.json:
+            print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2))
+        else:
+            print(render_doctor_report(report), end="")
+        return 0 if report.overall_status != "fail" else 1
 
     plan = plan_mission(
         task=args.task,

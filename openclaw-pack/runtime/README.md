@@ -12,6 +12,7 @@
 - `task-board.json` 是单会话推进任务的主入口。
 
 ## 关键文件
+- `../QUICKSTART.md`：首次接入时的最短安装与执行路径
 - `topology.json`：完整 agent 拓扑、路由、任务分配与激活步骤
 - `shared/mission-context.json`：全局任务上下文与验收标准
 - `shared/selection-trace.json`：主链与协作链选择依据

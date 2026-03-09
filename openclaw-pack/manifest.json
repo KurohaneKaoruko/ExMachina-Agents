@@ -1051,7 +1051,8 @@
     "compat_dir": "install/compat",
     "runtime_dir": "runtime",
     "skills_dir": "skills",
-    "workflow": "workflows/mission-loop.md"
+    "workflow": "workflows/mission-loop.md",
+    "quickstart": "QUICKSTART.md"
   },
   "openclaw_directive": {
     "entry_agent_id": "exmachina-main",

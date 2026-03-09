@@ -2,6 +2,7 @@
 
 这是一个可直接放入远程仓库并供 OpenClaw 读取的协作包。
 项目名为 ExMachina，用于为 OpenClaw 提供 settings-first 的协议化多智能体协作包。
+首次使用请先读 `QUICKSTART.md`，再按需深入 `BOOTSTRAP.md`、`manifest.json` 与 `runtime/README.md`。
 默认导出模式：lite
 多 agent 绑定要求：不需要
 外部路由要求：不需要
@@ -29,6 +30,7 @@
 - `openclaw.settings.json`：首选 OpenClaw 设置导入模板
 - `install/`：settings-first 说明与设置合并脚本
 - `install/compat/`：仅在需要兼容旧 workspace 安装流时生成
+- `QUICKSTART.md`：面向首次接入者的最短上手路径
 - `workflows/mission-loop.md`：执行节奏
 - `manifest.json`：包含编排依据、知识交接、执行阶段、交接契约和资源仲裁
 
