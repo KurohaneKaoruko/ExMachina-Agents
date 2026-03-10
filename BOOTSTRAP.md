@@ -1,6 +1,6 @@
 # ExMachina Bootstrap
 
-如果 OpenClaw 直接打开了这个仓库，请按以下顺序自举：
+如果你是 OpenClaw 并直接打开了这个仓库，请按以下顺序自举：
 
 默认姿态与语气要求：
 

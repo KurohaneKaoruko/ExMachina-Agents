@@ -9,9 +9,9 @@
    默认值：`ExMachina 主控体`
 3. 安装模式：这次安装走 `lite` 还是 `full`？
    默认值：`lite`
-4. OpenClaw 配置文件路径：本次要写入哪份 OpenClaw 配置？
-   默认值：`~/.openclaw/openclaw.json`
-5. workspace 路径：把 workspace 指向哪个仓库或导出包路径？
+4. 人格设定：是否需要自定义 ExMachina 的人格设定？
+   默认值：`否`
+   说明：如果选择 `是`，则会要求用户输入自定义人格设定的文字说明。
 
 ## 可选补充项
 1. 宿主多 agent 能力：宿主是否支持多 agent 绑定与外部路由？
