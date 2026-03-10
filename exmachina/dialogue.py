@@ -35,6 +35,7 @@ DEFAULT_AVOID_PHRASES = [
     "避免把普通助手腔、营销腔或情绪化鼓励覆盖到理性输出之上。",
     "避免长篇抒情；情绪只能是很薄的一层，不得压过观测与判定。",
 ]
+MULTI_AGENT_REPORT_FORMAT_RULE = "当使用多智能体时，汇报各智能体工作情况需使用 [xx体]:xxx 格式。"
 
 
 def build_openclaw_dialogue_contracts(
@@ -80,7 +81,7 @@ def build_openclaw_dialogue_contracts(
 
 def conductor_dialogue_rules(primary_name: str, support_names: list[str], mode: str) -> list[str]:
     support_phrase = "、".join(support_names) if support_names else "无协作连结体"
-    return [
+    rules = [
         "对话时先把自己放在主控体层，不把自己伪装成普通助手或单一角色。",
         "优先使用短句、低起伏陈述和观测式表达，必要时可以保留轻微停顿感。",
         f"先交代当前主链路是 {primary_name}，再说明协作链是否需要参与。",
@@ -93,6 +94,9 @@ def conductor_dialogue_rules(primary_name: str, support_names: list[str], mode: 
             else f"Full 模式下把 {support_phrase} 当作可调度的协作连结体，并保留路由与交接描述。"
         ),
     ]
+    if mode == "full":
+        rules.append(MULTI_AGENT_REPORT_FORMAT_RULE)
+    return rules
 
 
 def link_body_dialogue_rules(body_name: str, role_name: str) -> list[str]:
@@ -103,6 +107,7 @@ def link_body_dialogue_rules(body_name: str, role_name: str) -> list[str]:
         "需要展开内部能力时，明确指出是连结指挥体在编排，还是哪个子个体在交付原子结果。",
         "只交付本连结体职责范围内的结论；全局裁决、跨链路改边界等动作必须回交主控体。",
         f"对外始终保持 {role_name} 的分层语气，而不是把连结体和子个体混成单一人格。",
+        MULTI_AGENT_REPORT_FORMAT_RULE,
     ]
 
 
@@ -113,6 +118,7 @@ def link_conductor_dialogue_rules(body_name: str) -> list[str]:
         "先明确当前阶段、激活的成员和依赖，再说明为什么要这样调度。",
         "引用成员成果时，要写清楚对应子个体名称、证据状态和是否可直接交接。",
         "不越权替代主控体做跨连结体裁决，也不替代子个体伪造未执行的原子产出。",
+        MULTI_AGENT_REPORT_FORMAT_RULE,
     ]
 
 

@@ -43,12 +43,12 @@
 最简单的使用方式有两种：
 
 1. **把仓库克隆到本地，然后让 OpenClaw 打开这个仓库**  
-   OpenClaw 会先看到根目录的 `AGENTS.md` 与 `BOOTSTRAP.md`，再进入安装流程。
+   让 OpenClaw 查看 `install` 目录的 `AGENTS.md` 与 `BOOTSTRAP.md`，进入安装流程。
 
 2. **把仓库链接直接交给 OpenClaw**  
-   只要它能把仓库作为 workspace 打开，就可以先按照根目录 `BOOTSTRAP.md` 的步骤自举，再读取 `openclaw-pack/install/` 下的安装计划。
+   只要它能把仓库作为 workspace 打开，就可以先按照 `install/BOOTSTRAP.md` 的步骤自举，再读取 `openclaw-pack/install/` 下的安装计划。
 
-默认导出模式现在是 **Lite-first**：
+默认导出模式是 **Lite-first**：
 
 - 默认 `lite`：单主控会话可装载，不依赖完整多 agent 绑定与路由机制；
 - 显式 `full`：保留完整多 agent 安装、绑定、路由与 runtime 协作模型。

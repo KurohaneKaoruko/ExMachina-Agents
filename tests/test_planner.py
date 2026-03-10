@@ -96,6 +96,7 @@ class PlannerTests(unittest.TestCase):
             self.assertIn("对话口吻要求", agent["identity"]["theme"])
             self.assertIn("优先词汇", agent["identity"]["theme"])
             self.assertIn("{{OPENCLAW_INSTALL_LANGUAGE}}", agent["identity"]["theme"])
+            self.assertIn("[xx体]:xxx", agent["identity"]["theme"])
         self.assertEqual(plan.openclaw_settings_bundle.dialogue_contracts["exmachina-primary"]["role_name"], "主连结体")
 
 
