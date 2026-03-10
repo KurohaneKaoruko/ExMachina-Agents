@@ -1,0 +1,43 @@
+{
+  "agent_id": "exmachina-main",
+  "display_name": "ExMachina 主控体",
+  "runtime_role": "controller",
+  "source": "全连结指挥体",
+  "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
+  "responsibilities": [
+    "调度主连结体与协作连结体执行阶段任务。",
+    "汇总多智能体产出，生成最终结构化交付。",
+    "负责跨 agent 冲突裁决与风险升级。"
+  ],
+  "handoff_targets": [
+    "exmachina-primary",
+    "exmachina-support-1",
+    "exmachina-support-2",
+    "exmachina-support-3",
+    "exmachina-support-4"
+  ],
+  "inbox_path": "runtime/agents/exmachina-main/inbox",
+  "outbox_path": "runtime/agents/exmachina-main/outbox",
+  "status_path": "runtime/agents/exmachina-main/status.json",
+  "assignments": [
+    "assignment-controller"
+  ],
+  "coordination_rules": [
+    "必须启用多 agent 绑定与外部路由。",
+    "多智能体汇报需使用 [xx体]:xxx 格式。",
+    "协作连结体产出必须回流主控体与主连结体。"
+  ],
+  "operating_playbook": [
+    "先读取 mission-context 与 task-board，再派发阶段任务。",
+    "持续同步协作链回流结果，并驱动阶段 4 集成交接。"
+  ],
+  "escalation_triggers": [
+    "发现宿主不支持多 agent 绑定与路由时停止导入。",
+    "主链与协作链输出冲突时启动裁决流程。"
+  ],
+  "recommended_skill": {
+    "skill_id": "knowledge-link-body",
+    "skill_path": "../skills/knowledge-link-body/SKILL.md",
+    "purpose": "在任务主要命中 知识连结体 工作面时，提供对应的流程、边界和交接模板。"
+  }
+}

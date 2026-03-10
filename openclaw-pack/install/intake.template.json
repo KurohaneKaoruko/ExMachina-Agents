@@ -1,9 +1,0 @@
-{
-  "install_language": "zh-CN",
-  "conductor_name": "ExMachina 主控体",
-  "install_mode": "lite",
-  "target_config_path": "~/.openclaw/openclaw.json",
-  "workspace_root": "{{EXMACHINA_PACK_ROOT}}",
-  "host_supports_multi_agent": false,
-  "extra_config_notes": ""
-}
