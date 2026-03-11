@@ -6,7 +6,7 @@ Summary: documentation inventory, structure, examples, and proofreading release.
 Focus: documentation structure, examples, polish, release readiness.
 Dispatch Reason: The mission includes README examples and documentation integration, so this link body is required.
 Member Selection Rules: Default: load the conductor and documentation members; reduce scope only if documentation impact is minimal.
-Internal Conductor: Conductor
+Internal Conductor: Documentation Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 5
 
 ## Use Cases
@@ -113,4 +113,5 @@ English Alias: documentation-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

@@ -6,7 +6,7 @@ Summary: boundaries, interfaces, risk controls, and structural blueprints.
 Focus: architecture boundaries, contracts, risk controls.
 Dispatch Reason: Activate when system structure, boundaries, or interfaces are part of the delivery.
 Member Selection Rules: Load the conductor and architecture members when structure decisions are required.
-Internal Conductor: Conductor
+Internal Conductor: Architecture Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 4
 
 ## Use Cases
@@ -112,4 +112,5 @@ English Alias: architecture-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

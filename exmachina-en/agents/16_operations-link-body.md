@@ -6,7 +6,7 @@ Summary: observability, alerting, rollback planning, and drills.
 Focus: operational stability, monitoring, rollback.
 Dispatch Reason: Activate when operational reliability, monitoring, or rollback planning is required.
 Member Selection Rules: Load the conductor and operations members; enable drills when recovery validation is required.
-Internal Conductor: Conductor
+Internal Conductor: Operations Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 4
 
 ## Use Cases
@@ -112,4 +112,5 @@ English Alias: operations-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

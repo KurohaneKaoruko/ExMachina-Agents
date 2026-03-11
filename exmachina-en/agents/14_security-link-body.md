@@ -6,7 +6,7 @@ Summary: threat modeling, permission audits, hardening guidance, and compliance 
 Focus: threats, permissions, hardening, compliance.
 Dispatch Reason: The mission touches configuration and automation paths; security review is mandatory.
 Member Selection Rules: Default: load the conductor and security members; partial activation only when the risk surface is trivial.
-Internal Conductor: Conductor
+Internal Conductor: Security Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 5
 
 ## Use Cases
@@ -113,4 +113,5 @@ English Alias: security-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

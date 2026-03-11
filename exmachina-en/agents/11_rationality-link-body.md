@@ -6,7 +6,7 @@ Summary: evidence grading, counterevidence search, conflict arbitration, and con
 Focus: evidence-first reasoning, counterevidence validation, conflict arbitration, confidence calibration.
 Dispatch Reason: The mission must be independently calibrated to avoid writing hypotheses as facts.
 Member Selection Rules: Default: load the conductor and all rationality members; reduce counterevidence depth only when the task is tiny and the evidence chain is simple.
-Internal Conductor: Conductor
+Internal Conductor: Rationality Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 5
 
 ## Use Cases
@@ -113,4 +113,5 @@ English Alias: rationality-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

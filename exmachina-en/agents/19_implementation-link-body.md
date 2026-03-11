@@ -6,7 +6,7 @@ Summary: recon, decomposition, constraints, roadmap, coding, and review executio
 Focus: execution, decomposition, constraints, roadmap.
 Dispatch Reason: Activate when hands-on implementation or delivery planning is required.
 Member Selection Rules: Load the conductor and implementation members for execution work; reduce to essentials for small changes.
-Internal Conductor: Conductor
+Internal Conductor: Implementation Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 6
 
 ## Use Cases
@@ -114,4 +114,5 @@ English Alias: implementation-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

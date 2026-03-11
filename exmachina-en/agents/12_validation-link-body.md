@@ -6,7 +6,7 @@ Summary: reproduction, assertions, evidence archiving, and regression validation
 Focus: reproduction, assertions, evidence traceability, regression.
 Dispatch Reason: The mission requires validation to prevent unverified assumptions from entering the primary delivery.
 Member Selection Rules: Default: load the conductor and validation members; allow partial activation only when validation scope is minimal.
-Internal Conductor: Conductor
+Internal Conductor: Validation Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 5
 
 ## Use Cases
@@ -113,4 +113,5 @@ English Alias: validation-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

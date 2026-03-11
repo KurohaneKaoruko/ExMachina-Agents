@@ -6,7 +6,7 @@ Summary: context fill-in, provenance tracing, comparison, and hypothesis listing
 Focus: context, provenance, comparison, hypotheses.
 Dispatch Reason: Activate when background, alternatives, or hypothesis tracking is required.
 Member Selection Rules: Load the conductor and research members; reduce if inputs are already complete.
-Internal Conductor: Conductor
+Internal Conductor: Research Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 4
 
 ## Use Cases
@@ -112,4 +112,5 @@ English Alias: research-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

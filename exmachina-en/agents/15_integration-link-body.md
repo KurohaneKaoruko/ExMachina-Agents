@@ -6,7 +6,7 @@ Summary: integration bridges, configuration wiring, and release paths.
 Focus: connectivity, configuration, release.
 Dispatch Reason: Activate when external integration, configuration, or release paths must be defined.
 Member Selection Rules: Load the conductor and integration members when integration scope is present.
-Internal Conductor: Conductor
+Internal Conductor: Integration Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 3
 
 ## Use Cases
@@ -111,4 +111,5 @@ English Alias: integration-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 

@@ -6,7 +6,7 @@ Summary: terminology unification, decision archiving, index organization, and qu
 Focus: knowledge consolidation, decision archiving, terminology unification, question index, and handoff review.
 Dispatch Reason: The mission requires consolidating staged conclusions into reusable knowledge, so the Knowledge Link Body is activated for archiving and handoff.
 Member Selection Rules: Default: load the conductor and all knowledge members; if the task only needs partial recording, narrow the Terminology Body or Question Body scope.
-Internal Conductor: Conductor
+Internal Conductor: Knowledge Link Body Conductor (the only conductor inside this link body, responsible for member scheduling and delivery consolidation)
 Member Count: 5
 
 ## Use Cases
@@ -113,4 +113,5 @@ English Alias: knowledge-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+
 
