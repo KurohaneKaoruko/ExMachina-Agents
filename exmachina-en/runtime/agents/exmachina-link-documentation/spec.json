@@ -1,25 +1,24 @@
 {
   "agent_id": "exmachina-link-documentation",
-  "display_name": "ExMachina Support Link Body · Documentation Link Body",
-  "runtime_role": "support-link-body",
+  "display_name": "ExMachina Link Body · Documentation Link Body",
+  "runtime_role": "link-body",
   "source": "Documentation Link Body",
   "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
   "responsibilities": [
-    "Handle inventory, structure organization, example writing, and proofreading release."
+    "End-to-end delivery emphasizing inventory, structure, examples, and publication."
   ],
   "handoff_targets": [
-    "exmachina-main",
-    "exmachina-link-knowledge"
+    "exmachina-main"
   ],
   "inbox_path": "runtime/agents/exmachina-link-documentation/inbox",
   "outbox_path": "runtime/agents/exmachina-link-documentation/outbox",
   "status_path": "runtime/agents/exmachina-link-documentation/status.json",
   "assignments": [
-    "assignment-support-docs"
+    "assignment-link-documentation"
   ],
   "coordination_rules": [
     "Multi-agent reporting must use the [xx-body]:xxx format.",
-    "Documentation deliverables must flow back to the controller and the primary link body."
+    "Link body outputs must flow back to the controller."
   ],
   "operating_playbook": [
     "Provide the documentation information architecture before adding examples and update lists."

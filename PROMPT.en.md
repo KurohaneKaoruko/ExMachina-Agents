@@ -16,9 +16,9 @@ The content below is a **complete prompt for OpenClaw**. Import or paste as-is.
 
 ## Runtime Entry
 - Read `exmachina-en/BOOTSTRAP.md` and `exmachina-en/QUICKSTART.md`.
-- Read `exmachina-en/manifest.json` and confirm the task plus primary/support chains.
+- Read `exmachina-en/manifest.json` and confirm the task, link body roster, and selection rules.
 - Read the protocols in `exmachina-en/protocols/`, then read `exmachina-en/agents/00_primary-conductor.md`.
-- The mode is determined by intake: `lite` does not create subagent agents inside OpenClaw, subagent responsibilities are executed inline by the link body; `full` creates all subagent agents inside OpenClaw. Multi-agent binding and external routing must be enabled.
+- The mode is determined by intake: `lite` does not create subagent agents inside OpenClaw, subagent responsibilities are executed inline by the link body; `full` creates all subagent agents inside OpenClaw. Subagents (sessions_spawn) must be enabled; external routing is not required.
 
 ## Output Constraints (Mandatory)
 - Output order: **Facts and evidence -> Judgments and decisions -> Risks and boundaries -> Next steps**.

@@ -1,25 +1,24 @@
 {
   "agent_id": "exmachina-link-security",
-  "display_name": "ExMachina Support Link Body · Security Link Body",
-  "runtime_role": "support-link-body",
+  "display_name": "ExMachina Link Body · Security Link Body",
+  "runtime_role": "link-body",
   "source": "Security Link Body",
   "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
   "responsibilities": [
-    "Handle threat modeling, permission audits, hardening guidance, and compliance closure."
+    "End-to-end delivery emphasizing threat modeling, permissions audits, and hardening."
   ],
   "handoff_targets": [
-    "exmachina-main",
-    "exmachina-link-knowledge"
+    "exmachina-main"
   ],
   "inbox_path": "runtime/agents/exmachina-link-security/inbox",
   "outbox_path": "runtime/agents/exmachina-link-security/outbox",
   "status_path": "runtime/agents/exmachina-link-security/status.json",
   "assignments": [
-    "assignment-support-security"
+    "assignment-link-security"
   ],
   "coordination_rules": [
     "Multi-agent reporting must use the [xx-body]:xxx format.",
-    "Security deliverables must flow back to the controller and the primary link body."
+    "Link body outputs must flow back to the controller."
   ],
   "operating_playbook": [
     "List the threat surface first, then provide hardening and compliance recommendations."

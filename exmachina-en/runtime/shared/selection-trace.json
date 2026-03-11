@@ -1,25 +1,25 @@
 {
-  "primary_name": "Knowledge Link Body",
-  "primary_score": 13,
-  "primary_reasons": [
-    "Knowledge Link Body has the highest overall score: 13.",
+  "selected_link_body": "Knowledge Link Body",
+  "selected_score": 13,
+  "selection_reasons": [
+    "Knowledge Link Body has the highest composite score: 13.",
     "Matched keywords: knowledge, consolidation, terminology, index, rules.",
-    "Matched high-priority keywords: knowledge, consolidation, terminology, index.",
-    "Bonus: matched 5 keywords +10.",
+    "Matched priority keywords: knowledge, consolidation, terminology, index.",
+    "Bonus: 5 keyword hits +10.",
     "Bonus: workspace context +1.",
-    "Bonus: high-priority keywords +2."
+    "Bonus: priority keywords +2."
   ],
-  "support_names": [
+  "parallel_link_bodies": [
     "Rationality Link Body",
     "Validation Link Body",
     "Documentation Link Body",
     "Security Link Body"
   ],
-  "support_reasons": [
-    "Trigger support link body Rationality: primary link body is not Rationality Link Body.",
-    "Trigger support link body Validation: primary link body is not Validation Link Body; test context exists.",
-    "Trigger support link body Documentation: primary link body is not Documentation Link Body; task hits keywords documentation, readme, instructions, tutorial, examples, handbook, migration.",
-    "Security Link Body enters the support chain with score 2 to cover dimensions not in the primary chain."
+  "parallel_reasons": [
+    "Rationality Link Body: independent deliverables for evidence grading, counterevidence, and confidence calibration.",
+    "Validation Link Body: independent deliverables for reproduction and regression when test context exists.",
+    "Documentation Link Body: independent deliverables for documentation/examples when doc keywords are present.",
+    "Security Link Body: independent deliverables for threat modeling and hardening when needed."
   ],
   "scored_candidates": [
     {
@@ -39,9 +39,9 @@
         "index"
       ],
       "bonus_reasons": [
-        "Matched 5 keywords +10",
-        "Workspace context +1",
-        "High-priority keywords +2"
+        "5 keyword hits +10",
+        "workspace context +1",
+        "priority keywords +2"
       ]
     },
     {
@@ -56,9 +56,9 @@
         "examples"
       ],
       "bonus_reasons": [
-        "Matched 2 keywords +4",
-        "Workspace context +1",
-        "High-priority keywords +2"
+        "2 keyword hits +4",
+        "workspace context +1",
+        "priority keywords +2"
       ]
     },
     {
@@ -67,8 +67,8 @@
       "matched_keywords": [],
       "matched_priority_keywords": [],
       "bonus_reasons": [
-        "Test context +1",
-        "Workspace context +1"
+        "test context +1",
+        "workspace context +1"
       ]
     },
     {
@@ -79,7 +79,7 @@
       ],
       "matched_priority_keywords": [],
       "bonus_reasons": [
-        "Matched 1 keyword +2"
+        "1 keyword hit +2"
       ]
     },
     {
@@ -88,7 +88,7 @@
       "matched_keywords": [],
       "matched_priority_keywords": [],
       "bonus_reasons": [
-        "Workspace context +1"
+        "workspace context +1"
       ]
     },
     {
@@ -97,7 +97,7 @@
       "matched_keywords": [],
       "matched_priority_keywords": [],
       "bonus_reasons": [
-        "Test context +1"
+        "test context +1"
       ]
     },
     {
@@ -106,7 +106,7 @@
       "matched_keywords": [],
       "matched_priority_keywords": [],
       "bonus_reasons": [
-        "Base score +1"
+        "base score +1"
       ]
     },
     {
@@ -115,7 +115,7 @@
       "matched_keywords": [],
       "matched_priority_keywords": [],
       "bonus_reasons": [
-        "Workspace context +1"
+        "workspace context +1"
       ]
     },
     {
@@ -124,7 +124,7 @@
       "matched_keywords": [],
       "matched_priority_keywords": [],
       "bonus_reasons": [
-        "Test context +1"
+        "test context +1"
       ]
     },
     {

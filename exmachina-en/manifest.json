@@ -33,27 +33,27 @@
     }
   },
   "selection_trace": {
-    "primary_name": "Knowledge Link Body",
-    "primary_score": 13,
-    "primary_reasons": [
-      "Knowledge Link Body has the highest overall score: 13.",
+    "selected_link_body": "Knowledge Link Body",
+    "selected_score": 13,
+    "selection_reasons": [
+      "Knowledge Link Body has the highest composite score: 13.",
       "Matched keywords: knowledge, consolidation, terminology, index, rules.",
-      "Matched high-priority keywords: knowledge, consolidation, terminology, index.",
-      "Bonus: matched 5 keywords +10.",
+      "Matched priority keywords: knowledge, consolidation, terminology, index.",
+      "Bonus: 5 keyword hits +10.",
       "Bonus: workspace context +1.",
-      "Bonus: high-priority keywords +2."
+      "Bonus: priority keywords +2."
     ],
-    "support_names": [
+    "parallel_link_bodies": [
       "Rationality Link Body",
       "Validation Link Body",
       "Documentation Link Body",
       "Security Link Body"
     ],
-    "support_reasons": [
-      "Trigger support link body Rationality: primary link body is not Rationality Link Body.",
-      "Trigger support link body Validation: primary link body is not Validation Link Body; test context exists.",
-      "Trigger support link body Documentation: primary link body is not Documentation Link Body; task hits keywords documentation, readme, instructions, tutorial, examples, handbook, migration.",
-      "Security Link Body enters the support chain with score 2 to cover dimensions not in the primary chain."
+    "parallel_reasons": [
+      "Rationality Link Body: independent deliverables for evidence grading, counterevidence, and confidence calibration.",
+      "Validation Link Body: independent deliverables for reproduction and regression when test context exists.",
+      "Documentation Link Body: independent deliverables for documentation/examples when doc keywords are present.",
+      "Security Link Body: independent deliverables for threat modeling and hardening when needed."
     ],
     "scored_candidates": [
       {
@@ -73,9 +73,9 @@
           "index"
         ],
         "bonus_reasons": [
-          "Matched 5 keywords +10",
-          "Workspace context +1",
-          "High-priority keywords +2"
+          "5 keyword hits +10",
+          "workspace context +1",
+          "priority keywords +2"
         ]
       },
       {
@@ -90,9 +90,9 @@
           "examples"
         ],
         "bonus_reasons": [
-          "Matched 2 keywords +4",
-          "Workspace context +1",
-          "High-priority keywords +2"
+          "2 keyword hits +4",
+          "workspace context +1",
+          "priority keywords +2"
         ]
       },
       {
@@ -101,8 +101,8 @@
         "matched_keywords": [],
         "matched_priority_keywords": [],
         "bonus_reasons": [
-          "Test context +1",
-          "Workspace context +1"
+          "test context +1",
+          "workspace context +1"
         ]
       },
       {
@@ -113,7 +113,7 @@
         ],
         "matched_priority_keywords": [],
         "bonus_reasons": [
-          "Matched 1 keyword +2"
+          "1 keyword hit +2"
         ]
       },
       {
@@ -122,7 +122,7 @@
         "matched_keywords": [],
         "matched_priority_keywords": [],
         "bonus_reasons": [
-          "Workspace context +1"
+          "workspace context +1"
         ]
       },
       {
@@ -131,7 +131,7 @@
         "matched_keywords": [],
         "matched_priority_keywords": [],
         "bonus_reasons": [
-          "Test context +1"
+          "test context +1"
         ]
       },
       {
@@ -140,7 +140,7 @@
         "matched_keywords": [],
         "matched_priority_keywords": [],
         "bonus_reasons": [
-          "Base score +1"
+          "base score +1"
         ]
       },
       {
@@ -149,7 +149,7 @@
         "matched_keywords": [],
         "matched_priority_keywords": [],
         "bonus_reasons": [
-          "Workspace context +1"
+          "workspace context +1"
         ]
       },
       {
@@ -158,7 +158,7 @@
         "matched_keywords": [],
         "matched_priority_keywords": [],
         "bonus_reasons": [
-          "Test context +1"
+          "test context +1"
         ]
       },
       {
@@ -178,122 +178,85 @@
     ]
   },
   "knowledge_handoff": {
-    "summary": "Produce a reusable knowledge handoff for the mission \"Consolidate knowledge handoff, terminology index, resource arbitration rules, and README examples to form an OpenClaw collaboration layer\" to support the next iteration.",
+    "summary": "Reusable knowledge handoff for the mission \"Consolidate knowledge handoff, terminology index, resource arbitration rules, and README examples to form an OpenClaw collaboration layer.\"",
     "carry_forward": [
-      "Record the Knowledge Link Body deliverables, boundaries, and member responsibilities.",
-      "Archive evidence summaries, risk lists, and confidence conclusions to avoid repeat judgment.",
-      "Preserve key path index: README.en.md, exmachina-en/README.md, exmachina-en/runtime/README.md, PROMPT.en.md, exmachina-en/BOOTSTRAP.md.",
-      "Consolidate user-facing instructions, examples, and migration differences.",
-      "Consolidate security assumptions, threat surfaces, hardening advice, and items needing review.",
-      "Consolidate the terminology list, decision index, question index, and reuse entry points."
+      "Record the active link body (default: Knowledge Link Body) deliveries, boundaries, and member division of labor.",
+      "Archive evidence summaries, risk lists, and confidence conclusions to avoid repeat judgments.",
+      "Preserve key paths: README.md, exmachina/README.md, exmachina/runtime/README.md, PROMPT.md, exmachina/BOOTSTRAP.md.",
+      "Capture user-facing instructions, examples, and migration notes.",
+      "Capture security assumptions, threat surfaces, hardening advice, and pending verification items.",
+      "Capture terminology, decision index, question index, and reuse entry points."
     ],
     "decisions": [
-      "Primary link body selection: Knowledge Link Body (score 13).",
-      "Support chain: Rationality Link Body, Validation Link Body, Documentation Link Body, Security Link Body.",
+      "Active link body: Knowledge Link Body (score 13).",
+      "Parallel-capable link bodies: Rationality, Validation, Documentation, Security.",
       "Workspace stack: JSON, Markdown, Shell, TOML.",
-      "Preserve evidence levels, rejected options, and arbitration rationale for key conclusions."
+      "Preserve evidence grades, abandoned options, and arbitration rationale for key conclusions."
     ],
     "open_questions": [
-      "Record unverified assumptions from this round separately to avoid being treated as confirmed next round.",
-      "Convert high-risk but unexecuted actions into explicit to-dos and verification questions.",
-      "Continue tracking unconfirmed vulnerability assumptions, permission boundaries, and sensitive configuration risks."
+      "Record unverified assumptions separately to avoid treating them as confirmed facts.",
+      "Translate high-risk unexecuted actions into explicit TODOs and verification questions.",
+      "Continue tracking unconfirmed vulnerability hypotheses, permission boundaries, and sensitive configuration risks."
     ],
     "next_updates": [
-      "Sync new structure conventions, process rules, or examples back into README and export notes.",
-      "Update long-term docs with new critical paths, commands, or configuration entry points from this round.",
-      "Re-verify example commands, section structure, and reader-facing terminology.",
+      "Sync new structure conventions, process rules, or examples back into README and export instructions.",
+      "Update long-term docs with newly added key paths, commands, or config entry points.",
+      "Proofread example commands, chapter structure, and user-facing terminology.",
       "Sync terminology, decisions, and open questions into the long-term knowledge index."
     ]
   },
   "execution_stages": [
     {
-      "name": "Stage 1 · Task Clarification",
-      "goal": "Provide fill-in inputs for terminology alignment, decision consolidation, index organization, and question logging.",
-      "owner_body": "Knowledge Link Body",
-      "support_bodies": [
-        "Rationality Link Body",
-        "Validation Link Body",
-        "Documentation Link Body",
-        "Security Link Body"
-      ],
+      "name": "Stage 1 · Select Active Link Body",
+      "goal": "The Primary Conductor confirms task boundaries, acceptance criteria, and the active link body.",
+      "owner_body": "Primary Conductor",
       "deliverables": [
-        "Fill-in conclusions for terminology alignment, decision consolidation, index organization, and question logging",
-        "Risk and boundary reminders"
+        "Link body selection and rationale",
+        "Peer division of labor (if parallel)",
+        "Clear acceptance criteria and risk boundaries"
       ],
       "exit_checks": [
-        "Fill-in inputs are delivered to the owner per the handoff contract.",
-        "Fill-in conclusions do not exceed this link body's scope."
+        "Active link body confirmed.",
+        "If multiple link bodies are enabled, peer division of labor and boundaries are documented.",
+        "Acceptance criteria and risk boundaries recorded."
       ]
     },
     {
-      "name": "Stage 2 · Primary Delivery",
-      "goal": "The Knowledge Link Body produces the main deliverable.",
-      "owner_body": "Knowledge Link Body",
-      "support_bodies": [
-        "Rationality Link Body",
-        "Validation Link Body",
-        "Documentation Link Body",
-        "Security Link Body"
-      ],
+      "name": "Stage 2 · Link Body Delivery",
+      "goal": "The active link body completes end-to-end delivery; peer link bodies may run in parallel if needed.",
+      "owner_body": "Active Link Body",
       "deliverables": [
-        "Primary delivery",
-        "Implementation or plan summary",
-        "Risks and dependencies"
+        "Complete delivery with evidence summary",
+        "Risks and boundaries",
+        "Verification steps or evidence commands"
       ],
       "exit_checks": [
-        "Primary delivery is complete and traceable.",
-        "Key risks include rollback paths or alternatives.",
-        "Support link bodies have received required fill-in inputs."
+        "Delivery is traceable and meets acceptance criteria.",
+        "Evidence, judgments, and risks are clearly separated.",
+        "Parallel link body outputs are labeled with boundaries and ownership."
       ]
     },
     {
-      "name": "Stage 3 · Cross-Validation",
-      "goal": "Rationality Link Body delivers evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
-      "owner_body": "Rationality Link Body",
-      "support_bodies": [
-        "Validation Link Body",
-        "Documentation Link Body",
-        "Security Link Body"
-      ],
+      "name": "Stage 3 · Controller Consolidation",
+      "goal": "The Primary Conductor consolidates outputs into final structured conclusions and knowledge handoff.",
+      "owner_body": "Primary Conductor",
       "deliverables": [
-        "Evidence grading matrix",
-        "Counterevidence and conflict arbitration report",
-        "Confidence calibration conclusion"
+        "Final structured conclusions",
+        "Knowledge handoff checklist",
+        "Follow-up maintenance and open questions"
       ],
       "exit_checks": [
-        "Rationality Link Body outputs are structured and complete.",
-        "Risks, boundaries, and next actions are explicit.",
-        "Handoff outputs are directly consumable downstream."
-      ]
-    },
-    {
-      "name": "Stage 4 · Integration Handoff",
-      "goal": "Knowledge Link Body consolidates terminology, decisions, index, and open questions.",
-      "owner_body": "Knowledge Link Body",
-      "support_bodies": [
-        "Rationality Link Body",
-        "Validation Link Body",
-        "Documentation Link Body",
-        "Security Link Body"
-      ],
-      "deliverables": [
-        "Terminology and concept index",
-        "Key decisions and rejection rationale",
-        "Open questions and maintenance list"
-      ],
-      "exit_checks": [
-        "Knowledge Link Body outputs are structured and complete.",
-        "Risks, boundaries, and next actions are explicit.",
-        "Handoff outputs are directly consumable downstream."
+        "Final output satisfies the output contract.",
+        "Knowledge handoff checklist completed."
       ]
     }
   ],
   "handoff_contracts": [
     {
-      "name": "Handoff 1 · Stage 1 · Task Clarification → Stage 2 · Primary Delivery",
-      "producer_stage": "Stage 1 · Task Clarification",
-      "consumer_stage": "Stage 2 · Primary Delivery",
-      "producer_body": "Knowledge Link Body",
+      "name": "Handoff 1 · Stage 1 · Select Active Link Body → Stage 2 · Link Body Delivery",
+      "producer_stage": "Stage 1 · Select Active Link Body",
+      "consumer_stage": "Stage 2 · Link Body Delivery",
+      "producer_body": "Primary Conductor",
       "consumer_bodies": [
         "Knowledge Link Body",
         "Rationality Link Body",
@@ -302,136 +265,96 @@
         "Security Link Body"
       ],
       "payload": [
-        "Stage deliverable: fill-in conclusions for terminology alignment, decision consolidation, index organization, and question logging",
-        "Stage deliverable: risk and boundary reminders",
-        "Stage goal summary: provide fill-in inputs for terminology alignment, decision consolidation, index organization, and question logging.",
-        "Handoff template: current stage goals and completeness",
-        "Handoff template: structured deliverables summary",
-        "Handoff template: risks, unknowns, and downstream follow-ups"
+        "Link body selection and rationale",
+        "Peer division of labor (if parallel)",
+        "Acceptance criteria and risk boundaries",
+        "Task boundaries and known/unknown summary"
       ],
       "acceptance_checks": [
-        "Stage 1 exit checks are satisfied.",
-        "Stage 2 inputs are sufficient for its goal.",
-        "Handoff content separates confirmed facts, pending verification questions, and remaining risks.",
-        "Entry condition: the task boundary clearly requires this scope."
+        "Stage 1 exit checks satisfied.",
+        "Active link body confirmed and accepts delivery goals.",
+        "If multiple link bodies are enabled, boundaries are explicit."
       ]
     },
     {
-      "name": "Handoff 2 · Stage 2 · Primary Delivery → Stage 3 · Cross-Validation",
-      "producer_stage": "Stage 2 · Primary Delivery",
-      "consumer_stage": "Stage 3 · Cross-Validation",
-      "producer_body": "Knowledge Link Body",
+      "name": "Handoff 2 · Stage 2 · Link Body Delivery → Stage 3 · Controller Consolidation",
+      "producer_stage": "Stage 2 · Link Body Delivery",
+      "consumer_stage": "Stage 3 · Controller Consolidation",
+      "producer_body": "Active Link Body",
       "consumer_bodies": [
-        "Rationality Link Body",
-        "Validation Link Body",
-        "Documentation Link Body",
-        "Security Link Body"
+        "Primary Conductor"
       ],
       "payload": [
-        "Stage deliverable: Knowledge Link Body core deliverable",
-        "Stage deliverable: implementation or plan summary",
-        "Stage deliverable: risks and dependencies",
-        "Stage goal summary: the Knowledge Link Body produces the main deliverable.",
-        "Handoff template: current stage goals and completeness",
-        "Handoff template: structured deliverables summary",
-        "Handoff template: risks, unknowns, and downstream follow-ups"
+        "Complete delivery with evidence summary",
+        "Risks and boundaries",
+        "Verification steps or evidence commands",
+        "Knowledge handoff summary"
       ],
       "acceptance_checks": [
-        "Stage 2 exit checks are satisfied.",
-        "Stage 3 inputs are sufficient for its goal.",
-        "Handoff content separates confirmed facts, pending verification questions, and remaining risks.",
-        "Entry condition: the task boundary clearly requires this scope."
-      ]
-    },
-    {
-      "name": "Handoff 3 · Stage 3 · Cross-Validation → Stage 4 · Integration Handoff",
-      "producer_stage": "Stage 3 · Cross-Validation",
-      "consumer_stage": "Stage 4 · Integration Handoff",
-      "producer_body": "Rationality Link Body",
-      "consumer_bodies": [
-        "Knowledge Link Body",
-        "Rationality Link Body",
-        "Validation Link Body",
-        "Documentation Link Body",
-        "Security Link Body"
-      ],
-      "payload": [
-        "Stage deliverable: evidence grading matrix",
-        "Stage deliverable: counterevidence and conflict arbitration report",
-        "Stage deliverable: confidence calibration conclusion",
-        "Stage goal summary: Rationality Link Body delivers evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
-        "Handoff template: current stage goals and completeness",
-        "Handoff template: structured deliverables summary",
-        "Handoff template: risks, unknowns, and downstream follow-ups",
-        "Knowledge handoff summary: Consolidate knowledge handoff, terminology index, resource arbitration rules, and README examples to form an OpenClaw collaboration layer."
-      ],
-      "acceptance_checks": [
-        "Stage 3 exit checks are satisfied.",
-        "Stage 4 inputs are sufficient for its goal.",
-        "Handoff content separates confirmed facts, pending verification questions, and remaining risks.",
-        "Entry condition: the task boundary clearly requires this scope.",
-        "Items that must be synced into knowledge handoff and long-term docs are explicit."
+        "Stage 2 exit checks satisfied.",
+        "Deliverables are ready for consolidation and publication.",
+        "Knowledge handoff inputs are complete."
       ]
     }
   ],
   "resource_arbitration": {
-    "summary": "Allocate resources for the mission \"Consolidate knowledge handoff, terminology index, resource arbitration rules, and README examples to form an OpenClaw collaboration layer\" from P0 to P3: close risk gates first, protect the primary chain, then support and deferred work.",
+    "summary": "Resource allocation for the mission follows P0→P3: close risk gates, then protect the active link body, then support and deferrable work.",
     "priority_slots": [
       {
         "priority": "P0",
         "owner_body": "Rationality Link Body",
-        "objective": "Handle high-risk items, evidence conflicts, irreversible actions, and security/permission gates first.",
-        "reason": "If risk gates are not closed, downstream execution amplifies uncertainty and rework cost.",
+        "objective": "Handle high risk, evidence conflicts, irreversible actions, and security/permission gates first.",
+        "reason": "If risk gates are not closed, later execution magnifies uncertainty and rework cost.",
         "deferrable": false
       },
       {
         "priority": "P1",
-        "owner_body": "Knowledge Link Body",
-        "objective": "Keep the Knowledge Link Body primary delivery moving.",
-        "reason": "The primary chain decides whether this round produces a core deliverable.",
+        "owner_body": "Active Link Body",
+        "objective": "Protect the active link body’s core delivery.",
+        "reason": "The active link body determines whether this task yields a core deliverable.",
         "deferrable": false
       },
       {
         "priority": "P2",
         "owner_body": "Documentation Link Body",
-        "objective": "Handle integration, runbooks, instructions, and knowledge landing support work.",
-        "reason": "These directly impact usability, maintainability, and consumption of the deliverable.",
+        "objective": "Handle integration, runtime, documentation, and knowledge landing work.",
+        "reason": "These tasks affect usability, maintainability, and consumption of the deliverable.",
         "deferrable": false
       },
       {
         "priority": "P3",
-        "owner_body": "Knowledge Link Body",
-        "objective": "Collect deferrable research, optimization, polish, or extension items.",
-        "reason": "Before higher priorities are cleared, these must not block the main task.",
+        "owner_body": "Active Link Body",
+        "objective": "Capture deferrable research, optimization, or extension work.",
+        "reason": "Do not block the main task until higher priorities are cleared.",
         "deferrable": true
       }
     ],
     "contention_rules": [
-      "When the P0 risk gate is open, other stages must not preempt its required resources.",
-      "When the Knowledge Link Body core delivery conflicts with other support tasks, prioritize P1 primary chain work.",
-      "Support work should reuse existing stage outputs and must not recreate the same context.",
-      "Deferrable items sink to P3 and are recorded in the knowledge handoff; do not masquerade as blockers.",
-      "When test context exists, validation resources must not be preempted by documentation or polish work.",
-      "When the Knowledge Link Body scope is involved, prioritize its core delivery and required validation.",
-      "When the Rationality Link Body scope is involved, prioritize its core delivery and required validation.",
-      "When the Validation Link Body scope is involved, prioritize its core delivery and required validation.",
-      "When the Documentation Link Body scope is involved, prioritize its core delivery and required validation.",
-      "When the Security Link Body scope is involved, prioritize its core delivery and required validation."
+      "When P0 risk gates are not closed, other stages must not preempt required resources.",
+      "When the active link body’s core delivery conflicts with other tasks, prioritize P1.",
+      "Support work should reuse existing stage outputs; do not recreate the same context.",
+      "Deferrable work is pushed to P3 and recorded in the knowledge handoff; do not present it as blocking.",
+      "When test context exists, validation resources must not be preempted by documentation or cosmetics.",
+      "When the active link body is involved, prioritize its core delivery and required validation.",
+      "When Rationality Link Body is involved, prioritize its core delivery and required validation.",
+      "When Validation Link Body is involved, prioritize its core delivery and required validation.",
+      "When Documentation Link Body is involved, prioritize its core delivery and required validation.",
+      "When Security Link Body is involved, prioritize its core delivery and required validation."
     ],
     "escalation_rules": [
-      "If P0 and P1 contend for the same input and cannot be split, escalate to the Primary Conductor for arbitration.",
-      "When security, evidence, and delivery goals conflict, preserve options that are more verifiable and reversible.",
-      "When support work exceeds this round's capacity, move it into knowledge handoff and follow-up plans.",
-      "Knowledge Link Body boundary: only handle terminology unification, decision consolidation, index organization, and question logging.",
-      "Rationality Link Body boundary: only handle evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
+      "When P0 and P1 contend for the same input and cannot be split, escalate to the Primary Conductor.",
+      "When security, evidence, and delivery goals conflict, preserve the more verifiable and reversible option.",
+      "When support tasks exceed the current capacity, move them to knowledge handoff and a follow-up iteration.",
+      "Knowledge Link Body boundary: only handle terminology alignment, decision capture, index organization, and question archiving.",
+      "Rationality Link Body boundary: only handle evidence grading, counterevidence search, arbitration, and confidence calibration.",
       "Validation Link Body boundary: only handle reproduction, assertions, evidence collection, and regression validation.",
-      "Documentation Link Body boundary: only handle inventory, structure organization, example writing, and proofreading release.",
-      "Security Link Body boundary: only handle threat modeling, permission audits, hardening guidance, and compliance closure."
+      "Documentation Link Body boundary: only handle inventory, structure, examples, and publication.",
+      "Security Link Body boundary: only handle threat modeling, permissions audits, hardening, and compliance closure."
     ],
     "deferred_work": [
-      "Non-blocking performance tweaks, copy polish, and extra extension points.",
-      "Long-term abstractions and large-scale refactors that do not affect current acceptance.",
-      "Supplementary retrospectives beyond the knowledge index, captured after the main loop closes."
+      "Non-blocking performance tuning, copy polishing, and extra extension points.",
+      "Long-horizon abstractions or large refactors that do not affect current acceptance.",
+      "Supplemental retrospectives outside the knowledge index, recorded after closure."
     ]
   },
   "openclaw_install_plan": {
@@ -470,40 +393,40 @@
       },
       {
         "agent_id": "exmachina-link-knowledge",
-        "display_name": "ExMachina Primary Link Body · Knowledge Link Body",
-        "role": "primary-link-body",
+        "display_name": "ExMachina Link Body · Knowledge Link Body",
+        "role": "link-body",
         "session_strategy": "multi-session",
         "source": "Knowledge Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
         "agent_id": "exmachina-link-rationality",
-        "display_name": "ExMachina Support Link Body · Rationality Link Body",
-        "role": "support-link-body",
+        "display_name": "ExMachina Link Body · Rationality Link Body",
+        "role": "link-body",
         "session_strategy": "multi-session",
         "source": "Rationality Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
         "agent_id": "exmachina-link-validation",
-        "display_name": "ExMachina Support Link Body · Validation Link Body",
-        "role": "support-link-body",
+        "display_name": "ExMachina Link Body · Validation Link Body",
+        "role": "link-body",
         "session_strategy": "multi-session",
         "source": "Validation Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
         "agent_id": "exmachina-link-documentation",
-        "display_name": "ExMachina Support Link Body · Documentation Link Body",
-        "role": "support-link-body",
+        "display_name": "ExMachina Link Body · Documentation Link Body",
+        "role": "link-body",
         "session_strategy": "multi-session",
         "source": "Documentation Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
         "agent_id": "exmachina-link-security",
-        "display_name": "ExMachina Support Link Body · Security Link Body",
-        "role": "support-link-body",
+        "display_name": "ExMachina Link Body · Security Link Body",
+        "role": "link-body",
         "session_strategy": "multi-session",
         "source": "Security Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
@@ -846,15 +769,15 @@
         "agent_id": "exmachina-main",
         "source_body": "Primary Conductor",
         "role": "controller",
-        "goal": "Coordinate the primary chain, support chain, and final consolidation to keep multi-agent delivery mergeable.",
+        "goal": "Select the active link body, coordinate peer division of labor, and finalize delivery.",
         "deliverables": [
-          "Task boundary and acceptance criteria",
-          "Multi-agent task board",
+          "Task boundaries and acceptance criteria",
+          "Link-body selection and division-of-labor notes",
           "Final structured delivery"
         ],
         "exit_checks": [
-          "Primary and support chain responsibilities are aligned.",
-          "Final conclusions, risks, and next steps are unified."
+          "Active link body and peer-level division of labor confirmed.",
+          "Final conclusions, risks, and next steps unified."
         ],
         "depends_on": [],
         "handoff_routes": [
@@ -863,155 +786,103 @@
         ]
       },
       {
-        "assignment_id": "assignment-stage-01",
-        "stage_name": "Stage 1 · Task Clarification",
+        "assignment_id": "assignment-link-knowledge",
+        "stage_name": "Link Body Delivery · Knowledge",
         "agent_id": "exmachina-link-knowledge",
         "source_body": "Knowledge Link Body",
         "role": "owner",
-        "goal": "Provide fill-in inputs for terminology alignment, decision consolidation, index organization, and question logging.",
+        "goal": "End-to-end delivery emphasizing terminology alignment, decision capture, and index structure.",
         "deliverables": [
-          "Terminology alignment and index skeleton",
-          "Risk and boundary reminders"
+          "Complete delivery with evidence summary",
+          "Terminology and index skeleton",
+          "Risks and boundaries"
         ],
         "exit_checks": [
-          "Fill-in inputs delivered to the controller."
+          "Knowledge Link Body delivery is complete and traceable."
         ],
         "depends_on": [],
         "handoff_routes": [
-          "route-stage-01"
+          "route-link-knowledge"
         ]
       },
       {
-        "assignment_id": "assignment-stage-02",
-        "stage_name": "Stage 2 · Primary Delivery",
-        "agent_id": "exmachina-link-knowledge",
-        "source_body": "Knowledge Link Body",
-        "role": "owner",
-        "goal": "Produce the main deliverable and integrate support-chain inputs.",
-        "deliverables": [
-          "Primary delivery summary",
-          "Risks and dependencies"
-        ],
-        "exit_checks": [
-          "Primary delivery is traceable.",
-          "Support link bodies have received required fill-in inputs."
-        ],
-        "depends_on": [
-          "Stage 1 · Task Clarification"
-        ],
-        "handoff_routes": [
-          "route-stage-02",
-          "route-dispatch"
-        ]
-      },
-      {
-        "assignment_id": "assignment-stage-03",
-        "stage_name": "Stage 3 · Cross-Validation",
+        "assignment_id": "assignment-link-rationality",
+        "stage_name": "Link Body Delivery · Rationality",
         "agent_id": "exmachina-link-rationality",
         "source_body": "Rationality Link Body",
         "role": "owner",
-        "goal": "Complete evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
+        "goal": "End-to-end delivery emphasizing evidence grading, counterevidence search, arbitration, and confidence calibration.",
         "deliverables": [
           "Evidence grading matrix",
-          "Counterevidence and conflict arbitration report",
-          "Confidence calibration conclusion"
+          "Counterevidence and arbitration report",
+          "Confidence calibration"
         ],
         "exit_checks": [
           "Rationality Link Body delivery is structured and complete."
         ],
-        "depends_on": [
-          "Stage 2 · Primary Delivery"
-        ],
+        "depends_on": [],
         "handoff_routes": [
-          "route-stage-03"
+          "route-link-rationality"
         ]
       },
       {
-        "assignment_id": "assignment-stage-04",
-        "stage_name": "Stage 4 · Integration Handoff",
-        "agent_id": "exmachina-link-knowledge",
-        "source_body": "Knowledge Link Body",
-        "role": "owner",
-        "goal": "Consolidate terminology, decisions, index, and open questions.",
-        "deliverables": [
-          "Terminology and concept index",
-          "Key decisions and rejection rationale",
-          "Open questions and maintenance list"
-        ],
-        "exit_checks": [
-          "Knowledge Link Body delivery is directly consumable downstream."
-        ],
-        "depends_on": [
-          "Stage 3 · Cross-Validation"
-        ],
-        "handoff_routes": [
-          "route-stage-04"
-        ]
-      },
-      {
-        "assignment_id": "assignment-support-validation",
-        "stage_name": "Support Fill-in · Validation Link Body",
+        "assignment_id": "assignment-link-validation",
+        "stage_name": "Link Body Delivery · Validation",
         "agent_id": "exmachina-link-validation",
         "source_body": "Validation Link Body",
-        "role": "support",
-        "goal": "Fill in validation, regression, and evidence archiving.",
+        "role": "owner",
+        "goal": "End-to-end delivery emphasizing reproduction, assertions, evidence logging, and regression.",
         "deliverables": [
           "Validation matrix",
           "Regression results",
           "Issue evidence list"
         ],
         "exit_checks": [
-          "Validation deliverables returned to the controller and primary link body."
+          "Validation Link Body delivery is structured and complete."
         ],
-        "depends_on": [
-          "Stage 2 · Primary Delivery"
-        ],
+        "depends_on": [],
         "handoff_routes": [
-          "route-validation"
+          "route-link-validation"
         ]
       },
       {
-        "assignment_id": "assignment-support-docs",
-        "stage_name": "Support Fill-in · Documentation Link Body",
+        "assignment_id": "assignment-link-documentation",
+        "stage_name": "Link Body Delivery · Documentation",
         "agent_id": "exmachina-link-documentation",
         "source_body": "Documentation Link Body",
-        "role": "support",
-        "goal": "Fill in documentation structure, example writing, and proofreading release.",
+        "role": "owner",
+        "goal": "End-to-end delivery emphasizing inventory, structure, examples, and publication.",
         "deliverables": [
           "Documentation information architecture",
-          "Instructions and example draft",
-          "Update list"
+          "Guides and examples draft",
+          "Update checklist"
         ],
         "exit_checks": [
-          "Documentation deliverables returned to the controller and primary link body."
+          "Documentation Link Body delivery is structured and complete."
         ],
-        "depends_on": [
-          "Stage 2 · Primary Delivery"
-        ],
+        "depends_on": [],
         "handoff_routes": [
-          "route-docs"
+          "route-link-documentation"
         ]
       },
       {
-        "assignment_id": "assignment-support-security",
-        "stage_name": "Support Fill-in · Security Link Body",
+        "assignment_id": "assignment-link-security",
+        "stage_name": "Link Body Delivery · Security",
         "agent_id": "exmachina-link-security",
         "source_body": "Security Link Body",
-        "role": "support",
-        "goal": "Fill in threat modeling, permission audits, and hardening guidance.",
+        "role": "owner",
+        "goal": "End-to-end delivery emphasizing threat modeling, permissions audits, and hardening.",
         "deliverables": [
           "Threat surface and risk list",
-          "Permission or sensitive information audit conclusions",
-          "Hardening and compliance recommendations"
+          "Permissions/sensitive data audit",
+          "Hardening and compliance guidance"
         ],
         "exit_checks": [
-          "Security deliverables returned to the controller and primary link body."
+          "Security Link Body delivery is structured and complete."
         ],
-        "depends_on": [
-          "Stage 2 · Primary Delivery"
-        ],
+        "depends_on": [],
         "handoff_routes": [
-          "route-security"
+          "route-link-security"
         ]
       }
     ],
@@ -1026,7 +897,7 @@
           "exmachina-link-documentation",
           "exmachina-link-security"
         ],
-        "purpose": "Controller dispatches stage tasks and fill-in requests."
+        "purpose": "Controller dispatches link body delivery and parallel requests."
       },
       {
         "route_id": "route-status",
@@ -1041,76 +912,55 @@
         "purpose": "Status return and delivery sync."
       },
       {
-        "route_id": "route-stage-01",
+        "route_id": "route-link-knowledge",
         "from": "exmachina-link-knowledge",
         "to": [
           "exmachina-main"
         ],
-        "purpose": "Stage 1 delivery return flow."
+        "purpose": "Knowledge Link Body delivery return."
       },
       {
-        "route_id": "route-stage-02",
-        "from": "exmachina-link-knowledge",
-        "to": [
-          "exmachina-main"
-        ],
-        "purpose": "Stage 2 delivery return flow."
-      },
-      {
-        "route_id": "route-stage-03",
+        "route_id": "route-link-rationality",
         "from": "exmachina-link-rationality",
         "to": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
-        "purpose": "Stage 3 cross-validation return flow."
+        "purpose": "Rationality Link Body delivery return."
       },
       {
-        "route_id": "route-stage-04",
-        "from": "exmachina-link-knowledge",
+        "route_id": "route-link-validation",
+        "from": "exmachina-link-validation",
         "to": [
           "exmachina-main"
         ],
-        "purpose": "Stage 4 integration handoff return flow."
+        "purpose": "Validation Link Body delivery return."
       },
       {
-        "route_id": "route-validation",
-        "from": "exmachina-link-validation",
-        "to": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
-        ],
-        "purpose": "Validation Link Body delivery return flow."
-      },
-      {
-        "route_id": "route-docs",
+        "route_id": "route-link-documentation",
         "from": "exmachina-link-documentation",
         "to": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
-        "purpose": "Documentation Link Body delivery return flow."
+        "purpose": "Documentation Link Body delivery return."
       },
       {
-        "route_id": "route-security",
+        "route_id": "route-link-security",
         "from": "exmachina-link-security",
         "to": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
-        "purpose": "Security Link Body delivery return flow."
+        "purpose": "Security Link Body delivery return."
       }
     ],
     "coordination_rules": [
       "Subagents (sessions_spawn) must be enabled.",
-      "All support link body outputs must flow back to the controller and the primary link body.",
-      "Multi-agent reporting must use the [xx-body]:xxx format."
+      "Default to a single link body for end-to-end delivery; if multiple are activated, describe peer-level division of labor.",
+      "Multi-agent reporting must use [xx-body]:xxx."
     ],
     "activation_steps": [
       "The controller reads runtime/shared/mission-context.json, runtime/task-board.json, and runtime/topology.json.",
-      "The controller dispatches Stage 1 and Stage 2 tasks to the primary link body.",
-      "After Stage 2, dispatch cross-validation and support fill-in tasks.",
-      "The controller aggregates Stage 3 and support outputs to drive Stage 4 integration handoff."
+      "The controller selects the active link body and assigns delivery goals; if multiple are activated, describe peer division of labor.",
+      "The controller aggregates link body outputs into the final structured delivery."
     ]
   },
   "openclaw_settings_bundle": {
@@ -1134,8 +984,8 @@
       "full"
     ],
     "mode_notes": {
-      "lite": "Do not create subagent agents in OpenClaw; subagent responsibilities are executed inline by the link body.",
-      "full": "Create all subagent agents in OpenClaw; runtime topology remains link-body level."
+      "lite": "No subagent agents are created in OpenClaw; subagent responsibilities are executed inline by the link body.",
+      "full": "Create all subagent agents in OpenClaw; runtime topology remains link-body oriented."
     },
     "controller_agent_id": "exmachina-main",
     "coordination_mode": "subagent-dispatch",
@@ -1144,7 +994,7 @@
       {
         "name": "mission-context",
         "path": "runtime/shared/mission-context.json",
-        "description": "Global mission context and primary/support chain summary.",
+        "description": "Global mission context, link body roster, and selection rules.",
         "consumers": [
           "exmachina-main",
           "exmachina-link-knowledge",
@@ -1157,7 +1007,7 @@
       {
         "name": "task-board",
         "path": "runtime/task-board.json",
-        "description": "Multi-agent task board and stage allocation.",
+        "description": "Multi-agent task board and link body delivery assignments.",
         "consumers": [
           "exmachina-main",
           "exmachina-link-knowledge",
@@ -1170,7 +1020,7 @@
       {
         "name": "knowledge-handoff",
         "path": "runtime/shared/knowledge-handoff.json",
-        "description": "Knowledge handoff and maintenance inputs.",
+        "description": "Knowledge handoff and follow-up inputs.",
         "consumers": [
           "exmachina-main",
           "exmachina-link-knowledge"
@@ -1198,9 +1048,9 @@
         "source": "Primary Conductor",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
         "responsibilities": [
-          "Dispatch stage tasks to the primary and support link bodies.",
+          "Select the active link body and describe peer-level division of labor when needed.",
           "Aggregate multi-agent outputs into the final structured delivery.",
-          "Resolve cross-agent conflicts and handle risk escalation."
+          "Handle cross-agent arbitration and risk escalation."
         ],
         "handoff_targets": [
           "exmachina-link-knowledge",
@@ -1218,13 +1068,13 @@
       },
       {
         "agent_id": "exmachina-link-knowledge",
-        "display_name": "ExMachina Primary Link Body · Knowledge Link Body",
-        "runtime_role": "primary-link-body",
+        "display_name": "ExMachina Link Body · Knowledge Link Body",
+        "runtime_role": "link-body",
         "source": "Knowledge Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
         "responsibilities": [
-          "Own primary delivery for stages 1, 2, and 4.",
-          "Incorporate support link body outputs into primary conclusions."
+          "End-to-end delivery emphasizing terminology alignment, decision capture, and index structure.",
+          "Schedule internal subagents and consolidate outputs as needed."
         ],
         "handoff_targets": [
           "exmachina-main"
@@ -1233,89 +1083,87 @@
         "outbox_path": "runtime/agents/exmachina-link-knowledge/outbox",
         "status_path": "runtime/agents/exmachina-link-knowledge/status.json",
         "assignments": [
-          "assignment-stage-01",
-          "assignment-stage-02",
-          "assignment-stage-04"
+          "assignment-link-knowledge"
         ]
       },
       {
         "agent_id": "exmachina-link-rationality",
-        "display_name": "ExMachina Support Link Body · Rationality Link Body",
-        "runtime_role": "support-link-body",
+        "display_name": "ExMachina Link Body · Rationality Link Body",
+        "runtime_role": "link-body",
         "source": "Rationality Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
         "responsibilities": [
-          "Handle stage 3 evidence grading, counterevidence search, conflict arbitration, and confidence calibration."
+          "End-to-end delivery emphasizing evidence grading, counterevidence search, arbitration, and confidence calibration.",
+          "Schedule internal subagents and consolidate outputs as needed."
         ],
         "handoff_targets": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
         "inbox_path": "runtime/agents/exmachina-link-rationality/inbox",
         "outbox_path": "runtime/agents/exmachina-link-rationality/outbox",
         "status_path": "runtime/agents/exmachina-link-rationality/status.json",
         "assignments": [
-          "assignment-stage-03"
+          "assignment-link-rationality"
         ]
       },
       {
         "agent_id": "exmachina-link-validation",
-        "display_name": "ExMachina Support Link Body · Validation Link Body",
-        "runtime_role": "support-link-body",
+        "display_name": "ExMachina Link Body · Validation Link Body",
+        "runtime_role": "link-body",
         "source": "Validation Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
         "responsibilities": [
-          "Handle reproduction, assertions, evidence archiving, and regression validation."
+          "End-to-end delivery emphasizing reproduction, assertions, evidence logging, and regression.",
+          "Schedule internal subagents and consolidate outputs as needed."
         ],
         "handoff_targets": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
         "inbox_path": "runtime/agents/exmachina-link-validation/inbox",
         "outbox_path": "runtime/agents/exmachina-link-validation/outbox",
         "status_path": "runtime/agents/exmachina-link-validation/status.json",
         "assignments": [
-          "assignment-support-validation"
+          "assignment-link-validation"
         ]
       },
       {
         "agent_id": "exmachina-link-documentation",
-        "display_name": "ExMachina Support Link Body · Documentation Link Body",
-        "runtime_role": "support-link-body",
+        "display_name": "ExMachina Link Body · Documentation Link Body",
+        "runtime_role": "link-body",
         "source": "Documentation Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
         "responsibilities": [
-          "Handle inventory, structure organization, example writing, and proofreading release."
+          "End-to-end delivery emphasizing inventory, structure, examples, and publication.",
+          "Schedule internal subagents and consolidate outputs as needed."
         ],
         "handoff_targets": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
         "inbox_path": "runtime/agents/exmachina-link-documentation/inbox",
         "outbox_path": "runtime/agents/exmachina-link-documentation/outbox",
         "status_path": "runtime/agents/exmachina-link-documentation/status.json",
         "assignments": [
-          "assignment-support-docs"
+          "assignment-link-documentation"
         ]
       },
       {
         "agent_id": "exmachina-link-security",
-        "display_name": "ExMachina Support Link Body · Security Link Body",
-        "runtime_role": "support-link-body",
+        "display_name": "ExMachina Link Body · Security Link Body",
+        "runtime_role": "link-body",
         "source": "Security Link Body",
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
         "responsibilities": [
-          "Handle threat modeling, permission audits, hardening guidance, and compliance closure."
+          "End-to-end delivery emphasizing threat modeling, permissions audits, and hardening.",
+          "Schedule internal subagents and consolidate outputs as needed."
         ],
         "handoff_targets": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
         "inbox_path": "runtime/agents/exmachina-link-security/inbox",
         "outbox_path": "runtime/agents/exmachina-link-security/outbox",
         "status_path": "runtime/agents/exmachina-link-security/status.json",
         "assignments": [
-          "assignment-support-security"
+          "assignment-link-security"
         ]
       }
     ],
@@ -1326,15 +1174,15 @@
         "agent_id": "exmachina-main",
         "source_body": "Primary Conductor",
         "role": "controller",
-        "goal": "Coordinate the primary chain, support chain, and final consolidation to keep multi-agent delivery mergeable.",
+        "goal": "Select the active link body, coordinate peer division of labor, and finalize delivery.",
         "deliverables": [
-          "Task boundary and acceptance criteria",
-          "Multi-agent task board",
+          "Task boundaries and acceptance criteria",
+          "Link-body selection and division-of-labor notes",
           "Final structured delivery"
         ],
         "exit_checks": [
-          "Primary and support chain responsibilities are aligned.",
-          "Final conclusions, risks, and next steps are unified."
+          "Active link body and peer-level division of labor confirmed.",
+          "Final conclusions, risks, and next steps unified."
         ],
         "depends_on": [],
         "handoff_routes": [
@@ -1343,155 +1191,103 @@
         ]
       },
       {
-        "assignment_id": "assignment-stage-01",
-        "stage_name": "Stage 1 · Task Clarification",
+        "assignment_id": "assignment-link-knowledge",
+        "stage_name": "Link Body Delivery · Knowledge",
         "agent_id": "exmachina-link-knowledge",
         "source_body": "Knowledge Link Body",
         "role": "owner",
-        "goal": "Provide fill-in inputs for terminology alignment, decision consolidation, index organization, and question logging.",
+        "goal": "End-to-end delivery emphasizing terminology alignment, decision capture, and index structure.",
         "deliverables": [
-          "Terminology alignment and index skeleton",
-          "Risk and boundary reminders"
+          "Complete delivery with evidence summary",
+          "Terminology and index skeleton",
+          "Risks and boundaries"
         ],
         "exit_checks": [
-          "Fill-in inputs delivered to the controller."
+          "Knowledge Link Body delivery is complete and traceable."
         ],
         "depends_on": [],
         "handoff_routes": [
-          "route-stage-01"
+          "route-link-knowledge"
         ]
       },
       {
-        "assignment_id": "assignment-stage-02",
-        "stage_name": "Stage 2 · Primary Delivery",
-        "agent_id": "exmachina-link-knowledge",
-        "source_body": "Knowledge Link Body",
-        "role": "owner",
-        "goal": "Produce the main deliverable and integrate support-chain inputs.",
-        "deliverables": [
-          "Primary delivery summary",
-          "Risks and dependencies"
-        ],
-        "exit_checks": [
-          "Primary delivery is traceable.",
-          "Support link bodies have received required fill-in inputs."
-        ],
-        "depends_on": [
-          "Stage 1 · Task Clarification"
-        ],
-        "handoff_routes": [
-          "route-stage-02",
-          "route-dispatch"
-        ]
-      },
-      {
-        "assignment_id": "assignment-stage-03",
-        "stage_name": "Stage 3 · Cross-Validation",
+        "assignment_id": "assignment-link-rationality",
+        "stage_name": "Link Body Delivery · Rationality",
         "agent_id": "exmachina-link-rationality",
         "source_body": "Rationality Link Body",
         "role": "owner",
-        "goal": "Complete evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
+        "goal": "End-to-end delivery emphasizing evidence grading, counterevidence search, arbitration, and confidence calibration.",
         "deliverables": [
           "Evidence grading matrix",
-          "Counterevidence and conflict arbitration report",
-          "Confidence calibration conclusion"
+          "Counterevidence and arbitration report",
+          "Confidence calibration"
         ],
         "exit_checks": [
           "Rationality Link Body delivery is structured and complete."
         ],
-        "depends_on": [
-          "Stage 2 · Primary Delivery"
-        ],
+        "depends_on": [],
         "handoff_routes": [
-          "route-stage-03"
+          "route-link-rationality"
         ]
       },
       {
-        "assignment_id": "assignment-stage-04",
-        "stage_name": "Stage 4 · Integration Handoff",
-        "agent_id": "exmachina-link-knowledge",
-        "source_body": "Knowledge Link Body",
-        "role": "owner",
-        "goal": "Consolidate terminology, decisions, index, and open questions.",
-        "deliverables": [
-          "Terminology and concept index",
-          "Key decisions and rejection rationale",
-          "Open questions and maintenance list"
-        ],
-        "exit_checks": [
-          "Knowledge Link Body delivery is directly consumable downstream."
-        ],
-        "depends_on": [
-          "Stage 3 · Cross-Validation"
-        ],
-        "handoff_routes": [
-          "route-stage-04"
-        ]
-      },
-      {
-        "assignment_id": "assignment-support-validation",
-        "stage_name": "Support Fill-in · Validation Link Body",
+        "assignment_id": "assignment-link-validation",
+        "stage_name": "Link Body Delivery · Validation",
         "agent_id": "exmachina-link-validation",
         "source_body": "Validation Link Body",
-        "role": "support",
-        "goal": "Fill in validation, regression, and evidence archiving.",
+        "role": "owner",
+        "goal": "End-to-end delivery emphasizing reproduction, assertions, evidence logging, and regression.",
         "deliverables": [
           "Validation matrix",
           "Regression results",
           "Issue evidence list"
         ],
         "exit_checks": [
-          "Validation deliverables returned to the controller and primary link body."
+          "Validation Link Body delivery is structured and complete."
         ],
-        "depends_on": [
-          "Stage 2 · Primary Delivery"
-        ],
+        "depends_on": [],
         "handoff_routes": [
-          "route-validation"
+          "route-link-validation"
         ]
       },
       {
-        "assignment_id": "assignment-support-docs",
-        "stage_name": "Support Fill-in · Documentation Link Body",
+        "assignment_id": "assignment-link-documentation",
+        "stage_name": "Link Body Delivery · Documentation",
         "agent_id": "exmachina-link-documentation",
         "source_body": "Documentation Link Body",
-        "role": "support",
-        "goal": "Fill in documentation structure, example writing, and proofreading release.",
+        "role": "owner",
+        "goal": "End-to-end delivery emphasizing inventory, structure, examples, and publication.",
         "deliverables": [
           "Documentation information architecture",
-          "Instructions and example draft",
-          "Update list"
+          "Guides and examples draft",
+          "Update checklist"
         ],
         "exit_checks": [
-          "Documentation deliverables returned to the controller and primary link body."
+          "Documentation Link Body delivery is structured and complete."
         ],
-        "depends_on": [
-          "Stage 2 · Primary Delivery"
-        ],
+        "depends_on": [],
         "handoff_routes": [
-          "route-docs"
+          "route-link-documentation"
         ]
       },
       {
-        "assignment_id": "assignment-support-security",
-        "stage_name": "Support Fill-in · Security Link Body",
+        "assignment_id": "assignment-link-security",
+        "stage_name": "Link Body Delivery · Security",
         "agent_id": "exmachina-link-security",
         "source_body": "Security Link Body",
-        "role": "support",
-        "goal": "Fill in threat modeling, permission audits, and hardening guidance.",
+        "role": "owner",
+        "goal": "End-to-end delivery emphasizing threat modeling, permissions audits, and hardening.",
         "deliverables": [
           "Threat surface and risk list",
-          "Permission or sensitive information audit conclusions",
-          "Hardening and compliance recommendations"
+          "Permissions/sensitive data audit",
+          "Hardening and compliance guidance"
         ],
         "exit_checks": [
-          "Security deliverables returned to the controller and primary link body."
+          "Security Link Body delivery is structured and complete."
         ],
-        "depends_on": [
-          "Stage 2 · Primary Delivery"
-        ],
+        "depends_on": [],
         "handoff_routes": [
-          "route-security"
+          "route-link-security"
         ]
       }
     ],
@@ -1506,7 +1302,7 @@
           "exmachina-link-documentation",
           "exmachina-link-security"
         ],
-        "purpose": "Controller dispatches stage tasks and fill-in requests."
+        "purpose": "Controller dispatches link body delivery and parallel requests."
       },
       {
         "route_id": "route-status",
@@ -1521,76 +1317,55 @@
         "purpose": "Status return and delivery sync."
       },
       {
-        "route_id": "route-stage-01",
+        "route_id": "route-link-knowledge",
         "from": "exmachina-link-knowledge",
         "to": [
           "exmachina-main"
         ],
-        "purpose": "Stage 1 delivery return flow."
+        "purpose": "Knowledge Link Body delivery return."
       },
       {
-        "route_id": "route-stage-02",
-        "from": "exmachina-link-knowledge",
-        "to": [
-          "exmachina-main"
-        ],
-        "purpose": "Stage 2 delivery return flow."
-      },
-      {
-        "route_id": "route-stage-03",
+        "route_id": "route-link-rationality",
         "from": "exmachina-link-rationality",
         "to": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
-        "purpose": "Stage 3 cross-validation return flow."
+        "purpose": "Rationality Link Body delivery return."
       },
       {
-        "route_id": "route-stage-04",
-        "from": "exmachina-link-knowledge",
+        "route_id": "route-link-validation",
+        "from": "exmachina-link-validation",
         "to": [
           "exmachina-main"
         ],
-        "purpose": "Stage 4 integration handoff return flow."
+        "purpose": "Validation Link Body delivery return."
       },
       {
-        "route_id": "route-validation",
-        "from": "exmachina-link-validation",
-        "to": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
-        ],
-        "purpose": "Validation Link Body delivery return flow."
-      },
-      {
-        "route_id": "route-docs",
+        "route_id": "route-link-documentation",
         "from": "exmachina-link-documentation",
         "to": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
-        "purpose": "Documentation Link Body delivery return flow."
+        "purpose": "Documentation Link Body delivery return."
       },
       {
-        "route_id": "route-security",
+        "route_id": "route-link-security",
         "from": "exmachina-link-security",
         "to": [
-          "exmachina-main",
-          "exmachina-link-knowledge"
+          "exmachina-main"
         ],
-        "purpose": "Security Link Body delivery return flow."
+        "purpose": "Security Link Body delivery return."
       }
     ],
     "coordination_rules": [
       "Subagents (sessions_spawn) must be enabled.",
-      "All support link body outputs must flow back to the controller and the primary link body.",
-      "Multi-agent reporting must use the [xx-body]:xxx format."
+      "Default to a single link body for end-to-end delivery; if multiple are activated, describe peer-level division of labor.",
+      "Multi-agent reporting must use [xx-body]:xxx."
     ],
     "activation_steps": [
       "The controller reads runtime/shared/mission-context.json, runtime/task-board.json, and runtime/topology.json.",
-      "The controller dispatches Stage 1 and Stage 2 tasks to the primary link body.",
-      "After Stage 2, dispatch cross-validation and support fill-in tasks.",
-      "The controller aggregates Stage 3 and support outputs to drive Stage 4 integration handoff."
+      "The controller selects the active link body and assigns delivery goals; if multiple are activated, describe peer division of labor.",
+      "The controller aggregates link body outputs into the final structured delivery."
     ]
   },
   "skill_bindings": {
@@ -1649,63 +1424,112 @@
     "name": "Primary Conductor",
     "path": "agents/00_primary-conductor.md"
   },
-  "primary_link_body": {
-    "name": "Knowledge Link Body",
-    "path": "agents/10_knowledge-link-body.md",
-    "rationality_obligations": [
-      "All consolidated items must distinguish confirmed facts, temporary hypotheses, and pending verification questions.",
-      "All decision records must state selection reasons and rejection reasons.",
-      "All reusable entry points must bind to paths, commands, or concrete structures."
+  "repo": null,
+  "workflow": [
+    "The Primary Conductor loads the Absolute Rationality Protocol and clarifies knowns, unknowns, assumptions, and acceptance criteria.",
+    "The controller selects a single link body as the executor for this task; if parallel execution is required, specify peer-level division of labor.",
+    "The selected link body conductor schedules internal members and loads its subagents.",
+    "Member subagents parallelize fact extraction, solution construction, risk analysis, evidence validation, and stage reporting.",
+    "The link body conductor aggregates member results into a complete delivery.",
+    "If needed, additional link bodies can be enabled in parallel for independent deliverables (validation, documentation, security, etc.).",
+    "Adjacent stages pass inputs and outputs via handoff contracts to avoid context loss.",
+    "When resources are contested, follow resource arbitration: risk gates first, then the active link body’s core delivery.",
+    "The Primary Conductor outputs final conclusions, evidence summary, risk list, confidence, and next actions."
+  ],
+  "paths": {
+    "protocols_dir": "protocols",
+    "conductor_dir": "agents",
+    "link_bodies_dir": "agents",
+    "link_body_conductors_dir": "agents",
+    "install_dir": "install",
+    "install_intake": "install/INTAKE.en.md",
+    "install_intake_template": "install/intake.template.en.json",
+    "runtime_dir": "runtime",
+    "skills_dir": "../skills",
+    "workflow": "workflows/mission-loop.md",
+    "quickstart": "QUICKSTART.md",
+    "agents_dir": "agents"
+  },
+  "openclaw_directive": {
+    "entry_agent_id": "exmachina-main",
+    "execution_style": "subagent-dispatch",
+    "link_bodies": [
+      "Knowledge Link Body",
+      "Rationality Link Body",
+      "Validation Link Body",
+      "Documentation Link Body",
+      "Security Link Body"
     ],
-    "entry_conditions": [
-      "The task boundary clearly requires this scope.",
-      "Sufficient input exists for this link body."
+    "selection_rule": "Default to a single link body for end-to-end delivery; if multiple are enabled, describe peer-level division of labor.",
+    "quick_start": [
+      "Read manifest.json to confirm mode, link body roster, and selection rules.",
+      "Read the four protocols under protocols/, then agents/00_primary-conductor.md.",
+      "Read runtime/topology.json and runtime/task-board.json and advance via the task board.",
+      "The controller selects the active link body and consolidates returns."
     ],
-    "deliverable_contracts": [
-      "Delivery must cover: terminology and concept index",
-      "Delivery must cover: key decisions and rejection rationale",
-      "Delivery must cover: open questions and maintenance list"
-    ],
-    "recommended_skill": {
-      "skill_id": "knowledge-link-body",
-      "skill_path": "../skills/knowledge-link-body/SKILL.md",
-      "purpose": "When the task primarily hits the Knowledge Link Body scope, provide the matching process, boundaries, and handoff templates."
-    },
-    "link_conductor": {
-      "name": "Conductor",
-      "path": "agents/10_knowledge-link-body.md"
-    },
-    "member_agents": [
-      "Terminology Body",
-      "Decision Body",
-      "Index Body",
-      "Question Body",
-      "Reporting Body"
-    ],
-    "member_agent_files": [
-      {
-        "name": "Terminology Body",
-        "path": "agents/40_terminology-body.md"
-      },
-      {
-        "name": "Decision Body",
-        "path": "agents/41_decision-body.md"
-      },
-      {
-        "name": "Index Body",
-        "path": "agents/42_index-body.md"
-      },
-      {
-        "name": "Question Body",
-        "path": "agents/43_question-body.md"
-      },
-      {
-        "name": "Reporting Body",
-        "path": "agents/44_reporting-body.md"
-      }
+    "do_not_assume": [
+      "Do not start if subagents (sessions_spawn) are not enabled.",
+      "Do not skip the task board and return routes."
     ]
   },
-  "support_link_bodies": [
+  "selection_rule": "Default to a single link body for end-to-end delivery; if multiple are enabled, describe peer-level division of labor.",
+  "link_bodies": [
+    {
+      "name": "Knowledge Link Body",
+      "path": "agents/10_knowledge-link-body.md",
+      "rationality_obligations": [
+        "All consolidated items must distinguish confirmed facts, temporary hypotheses, and pending verification questions.",
+        "All decision records must state selection reasons and rejection reasons.",
+        "All reusable entry points must bind to paths, commands, or concrete structures."
+      ],
+      "entry_conditions": [
+        "The task boundary clearly requires this scope.",
+        "Sufficient input exists for this link body."
+      ],
+      "deliverable_contracts": [
+        "Delivery must cover: terminology and concept index",
+        "Delivery must cover: key decisions and rejection rationale",
+        "Delivery must cover: open questions and maintenance list"
+      ],
+      "recommended_skill": {
+        "skill_id": "knowledge-link-body",
+        "skill_path": "../skills/knowledge-link-body/SKILL.md",
+        "purpose": "When the task primarily hits the Knowledge Link Body scope, provide the matching process, boundaries, and handoff templates."
+      },
+      "link_conductor": {
+        "name": "Conductor",
+        "path": "agents/10_knowledge-link-body.md"
+      },
+      "member_agents": [
+        "Terminology Body",
+        "Decision Body",
+        "Index Body",
+        "Question Body",
+        "Reporting Body"
+      ],
+      "member_agent_files": [
+        {
+          "name": "Terminology Body",
+          "path": "agents/40_terminology-body.md"
+        },
+        {
+          "name": "Decision Body",
+          "path": "agents/41_decision-body.md"
+        },
+        {
+          "name": "Index Body",
+          "path": "agents/42_index-body.md"
+        },
+        {
+          "name": "Question Body",
+          "path": "agents/43_question-body.md"
+        },
+        {
+          "name": "Reporting Body",
+          "path": "agents/44_reporting-body.md"
+        }
+      ]
+    },
     {
       "name": "Rationality Link Body",
       "path": "agents/11_rationality-link-body.md",
@@ -1930,56 +1754,5 @@
         }
       ]
     }
-  ],
-  "repo": null,
-  "workflow": [
-    "The Primary Conductor loads the Absolute Rationality Protocol and clarifies knowns, unknowns, assumptions, and acceptance criteria.",
-    "Dispatch the primary task to the primary link body: Knowledge Link Body.",
-    "In lite mode, do not create subagent agents in OpenClaw; subagent responsibilities are executed inline by the link body to produce the primary delivery.",
-    "In full mode, the Knowledge Link Body conductor takes internal orchestration and loads its member subagents.",
-    "In full mode, member subagents work in parallel to produce fact extraction, solution construction, risk analysis, validation evidence, and stage reports.",
-    "In full mode, the Knowledge Link Body conductor consolidates member outputs into the primary delivery.",
-    "Support link bodies (Rationality, Validation, Documentation, Security) run counterevidence, validation, integration, or fill-in tasks in sequence.",
-    "Rationality Link Body performs evidence grading, counterevidence search, conflict arbitration, and confidence calibration for all key conclusions.",
-    "Knowledge Link Body consolidates terminology, key decisions, reusable entry points, and open questions into a long-term knowledge handoff.",
-    "Adjacent stages pass inputs and outputs by the handoff contracts to avoid context loss or orphaned responsibility.",
-    "When link bodies or stages contend for resources, the arbitration layer handles risk gates first, then protects the primary delivery.",
-    "The Primary Conductor outputs the final conclusions, evidence summary, risk list, confidence level, and next-round actions."
-  ],
-  "paths": {
-    "protocols_dir": "protocols",
-    "conductor_dir": "agents",
-    "link_bodies_dir": "agents",
-    "link_body_conductors_dir": "agents",
-    "install_dir": "install",
-    "install_intake": "install/INTAKE.en.md",
-    "install_intake_template": "install/intake.template.en.json",
-    "runtime_dir": "runtime",
-    "skills_dir": "../skills",
-    "workflow": "workflows/mission-loop.md",
-    "quickstart": "QUICKSTART.md",
-    "agents_dir": "agents"
-  },
-  "openclaw_directive": {
-    "entry_agent_id": "exmachina-main",
-    "execution_style": "multi-agent-routing",
-    "primary_link_body": "Knowledge Link Body",
-    "support_link_bodies": [
-      "Rationality Link Body",
-      "Validation Link Body",
-      "Documentation Link Body",
-      "Security Link Body"
-    ],
-    "quick_start": [
-      "Read manifest.json to confirm mode, primary link body, and support chain.",
-      "Read the protocols under protocols/ and then agents/00_primary-conductor.md.",
-      "Read runtime/topology.json and runtime/task-board.json, then advance via the multi-agent task board.",
-      "The Primary Conductor dispatches stage tasks and consolidates returned outputs."
-    ],
-    "do_not_assume": [
-      "Do not start without subagents (sessions_spawn) enabled.",
-      "Do not skip the task board or routing handoffs."
-    ]
-  }
+  ]
 }
-

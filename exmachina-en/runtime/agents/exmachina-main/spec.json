@@ -5,7 +5,7 @@
   "source": "Primary Conductor",
   "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
   "responsibilities": [
-    "Dispatch stage tasks to the primary and support link bodies.",
+    "Select the active link body and describe peer-level division of labor when needed.",
     "Aggregate multi-agent outputs into the final structured delivery.",
     "Resolve cross-agent conflicts and handle risk escalation."
   ],
@@ -25,15 +25,15 @@
   "coordination_rules": [
     "Subagents (sessions_spawn) must be enabled.",
     "Multi-agent reporting must use the [xx-body]:xxx format.",
-    "Support link body outputs must flow back to the controller and the primary link body."
+    "Link body outputs must flow back to the controller."
   ],
   "operating_playbook": [
-    "Read mission-context and task-board, then dispatch stage tasks.",
-    "Continuously sync support-chain returns and drive Stage 4 integration handoff."
+    "Read mission-context and task-board, then select the active link body and assign delivery goals.",
+    "When parallel link bodies are enabled, sync outputs and consolidate the final delivery."
   ],
   "escalation_triggers": [
     "Stop import if the host does not support subagents (sessions_spawn).",
-    "Trigger arbitration when primary-chain and support-chain outputs conflict."
+    "Trigger arbitration when link body outputs conflict."
   ],
   "recommended_skill": {
     "skill_id": "knowledge-link-body",

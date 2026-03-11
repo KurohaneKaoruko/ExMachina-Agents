@@ -5,41 +5,21 @@
     "full"
   ],
   "mode_notes": {
-    "lite": "Do not create subagent agents in OpenClaw; subagent responsibilities are executed inline by the link body.",
-    "full": "Create all subagent agents in OpenClaw; the task board remains link-body level."
+    "lite": "No subagent agents are created in OpenClaw; subagent responsibilities are executed inline by the link body.",
+    "full": "Create all subagent agents in OpenClaw; the task board remains link-body oriented."
   },
-  "summary": "Multi-agent task board for the controller to schedule primary and support link bodies.",
+  "summary": "Multi-agent task board for the controller to schedule peer link bodies.",
   "ordered_execution_steps": [
     {
       "step": "phase-01",
-      "summary": "Task clarification and primary-chain kickoff",
+      "summary": "Select active link body and clarify scope",
       "assignments": [
         "assignment-controller",
-        "assignment-stage-01"
-      ]
-    },
-    {
-      "step": "phase-02",
-      "summary": "Primary-chain delivery",
-      "assignments": [
-        "assignment-stage-02"
-      ]
-    },
-    {
-      "step": "phase-03",
-      "summary": "Cross-validation and support fill-in",
-      "assignments": [
-        "assignment-stage-03",
-        "assignment-support-validation",
-        "assignment-support-docs",
-        "assignment-support-security"
-      ]
-    },
-    {
-      "step": "phase-04",
-      "summary": "Integration handoff",
-      "assignments": [
-        "assignment-stage-04"
+        "assignment-link-knowledge",
+        "assignment-link-rationality",
+        "assignment-link-validation",
+        "assignment-link-documentation",
+        "assignment-link-security"
       ]
     }
   ],
@@ -50,122 +30,83 @@
       "agent_id": "exmachina-main",
       "source_body": "Primary Conductor",
       "role": "controller",
-      "goal": "Coordinate the primary chain, support chain, and final consolidation.",
+      "goal": "Select the active link body, coordinate peer-level division of labor, and finalize delivery.",
       "deliverables": [
-        "Task boundary and acceptance criteria",
-        "Multi-agent task board",
+        "Task boundaries and acceptance criteria",
+        "Link-body selection and division-of-labor notes",
         "Final structured delivery"
       ],
       "depends_on": []
     },
     {
-      "assignment_id": "assignment-stage-01",
-      "stage_name": "Stage 1 · Task Clarification",
+      "assignment_id": "assignment-link-knowledge",
+      "stage_name": "Link Body Delivery · Knowledge",
       "agent_id": "exmachina-link-knowledge",
       "source_body": "Knowledge Link Body",
       "role": "owner",
-      "goal": "Provide fill-in inputs for terminology alignment, decision consolidation, index organization, and question logging.",
+      "goal": "End-to-end delivery with emphasis on terminology alignment, decision capture, and index structure.",
       "deliverables": [
-        "Terminology alignment and index skeleton",
-        "Risk and boundary reminders"
+        "Complete delivery with evidence summary",
+        "Terminology and index skeleton",
+        "Risks and boundaries"
       ],
       "depends_on": []
     },
     {
-      "assignment_id": "assignment-stage-02",
-      "stage_name": "Stage 2 · Primary Delivery",
-      "agent_id": "exmachina-link-knowledge",
-      "source_body": "Knowledge Link Body",
-      "role": "owner",
-      "goal": "Produce the main deliverable and integrate support-chain inputs.",
-      "deliverables": [
-        "Primary delivery summary",
-        "Risks and dependencies"
-      ],
-      "depends_on": [
-        "Stage 1 · Task Clarification"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-03",
-      "stage_name": "Stage 3 · Cross-Validation",
+      "assignment_id": "assignment-link-rationality",
+      "stage_name": "Link Body Delivery · Rationality",
       "agent_id": "exmachina-link-rationality",
       "source_body": "Rationality Link Body",
       "role": "owner",
-      "goal": "Evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
+      "goal": "End-to-end delivery with evidence grading, counterevidence, arbitration, and confidence calibration.",
       "deliverables": [
         "Evidence grading matrix",
-        "Counterevidence and conflict arbitration report",
-        "Confidence calibration conclusion"
+        "Counterevidence and arbitration report",
+        "Confidence calibration"
       ],
-      "depends_on": [
-        "Stage 2 · Primary Delivery"
-      ]
+      "depends_on": []
     },
     {
-      "assignment_id": "assignment-stage-04",
-      "stage_name": "Stage 4 · Integration Handoff",
-      "agent_id": "exmachina-link-knowledge",
-      "source_body": "Knowledge Link Body",
-      "role": "owner",
-      "goal": "Consolidate terminology, decisions, index, and open questions.",
-      "deliverables": [
-        "Terminology and concept index",
-        "Key decisions and rejection rationale",
-        "Open questions and maintenance list"
-      ],
-      "depends_on": [
-        "Stage 3 · Cross-Validation"
-      ]
-    },
-    {
-      "assignment_id": "assignment-support-validation",
-      "stage_name": "Support Fill-in · Validation Link Body",
+      "assignment_id": "assignment-link-validation",
+      "stage_name": "Link Body Delivery · Validation",
       "agent_id": "exmachina-link-validation",
       "source_body": "Validation Link Body",
-      "role": "support",
-      "goal": "Fill in validation, regression, and evidence archiving.",
+      "role": "owner",
+      "goal": "End-to-end delivery with reproduction, assertions, evidence logging, and regression.",
       "deliverables": [
         "Validation matrix",
         "Regression results",
         "Issue evidence list"
       ],
-      "depends_on": [
-        "Stage 2 · Primary Delivery"
-      ]
+      "depends_on": []
     },
     {
-      "assignment_id": "assignment-support-docs",
-      "stage_name": "Support Fill-in · Documentation Link Body",
+      "assignment_id": "assignment-link-documentation",
+      "stage_name": "Link Body Delivery · Documentation",
       "agent_id": "exmachina-link-documentation",
       "source_body": "Documentation Link Body",
-      "role": "support",
-      "goal": "Fill in documentation structure, example writing, and proofreading release.",
+      "role": "owner",
+      "goal": "End-to-end delivery with inventory, structure, examples, and publication.",
       "deliverables": [
         "Documentation information architecture",
-        "Instructions and example draft",
-        "Update list"
+        "Guides and examples draft",
+        "Update checklist"
       ],
-      "depends_on": [
-        "Stage 2 · Primary Delivery"
-      ]
+      "depends_on": []
     },
     {
-      "assignment_id": "assignment-support-security",
-      "stage_name": "Support Fill-in · Security Link Body",
+      "assignment_id": "assignment-link-security",
+      "stage_name": "Link Body Delivery · Security",
       "agent_id": "exmachina-link-security",
       "source_body": "Security Link Body",
-      "role": "support",
-      "goal": "Fill in threat modeling, permission audits, and hardening guidance.",
+      "role": "owner",
+      "goal": "End-to-end delivery with threat modeling, permissions audits, and hardening.",
       "deliverables": [
         "Threat surface and risk list",
-        "Permission or sensitive information audit conclusions",
-        "Hardening and compliance recommendations"
+        "Permissions/sensitive data audit",
+        "Hardening and compliance guidance"
       ],
-      "depends_on": [
-        "Stage 2 · Primary Delivery"
-      ]
+      "depends_on": []
     }
   ]
 }
-

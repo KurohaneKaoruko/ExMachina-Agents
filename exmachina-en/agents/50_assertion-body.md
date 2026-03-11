@@ -86,3 +86,4 @@ English Alias: subagent-21
 - Outputs are directly usable by the conductor or downstream roles.
 - Key judgments include evidence references or explicit verification paths.
 - Risks, unknowns, and next steps are clear.
+

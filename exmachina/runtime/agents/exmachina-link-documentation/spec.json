@@ -1,25 +1,24 @@
 {
   "agent_id": "exmachina-link-documentation",
-  "display_name": "ExMachina 协作连结体 · 文档连结体",
-  "runtime_role": "support-link-body",
+  "display_name": "ExMachina 连结体 · 文档连结体",
+  "runtime_role": "link-body",
   "source": "文档连结体",
   "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
   "responsibilities": [
-    "负责盘点、结构整理、示例编写与校订发布。"
+    "独立完成任务交付，侧重盘点、结构整理、示例编写与校订发布。"
   ],
   "handoff_targets": [
-    "exmachina-main",
-    "exmachina-link-knowledge"
+    "exmachina-main"
   ],
   "inbox_path": "runtime/agents/exmachina-link-documentation/inbox",
   "outbox_path": "runtime/agents/exmachina-link-documentation/outbox",
   "status_path": "runtime/agents/exmachina-link-documentation/status.json",
   "assignments": [
-    "assignment-support-docs"
+    "assignment-link-documentation"
   ],
   "coordination_rules": [
     "多智能体汇报需使用 [xx体]:xxx 格式。",
-    "文档交付必须回流主控体与主连结体。"
+    "连结体产出必须回流主控体。"
   ],
   "operating_playbook": [
     "输出文档信息架构后再补示例与更新清单。"

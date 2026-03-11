@@ -1,16 +1,18 @@
 {
   "mission_title": "Consolidate knowledge handoff, terminology index, resource arbitration rules, and README examples to form an OpenClaw collaboration layer.",
   "task": "Consolidate knowledge handoff, terminology index, resource arbitration rules, and README examples to form an OpenClaw collaboration layer.",
-  "primary_link_body": "Knowledge Link Body",
-  "support_link_bodies": [
+  "link_bodies": [
+    "Knowledge Link Body",
     "Rationality Link Body",
     "Validation Link Body",
     "Documentation Link Body",
     "Security Link Body"
   ],
+  "selection_rule": "Default to a single link body for end-to-end delivery; if multiple are enabled, describe peer-level division of labor.",
   "acceptance_criteria": [
     "Global execution must follow the Absolute Rationality Protocol; all conclusions must distinguish facts, inferences, hypotheses, and decisions.",
-    "The Knowledge Link Body owns delivery and must output actionable deliverables.",
+    "Default to one link body for end-to-end delivery; if multiple are enabled, describe peer-level division of labor and boundaries.",
+    "Each link body can complete a full task independently via its internal conductor and subagents.",
     "Each link body must explicitly include one conductor and multiple subagents.",
     "Each conductor must handle member scheduling, conflict resolution, evidence consolidation, and stage aggregation.",
     "Lite mode does not create subagent agents in OpenClaw; subagent responsibilities are executed inline by the link body.",
@@ -21,7 +23,6 @@
     "All irreversible actions must include risk notes, rollback paths, or alternatives.",
     "Final output must satisfy the output contract and include evidence, judgments, risks, confidence, and next steps.",
     "Final output must include a knowledge handoff list with reusable artifacts, key decisions, open questions, and follow-up maintenance actions.",
-    "Support link bodies include Rationality, Validation, Documentation, and Security, providing cross-fill support.",
     "Rationality Link Body must output counterevidence, evidence grading, conflict arbitration, and confidence calibration.",
     "Knowledge Link Body must output terminology, decisions, reusable paths, and unresolved questions.",
     "Security work must not be deprioritized below core delivery and evidence checks during contention.",
@@ -30,20 +31,18 @@
   ],
   "workflow": [
     "The Primary Conductor loads the Absolute Rationality Protocol and clarifies knowns, unknowns, assumptions, and acceptance criteria.",
-    "Dispatch the main task to the Knowledge Link Body.",
-    "The Knowledge Link Body conductor takes internal scheduling and loads member subagents.",
+    "The controller selects a single link body as the executor for this task; if parallel execution is required, specify peer-level division of labor.",
+    "The selected link body conductor schedules internal members and loads its subagents.",
     "Member subagents parallelize fact extraction, solution construction, risk analysis, evidence validation, and stage reporting.",
-    "The Knowledge Link Body conductor aggregates member results into the primary delivery.",
-    "Support link bodies (Rationality, Validation, Documentation, Security) execute counterevidence, validation, integration, or fill-in tasks.",
-    "Rationality Link Body performs evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
-    "Knowledge Link Body consolidates terminology, key decisions, reuse entry points, and open questions for a durable handoff.",
+    "The link body conductor aggregates member results into a complete delivery.",
+    "If needed, additional link bodies can be enabled in parallel for independent deliverables (validation, documentation, security, etc.).",
     "Adjacent stages pass inputs and outputs via handoff contracts to avoid context loss.",
-    "When resources are contested, follow resource arbitration: risk gates first, then primary delivery, then support work.",
+    "When resources are contested, follow resource arbitration: risk gates first, then the active link body’s core delivery.",
     "The Primary Conductor outputs final conclusions, evidence summary, risk list, confidence, and next actions."
   ],
   "activation_steps": [
     "exmachina-main reads runtime/shared/mission-context.json and runtime/task-board.json.",
-    "exmachina-main loads the primary link body (Knowledge Link Body) and references support-chain rules as needed.",
+    "The controller selects the active link body and assigns delivery goals; if multiple are enabled, describe peer-level division of labor.",
     "All stage outputs are advanced within a single session via the task board; do not rely on cross-agent handoff."
   ]
 }

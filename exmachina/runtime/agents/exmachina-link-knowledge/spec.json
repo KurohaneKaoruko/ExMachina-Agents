@@ -1,12 +1,12 @@
 {
   "agent_id": "exmachina-link-knowledge",
-  "display_name": "ExMachina 主连结体 · 知识连结体",
-  "runtime_role": "primary-link-body",
+  "display_name": "ExMachina 连结体 · 知识连结体",
+  "runtime_role": "link-body",
   "source": "知识连结体",
   "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
   "responsibilities": [
-    "负责阶段 1、2、4 的主链路交付。",
-    "吸收协作连结体输出，生成主链路结论。"
+    "独立完成任务交付，侧重术语统一、决策沉淀与索引组织。",
+    "必要时调度本连结体内子个体并汇总交付。"
   ],
   "handoff_targets": [
     "exmachina-main"
@@ -15,20 +15,18 @@
   "outbox_path": "runtime/agents/exmachina-link-knowledge/outbox",
   "status_path": "runtime/agents/exmachina-link-knowledge/status.json",
   "assignments": [
-    "assignment-stage-01",
-    "assignment-stage-02",
-    "assignment-stage-04"
+    "assignment-link-knowledge"
   ],
   "coordination_rules": [
     "多智能体汇报需使用 [xx体]:xxx 格式。",
     "阶段产出必须回流主控体。"
   ],
   "operating_playbook": [
-    "先输出术语索引与决策沉淀，再推进主链路交付。",
-    "吸收理性与校验输出后再完成集成交接。"
+    "先输出术语索引与决策沉淀，再整合完整交付。",
+    "需要并行输出时，声明与其他连结体的平级分工。"
   ],
   "escalation_triggers": [
-    "主链路结论与协作链输出冲突时请求裁决。"
+    "连结体交付与其他连结体输出冲突时请求裁决。"
   ],
   "recommended_skill": {
     "skill_id": "knowledge-link-body",

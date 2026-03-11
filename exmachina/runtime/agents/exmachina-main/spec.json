@@ -5,7 +5,7 @@
   "source": "全连结指挥体",
   "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
   "responsibilities": [
-    "调度主连结体与协作连结体执行阶段任务。",
+    "选择当前执行连结体，必要时明确平级分工。",
     "汇总多智能体产出，生成最终结构化交付。",
     "负责跨 agent 冲突裁决与风险升级。"
   ],
@@ -25,15 +25,15 @@
   "coordination_rules": [
     "必须启用子代理（subagents / sessions_spawn）。",
     "多智能体汇报需使用 [xx体]:xxx 格式。",
-    "协作连结体产出必须回流主控体与主连结体。"
+    "连结体产出必须回流主控体。"
   ],
   "operating_playbook": [
-    "先读取 mission-context 与 task-board，再派发阶段任务。",
-    "持续同步协作链回流结果，并驱动阶段 4 集成交接。"
+    "先读取 mission-context 与 task-board，选择执行连结体并派发交付目标。",
+    "必要时并行启用其他连结体，并汇总其交付结果。"
   ],
   "escalation_triggers": [
     "发现宿主不支持子代理（subagents / sessions_spawn）时停止导入。",
-    "主链与协作链输出冲突时启动裁决流程。"
+    "连结体输出冲突时启动裁决流程。"
   ],
   "recommended_skill": {
     "skill_id": "knowledge-link-body",

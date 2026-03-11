@@ -10,7 +10,7 @@ English summary: Use this skill when the task is primarily about 复现、断言
 ## When to use
 
 - 当任务主要命中 校验连结体 对应工作面时。
-- 当你需要围绕 复现、断言、证据收集与回归验证 组织主链路或协作补位时。
+- 当你需要围绕 复现、断言、证据收集与回归验证 组织独立交付或并行补位时。
 - 当你需要按该连结体的阶段、交接和升级契约稳定推进任务时。
 
 ## Boundaries
@@ -39,3 +39,4 @@ English summary: Use this skill when the task is primarily about 复现、断言
 - 交付物可直接被下游消费。
 - 关键结论有证据、边界和风险说明。
 - 不把补位输入误当成最终全局裁决。
+

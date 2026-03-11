@@ -1,25 +1,24 @@
 {
   "agent_id": "exmachina-link-rationality",
-  "display_name": "ExMachina Support Link Body · Rationality Link Body",
-  "runtime_role": "support-link-body",
+  "display_name": "ExMachina Link Body · Rationality Link Body",
+  "runtime_role": "link-body",
   "source": "Rationality Link Body",
   "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
   "responsibilities": [
-    "Complete evidence grading, counterevidence search, conflict arbitration, and confidence calibration."
+    "End-to-end delivery emphasizing evidence grading, counterevidence search, arbitration, and confidence calibration."
   ],
   "handoff_targets": [
-    "exmachina-main",
-    "exmachina-link-knowledge"
+    "exmachina-main"
   ],
   "inbox_path": "runtime/agents/exmachina-link-rationality/inbox",
   "outbox_path": "runtime/agents/exmachina-link-rationality/outbox",
   "status_path": "runtime/agents/exmachina-link-rationality/status.json",
   "assignments": [
-    "assignment-stage-03"
+    "assignment-link-rationality"
   ],
   "coordination_rules": [
     "Multi-agent reporting must use the [xx-body]:xxx format.",
-    "Cross-validation outputs must flow back to the controller and the primary link body."
+    "Link body outputs must flow back to the controller."
   ],
   "operating_playbook": [
     "Provide the evidence grading matrix and counterevidence arbitration before stating confidence conclusions."

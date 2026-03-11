@@ -24,27 +24,27 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    M[Controller exmachina-main] --> P1[Primary Link Body exmachina-link-knowledge]
-    M --> S1[Support Link Body exmachina-link-rationality]
-    M --> S2[Support Link Body exmachina-link-validation]
-    M --> S3[Support Link Body exmachina-link-documentation]
-    M --> S4[Support Link Body exmachina-link-security]
+    M[Controller exmachina-main] --> L1[Link Body exmachina-link-knowledge]
+    M --> L2[Link Body exmachina-link-rationality]
+    M --> L3[Link Body exmachina-link-validation]
+    M --> L4[Link Body exmachina-link-documentation]
+    M --> L5[Link Body exmachina-link-security]
 
-    P1 --> M
-    S1 --> M
-    S2 --> M
-    S3 --> M
-    S4 --> M
+    L1 --> M
+    L2 --> M
+    L3 --> M
+    L4 --> M
+    L5 --> M
 
     M --> TASK[task-board.json]
-    TASK --> P1
-    TASK --> S1
-    TASK --> S2
-    TASK --> S3
-    TASK --> S4
+    TASK --> L1
+    TASK --> L2
+    TASK --> L3
+    TASK --> L4
+    TASK --> L5
 ```
 
-Note: lite mode uses the same link-body topology but does not create subagent agents in OpenClaw. Full mode additionally creates subagent agents.
+Note: lite mode uses the same link-body topology but does not create subagent agents in OpenClaw. Full mode additionally creates subagent agents. The controller defaults to one active link body and may enable peers in parallel with clear division of labor.
 
 ## Maintenance Principles
 

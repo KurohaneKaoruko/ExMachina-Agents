@@ -11,7 +11,7 @@ Member Count: 6
 
 ## Use Cases
 - Enable when the task requires Implementation Link Body scope.
-- Enable when Implementation Link Body needs to act as primary chain or support chain fill-in.
+- Enable when Implementation Link Body needs to deliver end-to-end or provide parallel fill-ins.
 
 ## Entry Conditions
 - The task boundary clearly requires this scope.
@@ -31,7 +31,7 @@ Member Count: 6
 
 ## Collaboration Capabilities
 - Provide fill-in inputs for other link bodies within this scope.
-- Provide structured handoffs when the primary chain needs it.
+- Provide structured handoffs when the active link body needs it.
 
 ## Collaboration Rules
 - Reuse upstream stage outputs; do not recreate context.
@@ -114,3 +114,4 @@ English Alias: implementation-link-body-conductor
 
 ### Checklist
 - Deliverables are traceable.
+

@@ -16,9 +16,9 @@
 
 ## 运行入口
 - 读取 `exmachina/BOOTSTRAP.md` 与 `exmachina/QUICKSTART.md`。
-- 读取 `exmachina/manifest.json`，确认当前任务与主/协作链。
+- 读取 `exmachina/manifest.json`，确认当前任务、连结体清单与选择规则。
 - 读取 `exmachina/protocols/` 下的协议，再读 `exmachina/agents/00_全连结指挥体.md`。
-- 当前模式由安装问询决定：`lite` 不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行；`full` 在 OpenClaw 中创建全部子个体 agent。必须启用多 agent 绑定与外部路由。
+- 当前模式由安装问询决定：`lite` 不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行；`full` 在 OpenClaw 中创建全部子个体 agent。必须启用子代理（subagents / sessions_spawn），不要求外部路由。
 
 ## 输出约束（必须遵守）
 - 输出顺序遵循：**事实与证据 → 判断与决策 → 风险与边界 → 下一步**。

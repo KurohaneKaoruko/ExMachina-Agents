@@ -24,27 +24,27 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    M[主控体 exmachina-main] --> P1[主连结体 exmachina-link-knowledge]
-    M --> S1[协作连结体 exmachina-link-rationality]
-    M --> S2[协作连结体 exmachina-link-validation]
-    M --> S3[协作连结体 exmachina-link-documentation]
-    M --> S4[协作连结体 exmachina-link-security]
+    M[主控体 exmachina-main] --> L1[连结体 exmachina-link-knowledge]
+    M --> L2[连结体 exmachina-link-rationality]
+    M --> L3[连结体 exmachina-link-validation]
+    M --> L4[连结体 exmachina-link-documentation]
+    M --> L5[连结体 exmachina-link-security]
 
-    P1 --> M
-    S1 --> M
-    S2 --> M
-    S3 --> M
-    S4 --> M
+    L1 --> M
+    L2 --> M
+    L3 --> M
+    L4 --> M
+    L5 --> M
 
     M --> TASK[task-board.json]
-    TASK --> P1
-    TASK --> S1
-    TASK --> S2
-    TASK --> S3
-    TASK --> S4
+    TASK --> L1
+    TASK --> L2
+    TASK --> L3
+    TASK --> L4
+    TASK --> L5
 ```
 
-说明：lite 模式仍使用相同连结体拓扑，但不在 OpenClaw 中创建子个体 agent；full 模式会额外创建子个体 agent。
+说明：lite 模式仍使用相同连结体拓扑，但不在 OpenClaw 中创建子个体 agent；full 模式会额外创建子个体 agent。主控体默认选择一个连结体独立执行，必要时并行启用多个连结体并明确平级分工。
 
 ## 维护原则
 
