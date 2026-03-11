@@ -54,6 +54,8 @@
 
 如果宿主不支持子代理（subagents / sessions_spawn），请停止安装。
 
+安装脚本会把 `install/INTAKE.md` 中确认的唤醒词写入 `~/.openclaw/settings/voicewake.json`，同时将 OpenClaw 根级 `identity` 与 `ui.assistant` 同步为 ExMachina 的 persona/语气，确保新会话的唤醒与态度都符合设定。
+
 ---
 
 ## 语言版本

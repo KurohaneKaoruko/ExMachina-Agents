@@ -3,7 +3,7 @@
 模式：lite / full（默认 full）
 
 ## 导入规则
-- 必须先完成 `install/INTAKE.md` 的问询。
+- 必须先完成 `install/INTAKE.md` 的问询（新增唤醒词问项，用于更新 OpenClaw 的 `voicewake.json`）。
 - 宿主必须支持子代理（subagents / sessions_spawn）。
 - ExMachina agent 必须继承 OpenClaw 当前默认模型。
 - 将 `exmachina-main` 的 `default` 设为 `true`（全连结指挥体作为默认入口）。
@@ -11,6 +11,7 @@
 - 按模式选择 settings 文件：`lite` 使用 `exmachina/openclaw.settings.lite.json`（不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行）；`full` 使用 `exmachina/openclaw.settings.json`（在 OpenClaw 中创建全部子个体 agent）。
 - 推荐使用 `install/apply-openclaw-settings.js` 合并 settings patch（`install.sh` / `install.ps1` / `install.cmd` 已内置调用）。
 - 使用脚本合并需要 Node.js；无 Node.js 时请手动合并。
+- 安装脚本还会同步 OpenClaw 根级 `identity` 与 `ui.assistant` 以匹配 ExMachina 的 persona / 语气，并把唤醒词写入 `~/.openclaw/settings/voicewake.json`（不存在时自动创建）。
 
 ## 模板变量
 - `{{OPENCLAW_INSTALL_LANGUAGE}}`：安装期与后续默认输出语言。

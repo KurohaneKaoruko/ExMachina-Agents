@@ -29,7 +29,7 @@ Key directories:
 - `openclaw.settings.json`: full settings template (creates all subagent agents in OpenClaw)
 - `install/INTAKE.en.md`: install intake and blocking rules
 - `install/intake.template.en.json`: install intake answer template
-- `install/apply-openclaw-settings.js`: merge OpenClaw config and create ExMachina agents (requires Node.js)
+- `install/apply-openclaw-settings.js`: merge OpenClaw config and create ExMachina agents (requires Node.js), write the intake wake word to `~/.openclaw/settings/voicewake.json`, and sync OpenClaw's root `identity` / `ui.assistant` to this pack's persona and tone.
 - `install/`: settings-first notes and import guide
 - `QUICKSTART.md`: shortest onboarding path
 - `workflows/mission-loop.md`: execution cadence

@@ -52,6 +52,8 @@ The simplest path:
 
 If the host does not support subagents (sessions_spawn), stop the installation.
 
+The installer writes the intake wake word to `~/.openclaw/settings/voicewake.json` and synchronizes OpenClaw's root `identity` and `ui.assistant` to ExMachina's persona and tone so new sessions wake and speak with the configured style.
+
 ---
 
 ## Language Packs

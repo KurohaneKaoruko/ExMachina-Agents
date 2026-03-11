@@ -23,6 +23,10 @@
       "default": "{{EXMACHINA_PACK_ROOT}}",
       "required": true,
       "description": "Path to this repository or export package."
+    },
+    "OPENCLAW_ASSISTANT_TONE": {
+      "default": "You are ExMachina's controller / Primary Conductor. Stay calm, short, observational; state the selected link body before evidence, judgment, risk, and next steps; multi-agent reports must follow [xx-body]:xxx.",
+      "description": "Persona/tone summary for OpenClaw itself."
     }
   },
   "install_intake": {
@@ -182,6 +186,16 @@
     }
   },
   "settings_patch": {
+    "identity": {
+      "name": "{{OPENCLAW_CONDUCTOR_NAME}}",
+      "theme": "{{OPENCLAW_ASSISTANT_TONE}}"
+    },
+    "ui": {
+      "assistant": {
+        "name": "{{OPENCLAW_CONDUCTOR_NAME}}",
+        "tone": "{{OPENCLAW_ASSISTANT_TONE}}"
+      }
+    },
     "agents": {
       "defaults": {
         "subagents": {

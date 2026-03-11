@@ -29,7 +29,7 @@
 - `openclaw.settings.json`：全量模式设置模板（在 OpenClaw 中创建全部子个体 agent）
 - `install/INTAKE.md`：安装前问询清单与阻断规则
 - `install/intake.template.json`：安装问询答案模板
-- `install/apply-openclaw-settings.js`：合并 OpenClaw 配置并创建 ExMachina agents（需要 Node.js）
+- `install/apply-openclaw-settings.js`：合并 OpenClaw 配置并创建 ExMachina agents（需要 Node.js），并将 `install/INTAKE.md` 中的唤醒词写入 `~/.openclaw/settings/voicewake.json`，同时同步 OpenClaw 根级 `identity` / `ui.assistant` 以匹配本包的 persona 与语气。
 - `install/`：settings-first 说明与设置导入指南
 - `QUICKSTART.md`：面向首次接入者的最短上手路径
 - `workflows/mission-loop.md`：执行节奏

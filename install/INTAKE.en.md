@@ -15,14 +15,17 @@ Before importing any OpenClaw configuration, you must ask the user the following
    Default: `Yes`
 6. Install mode: Choose `lite` (do not create subagent agents in OpenClaw, subagent responsibilities are executed inline by the link body) or `full` (create all subagent agents in OpenClaw).
    Default: `full`
+7. Wake word(s): What phrase(s) should wake a new OpenClaw session (comma-separated if multiple)?
+   Default: `ExMachina`
 
 ## Optional
 1. Other configuration: Any channels, tokens, workspace, or style settings to record?
 
 ## Blocking Rules
-- Do not import any settings patch before language, conductor display name, config path, workspace path, host subagent capability, and install mode are confirmed.
-- If the host does not support subagents (sessions_spawn), do not import this template.
-- ExMachina agents must inherit OpenClaw's current default model. Do not override default model, provider, API, or unrelated configuration.
+- Do not import any settings patch before language, conductor display name, config path, workspace path, host subagent capability, install mode, and wake word(s) are confirmed.
+ - If the host does not support subagents (sessions_spawn), do not import this template.
+ - ExMachina agents must inherit OpenClaw's current default model. Do not override default model, provider, API, or unrelated configuration.
+- Confirm whether the wake word(s) should be written to `~/.openclaw/settings/voicewake.json`; the installer will create/overwrite this file.
 
 ## Recording
 - Write answers to `install/intake.template.en.json`.

@@ -5,5 +5,8 @@
   "workspace_root": "{{EXMACHINA_PACK_ROOT}}",
   "host_supports_multi_agent": true,
   "install_mode": "full",
+  "wake_words": [
+    "ExMachina"
+  ],
   "extra_config_notes": ""
 }

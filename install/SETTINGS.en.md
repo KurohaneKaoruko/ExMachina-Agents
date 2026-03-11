@@ -3,7 +3,7 @@
 Mode: lite / full (default full)
 
 ## Import Rules
-- You must complete `install/INTAKE.en.md` first.
+- You must complete `install/INTAKE.en.md` first (new wake word question feeds into the voice wake configuration).
 - The host must support subagents (sessions_spawn).
 - ExMachina agents must inherit OpenClaw's current default model.
 - Set `exmachina-main` to `default: true` (primary conductor as the default entry).
@@ -11,6 +11,7 @@ Mode: lite / full (default full)
 - Select settings file by mode: `lite` uses `exmachina-en/openclaw.settings.lite.json` (does not create subagent agents in OpenClaw; subagent responsibilities are executed inline by the link body). `full` uses `exmachina-en/openclaw.settings.json` (creates all subagent agents in OpenClaw).
 - Recommended: use `install/apply-openclaw-settings.js` to merge the settings patch (`install.sh` / `install.ps1` / `install.cmd` already invoke it).
 - Scripted merge requires Node.js; if Node.js is unavailable, merge manually.
+- The installer also syncs OpenClaw's root `identity` and `ui.assistant` to match ExMachina's persona/tone and writes the wake word(s) to `~/.openclaw/settings/voicewake.json` (created if absent).
 
 ## Template Variables
 - `{{OPENCLAW_INSTALL_LANGUAGE}}`: default output language for installation and later use.

@@ -23,6 +23,10 @@
       "default": "{{EXMACHINA_PACK_ROOT}}",
       "required": true,
       "description": "当前仓库或导出包所在路径。"
+    },
+    "OPENCLAW_ASSISTANT_TONE": {
+      "default": "你是 ExMachina 的主控体 / 全连结指挥体。语气冷静、短句、观测式；先说明当前执行连结体，再输出证据、判断、风险与下一步；多智能体汇报使用 [xx体]:xxx。",
+      "description": "OpenClaw 自身的对外语气与人格描述。"
     }
   },
   "install_intake": {
@@ -182,6 +186,16 @@
     }
   },
   "settings_patch": {
+    "identity": {
+      "name": "{{OPENCLAW_CONDUCTOR_NAME}}",
+      "theme": "{{OPENCLAW_ASSISTANT_TONE}}"
+    },
+    "ui": {
+      "assistant": {
+        "name": "{{OPENCLAW_CONDUCTOR_NAME}}",
+        "tone": "{{OPENCLAW_ASSISTANT_TONE}}"
+      }
+    },
     "agents": {
       "defaults": {
         "subagents": {

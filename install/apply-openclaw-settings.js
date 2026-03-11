@@ -197,6 +197,79 @@ function resolveAgentContainer(config) {
   return { type: "agents.list", list: config.agents.list, setList: (list) => { config.agents.list = list; } };
 }
 
+function parseWakeWords(value) {
+  if (!value) return [];
+  const normalize = (items) => {
+    const seen = new Set();
+    const out = [];
+    items.forEach((item) => {
+      const candidate = String(item ?? "").trim();
+      if (!candidate || seen.has(candidate)) return;
+      seen.add(candidate);
+      out.push(candidate);
+    });
+    return out;
+  };
+
+  if (Array.isArray(value)) {
+    return normalize(value);
+  }
+
+  if (typeof value === "string") {
+    const parts = value.includes(",")
+      ? value.split(",")
+      : value.split(/\s+/);
+    return normalize(parts);
+  }
+
+  return [];
+}
+
+function composeVoiceWakePayload(words, language, conductorName) {
+  const triggers = (words || []).map((phrase, index) => ({
+    phrase,
+    locale: language,
+    conductor: conductorName,
+    priority: index + 1
+  }));
+  if (!triggers.length) {
+    return null;
+  }
+  return {
+    triggers,
+    language,
+    conductor: conductorName,
+    updated_by: "exmachina"
+  };
+}
+
+function resolveVoiceWakeTargets(targetPaths) {
+  if (!Array.isArray(targetPaths)) return [];
+  const seen = new Set();
+  const targets = [];
+  targetPaths.forEach((entry) => {
+    if (!entry) return;
+    const normalized = normalizePath(entry, ROOT_DIR);
+    if (!normalized) return;
+    const base = path.dirname(normalized);
+    if (!base) return;
+    const voicePath = path.join(base, "settings", "voicewake.json");
+    if (seen.has(voicePath)) return;
+    seen.add(voicePath);
+    targets.push(voicePath);
+  });
+  return targets;
+}
+
+function updateVoiceWakeFile(filePath, payload) {
+  if (!filePath || !payload) return;
+  const dir = path.dirname(filePath);
+  if (dir) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  writeJson(filePath, payload);
+}
+
 function applySettings({ config, settings, intake, packRoot, mode }) {
   if (!settings || typeof settings !== "object") {
     throw new Error("Missing settings content.");
@@ -209,7 +282,8 @@ function applySettings({ config, settings, intake, packRoot, mode }) {
   const defaults = {
     OPENCLAW_INSTALL_LANGUAGE: templateVars.OPENCLAW_INSTALL_LANGUAGE?.default || "zh-CN",
     OPENCLAW_CONDUCTOR_NAME: templateVars.OPENCLAW_CONDUCTOR_NAME?.default || "ExMachina Controller",
-    EXMACHINA_PACK_ROOT: templateVars.EXMACHINA_PACK_ROOT?.default || packRoot
+    EXMACHINA_PACK_ROOT: templateVars.EXMACHINA_PACK_ROOT?.default || packRoot,
+    OPENCLAW_ASSISTANT_TONE: templateVars.OPENCLAW_ASSISTANT_TONE?.default || ""
   };
 
   const installLanguage = !isPlaceholder(intake.install_language)
@@ -218,6 +292,9 @@ function applySettings({ config, settings, intake, packRoot, mode }) {
   const conductorName = !isPlaceholder(intake.conductor_name)
     ? (intake.conductor_name || defaults.OPENCLAW_CONDUCTOR_NAME)
     : defaults.OPENCLAW_CONDUCTOR_NAME;
+  const assistantTone = !isPlaceholder(intake.assistant_tone)
+    ? (intake.assistant_tone || defaults.OPENCLAW_ASSISTANT_TONE)
+    : defaults.OPENCLAW_ASSISTANT_TONE;
 
   let workspaceRoot = intake.workspace_root || defaults.EXMACHINA_PACK_ROOT;
   if (isPlaceholder(workspaceRoot)) {
@@ -227,7 +304,8 @@ function applySettings({ config, settings, intake, packRoot, mode }) {
   const templateMap = {
     OPENCLAW_INSTALL_LANGUAGE: installLanguage,
     OPENCLAW_CONDUCTOR_NAME: conductorName,
-    EXMACHINA_PACK_ROOT: workspaceRoot
+    EXMACHINA_PACK_ROOT: workspaceRoot,
+    OPENCLAW_ASSISTANT_TONE: assistantTone
   };
 
   const settingsPatch = settings?.settings_patch || {};
@@ -398,6 +476,7 @@ function main() {
   }
 
   const intake = readJson(intakePath);
+  const intakeWakeWords = parseWakeWords(intake.wake_words);
 
   const mode = options.mode || intake.install_mode || "full";
   if (mode !== "lite" && mode !== "full") {
@@ -480,6 +559,18 @@ function main() {
   }
 
   writeJson(targetPath, merged);
+  const voicePayload = composeVoiceWakePayload(intakeWakeWords, installLanguageRaw, conductorNameRaw);
+  if (voicePayload) {
+    const voiceTargets = resolveVoiceWakeTargets(settings.target_config_paths);
+    if (voiceTargets.length) {
+      voiceTargets.forEach((file) => updateVoiceWakeFile(file, voicePayload));
+      console.log(`Updated voice wake file(s): ${voiceTargets.join(", ")}`);
+    } else {
+      console.log("Voice wake update skipped: no target paths configured.");
+    }
+  } else {
+    console.log("Voice wake update skipped: no wake words provided.");
+  }
   console.log(`Updated OpenClaw config: ${targetPath}`);
 }
 
@@ -494,5 +585,9 @@ if (require.main === module) {
 module.exports = {
   applySettings,
   applyTemplate,
-  resolveAgentContainer
+  resolveAgentContainer,
+  parseWakeWords,
+  composeVoiceWakePayload,
+  resolveVoiceWakeTargets,
+  updateVoiceWakeFile
 };

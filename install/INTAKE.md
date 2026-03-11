@@ -15,14 +15,17 @@
    默认值：`是`
 6. 安装模式：选择 `lite`（不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行）或 `full`（在 OpenClaw 中创建全部子个体 agent）。
    默认值：`full`
+7. 唤醒词：希望 OpenClaw 为新会话设定哪个唤醒词（可逗号分隔多个）？
+   默认值：`ExMachina`
 
 ## 可选补充项
 1. 其它配置：是否还需要记录渠道绑定、token、workspace 或风格配置？
 
 ## 阻断规则
-- 在语言、全连结指挥体显示名、配置路径、workspace 路径、子代理能力与安装模式未确认前，不得导入任何 settings patch。
+- 在语言、全连结指挥体显示名、配置路径、workspace 路径、子代理能力、安装模式与唤醒词未确认前，不得导入任何 settings patch。
 - 如果宿主不支持子代理（subagents / sessions_spawn），则不得导入本模板。
 - ExMachina 创建的 agent 必须继承 OpenClaw 当前默认模型，不得覆写默认模型、provider、API 或其它无关配置。
+- 在自动设置唤醒词之前，请确保确认是否需同步至 `~/.openclaw/settings/voicewake.json`（脚本会自动覆盖此文件）。
 
 ## 记录方式
 - 把答案写入同目录 `intake.template.json`。
