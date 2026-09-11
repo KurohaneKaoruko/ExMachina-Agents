@@ -1,5 +1,5 @@
-import { cleanupLegacyArtifactSurface, buildRootFiles, buildHooks, buildEvals, buildExamplesAndBenchmark, buildMiscSurfaces } from "./build/content";
-import { buildSkills, buildCommands, buildAgents, buildPromptSurfaces } from "./build/prompts";
+import { cleanupLegacyArtifactSurface, buildRootFiles, buildHooks, buildEvals, buildExamplesAndBenchmark, buildMiscSurfaces } from "./dispatch/content";
+import { buildSkills, buildCommands, buildAgents, buildPromptSurfaces } from "./dispatch/prompts";
 import {
   buildClaudePluginSurface,
   buildCodexSurface,
@@ -7,8 +7,8 @@ import {
   buildOpenCodeSurface,
   buildGeminiSurface,
   buildHermesSurface
-} from "./build/platforms";
-import { buildOpenClawSurface } from "./build/openclaw";
+} from "./dispatch/platforms";
+import { buildOpenClawSurface } from "./dispatch/openclaw";
 
 declare const process: {
   exit(code?: number): never;

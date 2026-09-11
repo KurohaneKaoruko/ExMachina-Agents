@@ -20,7 +20,7 @@ ExMachina provides two installation modes under `dist/openclaw/`:
 | Mode | Mechanism | Use case |
 |------|-----------|----------|
 | lite (default) | workspace content install + sub-agent nesting config, adds no agent entries | a single primary agent doubles as the full-link conductor |
-| full | registers `exmachina-main` plus 19 link commanders as native agent entries, each with its own workspace and role prompt | dedicated conductor agent, per-link memory and identity isolation |
+| full | registers `exmachina-main` plus 5 link commanders as native agent entries, each with its own workspace and role prompt | dedicated conductor agent, per-link memory and identity isolation |
 
 The two modes are mutually exclusive; you can upgrade from lite to full later.
 
@@ -87,17 +87,19 @@ Usage: the primary agent receives tasks directly and dispatches sub-agents follo
 
 After installation, `agents.entries` in `~/.openclaw/openclaw.json` gains:
 
-- `exmachina-main`: the full-link conductor, workspace at `<repo>/dist/openclaw/workspaces/exmachina-main`, allowed to dispatch all 19 link commanders
-- `exmachina-link-<slug>` (19): each link commander, workspace at `<repo>/dist/openclaw/workspaces/exmachina-link-<slug>`, each loading its own role AGENTS.md
+- `exmachina-main`: the full-link conductor, workspace at `<repo>/dist/openclaw/workspaces/exmachina-main`, allowed to dispatch all 5 link commanders
+- `exmachina-link-<slug>` (5): each link commander, workspace at `<repo>/dist/openclaw/workspaces/exmachina-link-<slug>`, each loading its own role AGENTS.md
 
 The in-repo `dist/openclaw/workspaces/` layout:
 
 ```text
 dist/openclaw/workspaces/
-├── exmachina-main/AGENTS.md            # full-link conductor + resource map and dispatch protocol
-├── exmachina-link-knowledge/AGENTS.md  # knowledge link commander + appendix
-├── exmachina-link-rationality/AGENTS.md
-└── ... (20 workspaces total)
+├── exmachina-main/AGENTS.md                       # full-link conductor + resource map and dispatch protocol
+├── exmachina-link-research-rationality/AGENTS.md  # research & rationality link commander + appendix
+├── exmachina-link-architecture-implementation/AGENTS.md
+├── exmachina-link-validation-security/AGENTS.md
+├── exmachina-link-integration-operations/AGENTS.md
+└── exmachina-link-documentation-experience/AGENTS.md
 ```
 
 Ways to reach the conductor (pick one):
@@ -117,7 +119,7 @@ node scripts/apply-openclaw-settings.mjs --verify
 Or check manually:
 
 - lite: workspace `AGENTS.md` contains `# >>> ExMachina managed block >>>`; `<workspace>/skills/exmachina-zh/SKILL.md` exists
-- full: `agents.entries` in `~/.openclaw/openclaw.json` contains `exmachina-main` and `exmachina-link-knowledge`
+- full: `agents.entries` in `~/.openclaw/openclaw.json` contains `exmachina-main` and `exmachina-link-research-rationality`
 
 Then send one of these tasks to the primary agent (or `exmachina-main`):
 

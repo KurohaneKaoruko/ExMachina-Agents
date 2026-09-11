@@ -20,7 +20,7 @@ ExMachina 在 `dist/openclaw/` 下提供两种安装模式：
 | 模式 | 机制 | 适用场景 |
 |------|------|----------|
 | lite（默认） | workspace 内容安装 + 子代理嵌套配置，不新增任何 agent entry | 单个主力 agent 兼任全连结指挥体 |
-| full | 注册 `exmachina-main` 与 19 个连结指挥体为原生 agent entries，各自拥有独立 workspace 与角色提示词 | 需要独立主控体、按连结体隔离记忆与身份 |
+| full | 注册 `exmachina-main` 与 5 个连结指挥体为原生 agent entries，各自拥有独立 workspace 与角色提示词 | 需要独立主控体、按连结体隔离记忆与身份 |
 
 两种模式互斥使用，后续可从 lite 升级到 full。
 
@@ -87,17 +87,19 @@ node scripts/apply-openclaw-settings.mjs --target ~/.openclaw/openclaw.json --wo
 
 安装后，`~/.openclaw/openclaw.json` 的 `agents.entries` 中新增：
 
-- `exmachina-main`：全连结指挥体，workspace 指向 `<仓库>/dist/openclaw/workspaces/exmachina-main`，允许派发全部 11 个连结体
-- `exmachina-link-<slug>`（11 个）：各连结体，workspace 指向 `<仓库>/dist/openclaw/workspaces/exmachina-link-<slug>`，各自加载角色 AGENTS.md
+- `exmachina-main`：全连结指挥体，workspace 指向 `<仓库>/dist/openclaw/workspaces/exmachina-main`，允许派发全部 5 个连结体
+- `exmachina-link-<slug>`（5 个）：各连结体，workspace 指向 `<仓库>/dist/openclaw/workspaces/exmachina-link-<slug>`，各自加载角色 AGENTS.md
 
 仓库内 `dist/openclaw/workspaces/` 的目录结构：
 
 ```text
 dist/openclaw/workspaces/
-├── exmachina-main/AGENTS.md            # 全连结指挥体 + 资源地图与派发规约
-├── exmachina-link-research/AGENTS.md   # 研究连结体 + 附录
-├── exmachina-link-rationality/AGENTS.md
-└── ...（共 12 个 workspace）
+├── exmachina-main/AGENTS.md                       # 全连结指挥体 + 资源地图与派发规约
+├── exmachina-link-research-rationality/AGENTS.md  # 研究与理性连结体 + 附录
+├── exmachina-link-architecture-implementation/AGENTS.md
+├── exmachina-link-validation-security/AGENTS.md
+├── exmachina-link-integration-operations/AGENTS.md
+└── exmachina-link-documentation-experience/AGENTS.md
 ```
 
 主控体的使用入口（任选其一）：
@@ -117,7 +119,7 @@ node scripts/apply-openclaw-settings.mjs --verify
 或手动确认：
 
 - lite：workspace `AGENTS.md` 含 `# >>> ExMachina managed block >>>`；`<workspace>/skills/exmachina-zh/SKILL.md` 存在
-- full：`~/.openclaw/openclaw.json` 的 `agents.entries` 含 `exmachina-main` 与 `exmachina-link-knowledge`
+- full：`~/.openclaw/openclaw.json` 的 `agents.entries` 含 `exmachina-main` 与 `exmachina-link-research-rationality`
 
 然后向主 agent（或 `exmachina-main`）发起这些任务之一：
 

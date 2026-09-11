@@ -93,12 +93,12 @@ Do not force every task through the largest workflow. Judge complexity first, th
 
 | Task Signal | Default Primary Chain | Common Supporting Chains |
 |----------|----------|----------|
-| debugging, anomalies, root-cause analysis | research chain | rationality chain, verification chain |
-| implementation, refactoring, repair | implementation chain | architecture chain, verification chain |
-| SDK integration, external-system integration | integration chain | research chain, verification chain |
-| architecture tradeoffs, boundary design | architecture chain | rationality chain, documentation chain |
-| code review, security review | security chain or verification chain | rationality chain, documentation chain |
-| docs, standards, knowledge capture | documentation chain | knowledge chain |
+| debugging, anomalies, root-cause analysis | research & rationality chain | verification & security chain |
+| implementation, refactoring, repair | architecture & implementation chain | verification & security chain |
+| SDK integration, external-system integration | integration & operations chain | research & rationality chain |
+| architecture tradeoffs, boundary design | architecture & implementation chain | research & rationality chain |
+| code review, security review | verification & security chain | documentation & experience chain |
+| docs, standards, knowledge capture | documentation & experience chain | research & rationality chain |
 
 ### Specialist Mount Rules
 
@@ -111,7 +111,7 @@ Routing rules:
 
 - choose one primary chain by default instead of parallelizing immediately
 - pull supporting chains only when the primary chain cannot close alone or parallelism clearly improves quality
-- cross-domain conflicts go to the rationality chain; high-risk cross-domain tasks go back to the global commander
+- cross-domain conflicts go to the research & rationality chain; high-risk cross-domain tasks go back to the global commander
 
 ## Six. Execution Loop
 

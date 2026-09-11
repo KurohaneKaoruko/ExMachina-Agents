@@ -75,7 +75,7 @@ ExMachina is not a single system prompt, and not a package for one client only. 
 ```mermaid
 flowchart TD
     U["User task"] --> C["00 Full-Link Coordinator"]
-    C --> G["01-11 Link teams"]
+    C --> G["01-05 Link teams"]
     G --> A["30-70 Sub-individuals"]
     A --> G
     G --> C
@@ -103,13 +103,15 @@ A `Link team` is a **team concept**, not a single agent: the team leader plus th
 
 Role sources live in `src/prompt/agents/`. The actual composition:
 
-| Layer | Numbering | Count | Examples |
-|-------|-----------|------:|----------|
-| Top coordinator | `00_` | 1 | `00_全连结指挥体` |
-| Link teams | `01_` ~ `11_` | 11 | `02_研究连结体` (research), `04_实作连结体` (implementation), `05_校验连结体` (validation), `10_安全连结体` (security) |
-| Sub-individuals | `30_` ~ `70_` | 21 | `30_上下文体` (context), `45_证据体` (evidence), `65_侦察体` (recon), `69_编码体` (coding), `70_审核体` (review) |
+| Layer | Numbering | Count | Units |
+|-------|-----------|------:|-------|
+| Top coordinator | `00_` | 1 | `00_全连结指挥体` (absorbed the former coordination role: task decomposition, progress and resource management) |
+| Link teams | `01_` ~ `05_` | 5 | `01_研究与理性` (research & rationality), `02_架构与实作` (architecture & implementation), `03_校验与安全` (validation & security), `04_集成与运维` (integration & operations), `05_文档与体验` (documentation & experience) |
+| Sub-individuals | `30_` ~ `70_` | 12 | `30_上下文体` (context), `32_比对假设体` (comparison & hypotheses), `34_接驳配置体` (integration & config), `36_发布运维体` (release & ops), `44_汇报体` (reporting), `45_证据裁决体` (evidence & arbitration), `46_验证体` (verification), `47_文档体` (docs), `48_安全体` (security), `49_架构规划体` (architecture & planning), `69_编码体` (coding), `70_审核体` (review) |
 
-> Note: the `agents/` directory went through a naming convergence; a few numbers (e.g. `37_`, `40_`) are shared by two sub-individuals and are distinguished by full file name.
+The role system was consolidated in one round: the original 1 + 11 link teams + 21 sub-individuals were reduced to 1 + 5 + 12. All functions of the merged roles are inherited by their successors (see the function map in [`src/prompt/agents/README_组合指南.md`](src/prompt/agents/README_组合指南.md)).
+
+> Note: numbering is kept for stable indexing and distribution consistency; the non-contiguous numbers (30/32/34/36/44/45/46/47/48/49/69/70) are historical indexes preserved after the consolidation.
 
 ## Protocol Layer
 

@@ -192,6 +192,81 @@ assertMissing("skills/exmachina-zh/references/agents/00_全连结体.md");
 assertMissing("skills/exmachina-zh/references/agents/31_溯源体.md");
 assertMissing("agents/00_全连结体.md");
 
+// 精简后的角色集：1 顶层 + 5 连结体 + 12 子个体，旧角色文件不得残留
+const legacyAgentFiles = [
+  "agents/01_协调连结体.md",
+  "agents/02_研究连结体.md",
+  "agents/03_架构连结体.md",
+  "agents/04_实作连结体.md",
+  "agents/05_校验连结体.md",
+  "agents/06_理性连结体.md",
+  "agents/07_文档连结体.md",
+  "agents/08_集成连结体.md",
+  "agents/09_运维连结体.md",
+  "agents/10_安全连结体.md",
+  "agents/11_体验连结体.md",
+  "agents/32_比对体.md",
+  "agents/33_假设体.md",
+  "agents/34_接驳体.md",
+  "agents/35_配置体.md",
+  "agents/36_发布体.md",
+  "agents/37_观测体.md",
+  "agents/37_运维体.md",
+  "agents/40_术语体.md",
+  "agents/40_知识体.md",
+  "agents/41_裁决体.md",
+  "agents/45_证据体.md",
+  "agents/49_架构体.md",
+  "agents/50_规划体.md",
+  "agents/65_侦察体.md"
+];
+for (const file of legacyAgentFiles) {
+  assertMissing(file);
+}
+
+const requiredAgentFiles = [
+  "agents/00_全连结指挥体.md",
+  "agents/01_研究与理性连结体.md",
+  "agents/02_架构与实作连结体.md",
+  "agents/03_校验与安全连结体.md",
+  "agents/04_集成与运维连结体.md",
+  "agents/05_文档与体验连结体.md",
+  "agents/30_上下文体.md",
+  "agents/32_比对假设体.md",
+  "agents/34_接驳配置体.md",
+  "agents/36_发布运维体.md",
+  "agents/44_汇报体.md",
+  "agents/45_证据裁决体.md",
+  "agents/46_验证体.md",
+  "agents/47_文档体.md",
+  "agents/48_安全体.md",
+  "agents/49_架构规划体.md",
+  "agents/69_编码体.md",
+  "agents/70_审核体.md"
+];
+for (const file of requiredAgentFiles) {
+  assertFile(file);
+}
+
+// OpenClaw workspace 面只允许主控 + 5 个连结体 workspace
+const workspacesDir = path.join(rootDir, "dist/openclaw/workspaces");
+const expectedWorkspaces = new Set([
+  "exmachina-main",
+  "exmachina-link-research-rationality",
+  "exmachina-link-architecture-implementation",
+  "exmachina-link-validation-security",
+  "exmachina-link-integration-operations",
+  "exmachina-link-documentation-experience"
+]);
+if (fs.existsSync(workspacesDir)) {
+  for (const entry of fs.readdirSync(workspacesDir)) {
+    assert(
+      expectedWorkspaces.has(entry),
+      `[verify-generated] stale OpenClaw workspace remains: ${entry}`
+    );
+  }
+}
+
 const packageJson = readJson("package.json");
 const plugin = readJson("plugin.json");
 assert(
