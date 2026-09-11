@@ -1,5 +1,12 @@
 # ExMachina
 
+> [!WARNING]
+> **⚠️ 本项目尚未经过全面的功能测试。**
+> 各平台安装面、构建产物与多智能体行为均可能在未验证的场景下出现偏差。
+> 使用者需**自行验证**安装结果与运行行为，并在受控环境中**谨慎使用**；
+> 请勿在未经验证的情况下将其直接用于生产或高风险任务。
+> 发现问题请提交 Issue 反馈。
+
 ```text
 ███████╗██╗  ██╗███╗   ███╗ █████╗  ██████╗██╗  ██╗██╗███╗   ██╗ █████╗
 ██╔════╝╚██╗██╔╝████╗ ████║██╔══██╗██╔════╝██║  ██║██║████╗  ██║██╔══██╗
@@ -9,22 +16,41 @@
 ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
 ```
 
-> ExMachina 是一套面向通用 AI 软件的机械智能操作层。它不追求人格化、不追求“像人类一样聊天”，而是追求绝对理性、证据驱动、冲突显式化、路径可审计，以及在复杂任务中稳定地拆解、执行、校验和收束。
+**ExMachina** 是一套面向通用 AI 软件的机械智能操作层。它不追求人格化、不追求"像人类一样聊天"，而是追求绝对理性、证据驱动、冲突显式化、路径可审计，以及在复杂任务中稳定地拆解、执行、校验和收束。
+
+支持平台：**Codex · Claude Code · Cursor · OpenCode · Gemini CLI · Trae · Kiro · VS Code · OpenClaw · Hermes Agent**
+
+---
+
+## 目录
+
+- [这套系统解决什么问题](#这套系统解决什么问题)
+- [系统定位](#系统定位)
+- [核心理念](#核心理念)
+- [角色体系](#角色体系)
+- [协议层](#协议层)
+- [仓库结构](#仓库结构)
+- [安装指南](#安装指南)
+- [配置说明](#配置说明)
+- [使用示例](#使用示例)
+- [源码层与产物层](#源码层与产物层)
+- [当前实现状态](#当前实现状态)
+- [设计原则总结](#设计原则总结)
 
 ## 这套系统解决什么问题
 
 普通提示词系统常见的问题有三类：
 
-- 角色边界模糊：分析、执行、校验混在一起，模型容易边想边编，最后输出看似完整但无法验证。
-- 提示词重复分叉：同一段逻辑散落在多个平台、多种安装面里，后续一改就漂移。
-- 多智能体协作失真：表面上有“很多智能体”，本质上只是堆很多身份，没有稳定的分工协议、回流协议和冲突裁决机制。
+- **角色边界模糊**：分析、执行、校验混在一起，模型容易边想边编，最后输出看似完整但无法验证。
+- **提示词重复分叉**：同一段逻辑散落在多个平台、多种安装面里，后续一改就漂移。
+- **多智能体协作失真**：表面上有"很多智能体"，本质上只是堆很多身份，没有稳定的分工协议、回流协议和冲突裁决机制。
 
 ExMachina 的目标就是把这三件事做硬：
 
 - 用多层结构定义角色边界。
 - 用协议定义协作方式，而不是让角色自由发挥。
 - 用单一真相源生成多平台产物，避免多处手改。
-- 用“未知保留、证据分级、反证优先、冲突裁决”约束整个系统。
+- 用"未知保留、证据分级、反证优先、冲突裁决"约束整个系统。
 
 ## 系统定位
 
@@ -34,51 +60,25 @@ ExMachina 不是单一模型的一段系统提示词，也不是只服务某一�
 - 对不支持多智能体的软件，ExMachina 通过 Skill、命令、规则或指令文件模拟局部子个体或局部链路。
 - 对同一套行为逻辑，ExMachina 只维护一套源，再复制分发到不同安装面。
 
-## 双语版本
-
-现在仓库中的用户直接交互面已按中英文两套版本组织：
-
-- 中文面：默认入口，适合中文工作流
-- 英文面：适合英文工作流与跨平台英文环境
-
-优先保证双语的部分包括：
-
-- Skill 入口
-- 命令入口说明
-- Codex 安装文档与使用说明
-- Trae 安装文档与规则面
-- Cursor / Claude / OpenCode / Gemini 的安装面
-- README 与平台说明
-
-底层 agents / protocol 仍允许单语维护，不强制所有内部提示词都做双语镜像。
-
 ## 核心理念
 
 ### 1. 机械智能
 
-这里的“机械智能”不是冷酷语气，也不是故意写得像机器，而是指一套更严格的工作方式：
+这里的"机械智能"不是冷酷语气，也不是故意写得像机器，而是指一套更严格的工作方式：
 
 - 不把猜测伪装成结论。
 - 不把局部观察伪装成全局事实。
 - 不把单次成功伪装成稳定能力。
 - 不把语言流畅伪装成推理正确。
 
-ExMachina 要求模型优先做这些事：
-
-- 明确任务边界
-- 识别未知与缺口
-- 区分事实、推断、假设、风险
-- 输出可校验的下一步
-- 在冲突信息出现时显式裁决
+ExMachina 要求模型优先做这些事：明确任务边界、识别未知与缺口、区分事实/推断/假设/风险、输出可校验的下一步、在冲突信息出现时显式裁决。
 
 ### 2. 多层结构
-
-ExMachina 使用三层结构组织多智能体协作：
 
 ```mermaid
 flowchart TD
     U["用户任务"] --> C["00 全连结指挥体"]
-    C --> G["10-19 各连结指挥体层"]
+    C --> G["01-11 各连结体"]
     G --> A["30-70 子个体层"]
     A --> G
     G --> C
@@ -90,92 +90,59 @@ flowchart TD
     P --> A
 ```
 
-这三层分别是：
+- **顶层**：`全连结指挥体`，负责总路由、总裁决、总收束。
+- **中层**：各工作域 `连结体`，负责域内调度子个体、约束输出形态、控制回流节奏。
+- **底层**：`子个体`，稳定、可组合、可替换的功能单元。
 
-- 顶层：`全连结指挥体`
-- 中层：`各工作域连结体`
-- 底层：`子个体`
+最容易混淆的一点：
 
-其中最容易混淆的一点是：
-
-- `连结体` 是团队概念，不是单个智能体。
-- 单个智能体必须写成 `xx连结指挥体`。
-- 一个 `xx连结体` 由 `xx连结指挥体 + 按任务动态挂载的子个体集合` 组成。
+- `连结体` 是**团队概念**，不是单个智能体，由 `连结指挥体 + 按任务动态挂载的子个体集合` 组成。
 - 同一个子个体可以按职能被多个连结体复用，不存在强制的一对一归属。
-
-例如：
-
-- `研究连结指挥体` 是单个智能体。
-- `研究连结体` 则表示“研究连结指挥体 + 当前任务需要挂载的上下文体 / 溯源体 / 比对体 / 假设体 / 证据体 / 反证体等单元”这一整支团队。
 
 ### 3. 大任务组队，小任务直达
 
-ExMachina 不是强制每个任务都走完整团队模式：
-
 - 复杂任务由 `全连结指挥体 -> 某连结体 -> 子个体` 逐层分派。
-- 中等任务可以直接交给某个 `xx连结指挥体` 完成。
+- 中等任务可以直接交给某个连结体完成。
 - 小任务可以直接临时加载某个子个体能力，而不需要完整组建连结体。
 
 这让系统既能处理复杂任务，也能在不支持原生多智能体的软件里通过 Skill 模拟局部能力。
 
 ## 角色体系
 
-### 顶层角色
+角色源位于 `src/prompt/agents/`，当前实际构成：
 
-- `00_全连结指挥体`
+| 层级 | 编号区间 | 数量 | 示例 |
+|------|----------|-----:|------|
+| 顶层指挥体 | `00_` | 1 | `00_全连结指挥体` |
+| 工作域连结体 | `01_` ~ `11_` | 11 | `02_研究连结体`、`04_实作连结体`、`05_校验连结体`、`10_安全连结体` |
+| 子个体 | `30_` ~ `70_` | 21 | `30_上下文体`、`45_证据体`、`65_侦察体`、`69_编码体`、`70_审核体` |
 
-职责：
+> 说明：`agents/` 目录曾经历一轮命名收敛，个别编号（如 `37_`、`40_`）被两个子个体复用，按完整文件名区分。编号用于维持稳定索引与分发一致性。
 
-- 收拢用户真实目标
-- 判断任务复杂度与风险
-- 选择合适的工作域
-- 决定是走连结体协作还是直接调用子个体
-- 汇总结果并形成最终输出
-
-### 中层角色
-
-当前工作域连结指挥体包括：
-
-- `10_知识连结指挥体`
-- `11_理性连结指挥体`
-- `12_校验连结指挥体`
-- `13_文档连结指挥体`
-- `14_安全连结指挥体`
-- `15_集成连结指挥体`
-- `16_运维连结指挥体`
-- `17_研究连结指挥体`
-- `18_架构连结指挥体`
-- `19_实作连结指挥体`
-
-这些角色负责在各自工作域内调度子个体、约束输出形态、控制回流节奏。
-
-### 底层角色
-
-子个体从 `30_` 到 `70_` 编号，覆盖上下文、溯源、比对、假设、接驳、配置、发布、观测、回滚、术语、决策、索引、问题、汇报、证据、反证、裁决、校准、复现、断言、回归、结构、示例、校订、威胁、审计、加固、合规、边界、接口、风控、侦察、拆解、约束、路线、编码、审核等细分能力。
-
-它们的定位不是“独立人格”，而是稳定、可组合、可替换的功能单元。
-它们按职责复用，可以同时出现在多个连结体的常用挂载清单中。
+子个体的定位不是"独立人格"，而是按职责复用的功能单元，可以同时出现在多个连结体的常用挂载清单中。
 
 ## 协议层
 
-ExMachina 不依赖“角色自己发挥协作意识”，而是把协作规范固定成显式协议。当前协议源位于 `src/prompt/protocol/`：
+协议源位于 `src/prompt/protocol/`，对所有角色生效，当前共 12 份：
 
-- `01_绝对理性协议`
-- `02_证据分级协议`
-- `03_冲突裁决协议`
-- `04_工作区与协作协议`
-- `05_多智能体回流协议`
-- `06_输出契约`
+| 协议 | 约束重点 |
+|------|----------|
+| `01_绝对理性协议` | 语言纪律、执行姿态 |
+| `02_证据分级协议` | 证据等级 A/B/C/D 与结论强度匹配 |
+| `03_冲突裁决协议` | 多个结论冲突时的裁决流程 |
+| `04_工作区与协作协议` | 工作区资源与协作边界 |
+| `05_多智能体回流协议` | 中间结果如何在层级间回流 |
+| `06_输出契约` | 最终输出的最小字段 |
+| `06_代码审查协议` | 审查类任务的执行规范 |
+| `07_调试协议` | 调试类任务的执行规范 |
+| `08_变更协议` | 变更范围与可逆性控制 |
+| `09_安全审计协议` | 安全审查的执行规范 |
+| `10_发布协议` | 发布前检查与收束 |
+| `11_回滚协议` | 回退路径与恢复纪律 |
 
-这些协议约束的重点包括：
+> 说明：`06_` 编号被 `输出契约` 与 `代码审查协议` 复用，按完整文件名区分。
 
-- 什么时候必须保留未知
-- 什么时候必须给出证据等级
-- 多个子结论冲突时如何裁决
-- 多个智能体之间如何回流中间结果
-- 最终输出应保留哪些最小字段
-
-可以把它理解成：角色告诉模型“做什么”，协议告诉模型“怎么做才算合规”。
+可以把它理解成：角色告诉模型"做什么"，协议告诉模型"怎么做才算合规"。
 
 ## 仓库结构
 
@@ -183,15 +150,16 @@ ExMachina 不依赖“角色自己发挥协作意识”，而是把协作规范�
 
 ```text
 .
-├─ agents/                # 共享角色提示词
+├─ agents/                # 共享角色提示词（生成）
 ├─ benchmark/             # 基准场景
-├─ commands/              # 命令入口文档
+├─ commands/              # 命令入口文档（生成）
 ├─ dist/                  # 各平台产物集中目录
 │  ├─ codex/              # Codex 文档与技能使用面
 │  ├─ claude-plugin/      # 仓库级 Claude 插件入口
 │  ├─ cursor/             # 仓库级 Cursor 规则回退面
 │  ├─ cursor-plugin/      # 仓库级 Cursor 插件入口
 │  ├─ gemini/             # Gemini 辅助文件
+│  ├─ hermes/             # Hermes Agent 安装面（安装文档 + 配置片段 + 技能副本）
 │  ├─ opencode/           # 仓库级 OpenCode 插件入口
 │  ├─ kiro/               # Kiro 技能与 steering 面
 │  ├─ openclaw/           # OpenClaw 包
@@ -203,40 +171,41 @@ ExMachina 不依赖“角色自己发挥协作意识”，而是把协作规范�
 ├─ hooks/                 # 共享 hooks
 ├─ paper/                 # 长文档说明
 ├─ skills/                # 共享技能面
-├─ src/
-│  ├─ build.ts
-│  ├─ prompt/
-│  │  ├─ agents/
-│  │  └─ protocol/
-│  ├─ templates/
-│  └─ trae-agents/
-├─ scripts/
-│  ├─ setup-exmachina.sh
-│  ├─ setup-exmachina.ps1
-│  └─ dev/
-│     └─ verify-generated.mjs
+├─ src/                   # 单一源码层（唯一需要手工编辑的目录）
+│  ├─ build.ts            # 分发器（编排）
+│  ├─ build/              # 分发器模块（lib / content / prompts / platforms / openclaw）
+│  ├─ exmachina/          # plugin.json 源
+│  ├─ prompt/             # agents / protocol / AGENTS.md / RULES.md
+│  └─ templates/          # 跨安装面模板（zh-CN / en-US）
+├─ scripts/               # 安装脚本（setup-exmachina.sh / .ps1）与 dev 工具
 ├─ gemini-extension.json  # 仓库级 Gemini extension manifest
-├─ GEMINI.md              # 仓库级 Gemini context
 └─ README.md
 ```
 
 ## 安装指南
 
-### Codex 原生安装
-
-现在可以直接把仓库的 `skills/` 接入本地 Codex 技能库，并把 `agents/` 同步到 `~/.codex/agents/`。
-
-安装文档：
-
-- 仓库内：[`dist/codex/INSTALL.md`](dist/codex/INSTALL.md)
-- Raw URL：`https://raw.githubusercontent.com/KurohaneKaoruko/Ex-Machina/main/dist/codex/INSTALL.md`
-
-快速安装：
+### 通用安装（Codex 路线）
 
 ```bash
 git clone https://github.com/KurohaneKaoruko/Ex-Machina ~/exmachina
 cd ~/exmachina
 bash ./scripts/setup-exmachina.sh
+```
+
+Windows PowerShell：
+
+```powershell
+git clone https://github.com/KurohaneKaoruko/Ex-Machina "$HOME/exmachina"
+Set-Location "$HOME/exmachina"
+.\scripts\setup-exmachina.ps1
+```
+
+安装脚本支持生命周期管理：
+
+```bash
+bash ./scripts/setup-exmachina.sh --verify           # 检查安装状态
+bash ./scripts/setup-exmachina.sh --uninstall        # 卸载受管理内容
+bash ./scripts/setup-exmachina.sh --install-guidance --guidance-language en  # 追加英文常驻指引
 ```
 
 ### 平台安装
@@ -245,15 +214,47 @@ bash ./scripts/setup-exmachina.sh
 
 | 平台 | 安装文件位置 | 参考文档 |
 |------|-------------|---------|
-| OpenAI Codex | `scripts/` + `skills/` + `agents/` + `dist/codex/` | [`dist/codex/INSTALL.md`](dist/codex/INSTALL.md), [`dist/codex/INSTALL.en.md`](dist/codex/INSTALL.en.md), [`dist/codex/README.md`](dist/codex/README.md), [`dist/codex/README.en.md`](dist/codex/README.en.md) |
-| Trae | `dist/trae/` | [`dist/trae/INSTALL.md`](dist/trae/INSTALL.md), [`dist/trae/INSTALL.en.md`](dist/trae/INSTALL.en.md) |
-| Cursor | `dist/cursor-plugin/` + `dist/cursor/` | [`dist/cursor-plugin/INSTALL.md`](dist/cursor-plugin/INSTALL.md), [`dist/cursor-plugin/INSTALL.en.md`](dist/cursor-plugin/INSTALL.en.md) |
-| Claude Code | `dist/claude-plugin/` | [`dist/claude-plugin/INSTALL.md`](dist/claude-plugin/INSTALL.md), [`dist/claude-plugin/INSTALL.en.md`](dist/claude-plugin/INSTALL.en.md) |
-| OpenCode | `dist/opencode/` | [`dist/opencode/INSTALL.md`](dist/opencode/INSTALL.md), [`dist/opencode/INSTALL.en.md`](dist/opencode/INSTALL.en.md) |
-| Gemini CLI | `gemini-extension.json` + `GEMINI.md` + `dist/gemini/` | [`dist/gemini/INSTALL.md`](dist/gemini/INSTALL.md), [`dist/gemini/INSTALL.en.md`](dist/gemini/INSTALL.en.md) |
-| VS Code | `dist/vscode/` | Prompt 与 instructions 产物已生成 |
-| Kiro | `dist/kiro/` | Skill 与 steering 产物已生成 |
+| OpenAI Codex | `scripts/` + `skills/` + `agents/` + `dist/codex/` | [`dist/codex/INSTALL.md`](dist/codex/INSTALL.md) |
+| Claude Code | `dist/claude-plugin/` | [`dist/claude-plugin/INSTALL.md`](dist/claude-plugin/INSTALL.md) |
+| Cursor | `dist/cursor-plugin/` + `dist/cursor/` | [`dist/cursor-plugin/INSTALL.md`](dist/cursor-plugin/INSTALL.md) |
+| OpenCode | `dist/opencode/` | [`dist/opencode/INSTALL.md`](dist/opencode/INSTALL.md) |
+| Gemini CLI | `gemini-extension.json` + `dist/GEMINI.md` + `dist/gemini/` | [`dist/gemini/INSTALL.md`](dist/gemini/INSTALL.md) |
+| **Hermes Agent** | `dist/hermes/`（或直接使用根目录 `skills/`） | [`dist/hermes/INSTALL.md`](dist/hermes/INSTALL.md) |
 | OpenClaw | `dist/openclaw/` | [`dist/openclaw/INSTALL.md`](dist/openclaw/INSTALL.md) |
+| Trae | `dist/trae/` | [`dist/trae/INSTALL.md`](dist/trae/INSTALL.md) |
+| Kiro | `dist/kiro/` | 产物已生成，按目录说明接入 |
+| VS Code | `dist/vscode/` | Prompt 与 instructions 产物已生成 |
+
+各文档均有英文版（`*.en.md`）。
+
+### Hermes Agent 快速接入
+
+Hermes Agent（Nous Research）的技能库使用「目录 + `SKILL.md`」格式，与根目录 `skills/` 直接兼容。二选一：
+
+**方式 A — external_dirs（推荐，更新方便）**：在 `~/.hermes/config.yaml` 中加入（参考 [`dist/hermes/config-snippet.yaml`](dist/hermes/config-snippet.yaml)）：
+
+```yaml
+skills:
+  external_dirs:
+    - ~/exmachina/skills
+```
+
+**方式 B — 复制安装**：
+
+```bash
+mkdir -p ~/.hermes/skills
+cp -r ~/exmachina/skills/exmachina-zh ~/exmachina/skills/exmachina-en \
+      ~/exmachina/skills/using-exmachina ~/exmachina/skills/using-exmachina-zh \
+      ~/exmachina/skills/using-exmachina-en ~/.hermes/skills/
+```
+
+验证：
+
+```bash
+hermes skills list   # 确认输出包含 exmachina-zh
+```
+
+完整说明（含 SOUL.md 受管理块注入、卸载与故障排查）见 [`dist/hermes/INSTALL.md`](dist/hermes/INSTALL.md)。
 
 ### 贡献者构建产物
 
@@ -261,17 +262,9 @@ bash ./scripts/setup-exmachina.sh
 
 ```bash
 npm install
-npm run generate
-npm run verify
+npm run generate   # = tsc 编译 + node build/build.js
+npm run verify     # 产物完整性 + 安装脚本冒烟测试
 ```
-
-### 快速开始
-
-安装完成后，在对应工具中：
-
-1. **使用 Skill**：Codex 可按语言选择 `using-exmachina-zh` / `using-exmachina-en` 与 `exmachina-zh` / `exmachina-en`；其他平台加载对应语言的 skill 或规则文件
-2. **使用命令**：`/ex` 启动 ExMachina 任务
-3. **使用规则**：在 Rules 中配置 `project_rules.md` 或 `user_rules.md`
 
 ### 验证安装
 
@@ -287,183 +280,124 @@ ls ~/.codex/skills/exmachina
 npm run verify
 ```
 
-生成成功后，共享内容直接位于仓库根目录的 `skills/`、`agents/`、`commands/`、`hooks/` 等目录；各平台产物集中位于 `dist/` 目录；平台安装脚本仍位于根目录 `scripts/`。
+## 配置说明
+
+### 使用者侧
+
+| 配置项 | 作用 | 生效平台 |
+|--------|------|----------|
+| `EXMACHINA_LANG` / `EXMACHINA_LANGUAGE` | 强制引导技能语言（`zh` / `en`），覆盖系统 locale 自动判断 | OpenCode 插件 |
+| `LANG` / `LC_ALL` | 未显式指定时的语言回退依据 | OpenCode 插件 |
+| `skills.external_dirs` | 把仓库 `skills/` 注册进 Hermes 技能库 | Hermes Agent |
+| Cursor Rules | 安装 `dist/cursor/rules/exmachina.mdc`（中文）或 `exmachina-en.mdc`（英文），`alwaysApply: true` | Cursor |
+| `GEMINI.md` context | 通过 `gemini-extension.json` 的 `contextFileName` 指向 `GEMINI.md`，其中 `@` 引用引导技能 | Gemini CLI |
+| OpenClaw settings | `dist/openclaw/openclaw.settings.json`（full）与 `openclaw.settings.lite.json`（lite），含合并指令与回滚说明 | OpenClaw |
+
+### 贡献者侧（构建环境变量）
+
+| 变量 | 作用 | 默认值 |
+|------|------|--------|
+| `EXMACHINA_REPOSITORY_URL` | 生成产物中的仓库地址（支持 SSH 形式自动转换） | `https://github.com/KurohaneKaoruko/Ex-Machina` |
+| `EXMACHINA_BRANCH` | 生成 raw 链接所用的分支 | `main` |
+| `EXMACHINA_RAW_BASE_URL` | 直接指定 raw 链接基址，跳过推导 | 由上两项推导 |
+
+### 语言选择约定
+
+- 中文面为默认入口；英文面通过 `*.en.md` / `-en` 技能提供。
+- 优先双语的部分：Skill 入口、命令入口、各平台安装文档、README。
+- 底层 agents / protocol 允许单语维护，不强制双语镜像。
+
+## 使用示例
+
+### 命令入口
+
+安装后在支持命令的平台直接调用：
+
+```text
+/ex 追踪这个回归问题，先找证据再动代码。
+```
+
+### Skill 触发（无需命令）
+
+以下任务会自然触发 ExMachina 行为模式：
+
+```text
+请帮我分析这个报错并修复它。
+做一次代码审查，先列风险再总结。
+这个需求边界不清，帮我把验收标准先锁住，再评估风险。
+```
+
+以下场景**不会**触发（正常对话）：
+
+```text
+简单问候。
+翻译这一句话。
+总结这段我已经给出的文本。
+```
+
+（触发样本见 `evals/trigger-prompts/`。）
+
+### 期望的行为差异
+
+安装 ExMachina 后，对同一个修复任务：
+
+- **未安装**：模型直接猜测原因并给出改动。
+- **安装后**：模型先锁定任务边界 → 列出证据与缺口 → 区分事实/推断/假设 → 给出最小可逆修复与回退路径 → 明确残余未知。
+
+### 多智能体协作（OpenClaw 路线）
+
+在 OpenClaw 的 full 模式下，`exmachina-main` 主控体会把复杂任务按连结体拆分派发给子代理，回流内容带 `[角色]:` 标记与证据分级，最终由主控体裁决收束。接入方式见 [`dist/openclaw/INSTALL.md`](dist/openclaw/INSTALL.md)。
+
+### 示例任务包
+
+`examples/task-brief.json` 给出了标准的任务输入格式（目标、验收标准、约束、排除范围），可直接作为向 ExMachina 提任务的模板。
 
 ## 源码层与产物层
 
 `src/` 是唯一源码层，负责维护真正需要人工编辑的内容；根目录则是生成后的共享内容层与平台适配层。
 
-#### `src/prompt/`
+| 路径 | 职责 |
+|------|------|
+| `src/prompt/agents/` | 全连结指挥体、各连结体、子个体提示词 |
+| `src/prompt/protocol/` | 所有共享协议 |
+| `src/prompt/AGENTS.md` | 主协定全文（生成根目录 `AGENTS.md` 与 `dist/codex/AGENTS.md`） |
+| `src/prompt/RULES.md` | 规则面源（生成 Cursor / Kiro 规则产物） |
+| `src/templates/{zh-CN,en-US}/` | 各平台安装文档、技能、命令模板 |
+| `src/build.ts` + `src/build/` | 唯一分发器（编排 + lib/content/prompts/platforms/openclaw 五个模块） |
+| `src/exmachina/plugin.json` | 仓库级入口元数据源 |
 
-角色与协议源。
-
-- `src/prompt/agents/`：全连结指挥体、各连结指挥体、子个体
-- `src/prompt/protocol/`：所有共享协议
-
-这里固定只保留两类目录：
-
-- `agents/`：凡是可以作为独立角色加载的提示词，都统一放这里，不再额外拆 `groups/`
-- `protocol/`：凡是对整个系统生效的共享约束，都统一放这里
-
-提示词文件结构如下：
-
-| 目录路径 | 组件类型 | 数量 | 说明 |
-| --- | --- | ---: | --- |
-| `src/prompt/agents/00_全连结指挥体.md` | 顶层指挥体 | 1 | 系统最高调度层，直接面对用户，负责总路由、总裁决、总收束。 |
-| `src/prompt/agents/10_*.md ~ 19_*.md` | 连结指挥体 | 10 | 各工作域的指挥智能体，例如 `17_研究连结指挥体.md`、`19_实作连结指挥体.md`。单个文件表示单个指挥体，不表示整个连结体。 |
-| `src/prompt/agents/30_*.md ~ 70_*.md` | 子个体 | 41 | 负责具体子任务的原子执行单元，例如 `30_上下文体.md`、`45_证据体.md`、`69_编码体.md`、`70_审核体.md`。 |
-| `src/prompt/protocol/*.md` | 协议层 | 6 | 对所有角色生效的共享协议，例如 `01_绝对理性协议.md`、`02_证据分级协议.md`、`03_冲突裁决协议.md`。 |
-
-#### `src/templates/`
-
-跨多个安装面重复出现的主 Skill、命令模板和平台说明模板。
-
-#### `src/build.ts`
-
-唯一分发器。它负责把单一源复制到不同产品目录中，避免多处手改。
-
-### 根目录共享内容层
-
-共享内容现在直接展开在仓库根目录，而不是再包一层 `exmachina/`。
-
-### `agents/`
-
-完整的角色清单，按编号顺序保存。这里保留文件名前缀序号，用于维持稳定索引与分发一致性。
-
-### `skills/`
-
-Skill 安装面。当前包含：
-
-- `using-exmachina`
-- `using-exmachina-zh`
-- `using-exmachina-en`
-- `exmachina-zh`
-- `exmachina-en`
-
-### `commands/`
-
-命令入口。当前主命令和别名为：
-
-- `/ex`
-- `/excodex`
-- `/exclaude`
-
-这些命令用于把 ExMachina 作为可调用工作流接入不同环境。
-
-### `dist/codex/`
-
-Codex 使用面，包含：
-
-- `dist/codex/exmachina/SKILL.md`
-- `dist/codex/exmachina-en/SKILL.md`
-- `INSTALL.md`
-- `README.md`
-
-### `dist/trae/`
-
-Trae 使用面，包含规则、技能与自定义 agents。
-
-### `hooks/`
-
-运行辅助钩子与会话保护脚本，例如：
-
-- 路由守卫
-- 会话快照
-- 会话恢复
-
-### `evals/`
-
-评测执行层。它更偏向“怎么测”，通常放触发器、测试脚本、辅助函数。
-
-### `benchmark/`
-
-基准场景层。它更偏向“测什么”，通常放固定任务样本、基准数据和行为样例。
-
-可以简单理解为：
-
-- `benchmark`：题库
-- `evals`：判题与执行流程
-
-### `examples/`
-
-示例输入、示例任务包或最小调用样例。
-
-### `paper/`
-
-面向设计说明、白皮书或更长篇技术论述的文档面。
-
-### 根目录平台适配层
-
-各平台安装入口现在都尽量保持“薄壳”设计，只负责让平台发现共享内容：
-
-- `dist/cursor-plugin/` 与 `dist/cursor/`：Cursor 插件 manifest、hooks 与规则回退面
-- `dist/claude-plugin/`：Claude 插件 manifest 与 marketplace 描述
-- `dist/opencode/`：OpenCode 仓库插件入口
-- `gemini-extension.json`、`GEMINI.md` 与 `dist/gemini/`：Gemini CLI 原生 extension 面
-- `dist/kiro/`：Kiro Skill 与 steering 入口
-- `dist/vscode/`：VS Code 风格 prompt / instructions 面
-- `dist/openclaw/`：OpenClaw 包
-- `plugin.json`：仓库级入口元数据
-
-### `scripts/`
-
-仓库工具与安装脚本目录。当前按职责分层：
-
-- `scripts/setup-exmachina.sh`
-- `scripts/setup-exmachina.ps1`
-- `scripts/dev/verify-generated.mjs`
-
-## 迁移说明
-
-旧的嵌套产物目录 `./exmachina` 已从当前架构中移除。现在唯一有效的共享内容路径就是根目录下的 `skills/`、`agents/`、`commands/`、`hooks/` 等目录；各平台产物集中位于 `dist/` 目录。
-
-这次收束后的原则是：
-
-- 不再保留“根目录一份 + `exmachina/` 再包一份”的双层复制结构
-- 根目录直接作为仓库级安装面
-- `src/` 继续作为单一真相源
-
-## 默认工作方式
-
-ExMachina 的推荐执行流程大致如下：
-
-1. 用户提出任务。
-2. `全连结指挥体` 识别任务类型、复杂度、风险与未知。
-3. 选择直接调用子个体、直接调用某个连结指挥体，或组建完整连结体。
-4. 各子个体在协议约束下产出局部结果。
-5. 连结指挥体整合、裁决、补缺、回流。
-6. 全连结指挥体给出最终可执行结果。
-
-如果环境不支持原生多智能体，则由 Skill 或命令入口在当前上下文中暂时模拟对应角色链路。
-
+分发器职责：把单一源复制/渲染到不同产品目录，避免多处手改。手工修改生成产物会在下次构建时被覆盖。
 
 ## 当前实现状态
 
-当前仓库已经具备这些基础能力：
+已具备的能力：
 
-- Skill 与多平台分发表面
-- Codex 原生安装面与可执行安装脚本
-- Cursor / Claude / OpenCode / Gemini 的仓库级安装入口
+- Skill 与多平台分发表面（含 Hermes Agent 安装面）
+- Codex 原生安装面与可执行安装脚本（含生命周期管理）
+- Cursor / Claude / OpenCode / Gemini / OpenClaw 的仓库级安装入口
 - 中英文双版本的用户交互面
 - 金字塔角色源与协议源
-- `src/` 单一真相源
-- 根目录共享内容层
+- `src/` 单一真相源与模块化分发器
 - `/ex`、`/excodex`、`/exclaude` 命令入口
 - `benchmark` 与 `evals` 的基础骨架
+- `npm run verify` 产物完整性校验与安装脚本冒烟测试
 
-仍在持续完善的部分主要是：
+已知限制与持续完善方向：
 
+- **整个项目尚未经过全面的功能测试**（再次提醒，见顶部告警）
 - 更强的运行时路由能力
 - 更完整的自动评测回路
-- VS Code 等平台的安装细节继续细化
+- OpenClaw 安装文档引用的 `scripts/apply-openclaw-settings.mjs` 尚未随仓库提供，OpenClaw 接入暂需按文档手动操作
 - 更稳定的场景基准与回归机制
 
 ## 设计原则总结
 
-如果只用几句话概括 ExMachina，它的核心就是：
-
 - 用多层结构组织多智能体
 - 用协议而不是人格来约束行为
-- 用证据与裁决替代“自信输出”
+- 用证据与裁决替代"自信输出"
 - 用单一真相源生成多平台产物
 - 用机械化、可审计、可回流的方式执行复杂任务
+
+## License
+
+MIT

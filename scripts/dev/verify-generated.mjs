@@ -161,7 +161,16 @@ const requiredFiles = [
   "dist/GEMINI.md",
   "dist/gemini/gemini-tools.md",
   "dist/gemini/INSTALL.md",
-  "dist/gemini/INSTALL.en.md"
+  "dist/gemini/INSTALL.en.md",
+  "dist/hermes/INSTALL.md",
+  "dist/hermes/INSTALL.en.md",
+  "dist/hermes/config-snippet.yaml",
+  "dist/hermes/skills/exmachina-zh/SKILL.md",
+  "dist/hermes/skills/exmachina-en/SKILL.md",
+  "dist/hermes/skills/using-exmachina/SKILL.md",
+  "dist/hermes/skills/using-exmachina-zh/SKILL.md",
+  "dist/hermes/skills/using-exmachina-en/SKILL.md",
+  "dist/hermes/skills/exmachina-zh/references/protocol/01_绝对理性协议.md"
 ];
 
 for (const file of requiredFiles) {
@@ -179,6 +188,9 @@ assertMissing("vscode");
 assertMissing("skills/exmachina-en/references");
 assertMissing("dist/codex/exmachina-en/references");
 assertMissing("dist/kiro/skills/exmachina-en/references");
+assertMissing("skills/exmachina-zh/references/agents/00_全连结体.md");
+assertMissing("skills/exmachina-zh/references/agents/31_溯源体.md");
+assertMissing("agents/00_全连结体.md");
 
 const packageJson = readJson("package.json");
 const plugin = readJson("plugin.json");
@@ -435,6 +447,49 @@ assert(
     geminiInstall.includes("dist/gemini/gemini-tools.md"),
   "[verify-generated] Gemini install guide does not describe the extension surface"
 );
+
+const hermesInstallZh = readText("dist/hermes/INSTALL.md");
+const hermesInstallEn = readText("dist/hermes/INSTALL.en.md");
+assert(
+  hermesInstallZh.includes("skills.external_dirs") &&
+    hermesInstallZh.includes("dist/hermes/config-snippet.yaml") &&
+    hermesInstallZh.includes("~/.hermes/skills"),
+  "[verify-generated] Hermes install guide does not describe the skill-library integration"
+);
+assert(
+  hermesInstallEn.includes("skills.external_dirs") &&
+    hermesInstallEn.includes("dist/hermes/config-snippet.yaml") &&
+    hermesInstallEn.includes("~/.hermes/skills"),
+  "[verify-generated] english Hermes install guide does not describe the skill-library integration"
+);
+assert(
+  !hermesInstallZh.includes("{{") && !hermesInstallEn.includes("{{"),
+  "[verify-generated] unresolved template token in Hermes install doc"
+);
+assert(
+  !hermesInstallZh.includes(forbiddenExternalProjectName) &&
+    !hermesInstallEn.includes(forbiddenExternalProjectName),
+  "[verify-generated] Hermes install docs contain forbidden external project wording"
+);
+
+const hermesSnippet = readText("dist/hermes/config-snippet.yaml");
+assert(
+  hermesSnippet.includes("external_dirs") && hermesSnippet.includes("~/exmachina/skills"),
+  "[verify-generated] Hermes config snippet does not register the repository skills directory"
+);
+
+for (const skillName of [
+  "exmachina-zh",
+  "exmachina-en",
+  "using-exmachina",
+  "using-exmachina-zh",
+  "using-exmachina-en"
+]) {
+  assert(
+    fs.existsSync(path.join(rootDir, "dist/hermes/skills", skillName, "SKILL.md")),
+    `[verify-generated] Hermes surface is missing the ${skillName} skill`
+  );
+}
 
 const bootstrapSkill = readText("skills/using-exmachina-en/SKILL.md");
 assert(

@@ -1,5 +1,12 @@
 # ExMachina
 
+> [!WARNING]
+> **⚠️ This project has not been fully tested.**
+> Install surfaces, generated artifacts, and multi-agent behavior may deviate in unverified scenarios.
+> You must **verify the install and runtime behavior yourself** and use it **cautiously in controlled environments**.
+> Do not deploy it to production or high-risk tasks without your own validation.
+> Please open an issue if you hit problems.
+
 ```text
 ███████╗██╗  ██╗███╗   ███╗ █████╗  ██████╗██╗  ██╗██╗███╗   ██╗ █████╗
 ██╔════╝╚██╗██╔╝████╗ ████║██╔══██╗██╔════╝██║  ██║██║████╗  ██║██╔══██╗
@@ -9,15 +16,33 @@
 ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
 ```
 
-> ExMachina is a mechanical-intelligence operating layer for general AI software. It does not optimize for persona, chat style, or human-like conversation. It optimizes for explicit evidence, bounded execution, visible conflict handling, auditable routing, and stable decomposition, implementation, verification, and closure for complex tasks.
+**ExMachina** is a mechanical-intelligence operating layer for general AI software. It does not optimize for persona, chat style, or human-like conversation. It optimizes for explicit evidence, bounded execution, visible conflict handling, auditable routing, and stable decomposition, implementation, verification, and closure for complex tasks.
+
+Supported platforms: **Codex · Claude Code · Cursor · OpenCode · Gemini CLI · Trae · Kiro · VS Code · OpenClaw · Hermes Agent**
+
+---
+
+## Table of Contents
+
+- [What This System Solves](#what-this-system-solves)
+- [Positioning](#positioning)
+- [Core Ideas](#core-ideas)
+- [Role System](#role-system)
+- [Protocol Layer](#protocol-layer)
+- [Repository Layout](#repository-layout)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage Examples](#usage-examples)
+- [Source Layer vs Artifact Layer](#source-layer-vs-artifact-layer)
+- [Implementation Status](#implementation-status)
 
 ## What This System Solves
 
 Typical prompt packs fail in three ways:
 
-- role boundaries are blurry, so analysis, execution, and verification collapse into one stream and produce answers that sound complete but are hard to validate
-- the same behavior logic drifts across platforms and install surfaces, so one change turns into many manual edits
-- so-called multi-agent systems are often just piles of personas without a stable division of labor, return-flow contract, or arbitration protocol
+- **Blurry role boundaries**: analysis, execution, and verification collapse into one stream and produce answers that sound complete but are hard to validate.
+- **Prompt drift**: the same behavior logic spreads across platforms and install surfaces, so one change turns into many manual edits.
+- **Fake multi-agent**: piles of personas without a stable division of labor, return-flow contract, or arbitration protocol.
 
 ExMachina hardens those points by:
 
@@ -28,149 +53,126 @@ ExMachina hardens those points by:
 
 ## Positioning
 
-ExMachina is not just a single system prompt, and it is not a package tied to one client. It is closer to an operating layer:
+ExMachina is not a single system prompt, and not a package for one client only. It is closer to an operating layer in between:
 
-- for software that supports native multi-agent workflows, ExMachina provides a full multi-agent structure and distribution surfaces
-- for software that does not support native multi-agent workflows, ExMachina simulates partial specialist paths through skills, commands, rules, or instruction files
-- for the same behavior logic, ExMachina maintains one source and redistributes it to multiple install surfaces
-
-## Bilingual Surfaces
-
-The direct user-facing surfaces in this repository are now organized in both Chinese and English:
-
-- Chinese: the default surface for Chinese workflows
-- English: the surface for English workflows and English-first platform environments
-
-The bilingual guarantee currently covers:
-
-- bootstrap skills
-- command entry docs
-- Codex installation docs and usage guides
-- Trae installation docs and rule surfaces
-- Cursor / Claude / OpenCode / Gemini install surfaces
-- README files and platform overviews
-
-Lower-level agents and protocols may still remain single-language when that does not affect direct user interaction.
+- For tools with native multi-agent support, ExMachina ships the full multi-agent structure and distribution artifacts.
+- For tools without multi-agent support, ExMachina simulates partial units and chains through Skills, commands, rules, or instruction files.
+- For the same behavior logic, ExMachina maintains one source and distributes it to different install surfaces.
 
 ## Core Ideas
 
-### 1. Mechanical Intelligence
+### 1. Mechanical intelligence
 
-“Mechanical intelligence” here does not mean a cold tone or machine cosplay. It means a stricter operating style:
+"Mechanical" here is not about cold tone or machine-like writing. It is a stricter way of working:
 
-- do not disguise guesses as conclusions
-- do not disguise local observations as global facts
-- do not disguise one successful attempt as stable capability
-- do not disguise fluent language as correct reasoning
+- never disguise guesses as conclusions
+- never disguise local observations as global facts
+- never disguise a single success as a stable capability
+- never disguise fluent language as correct reasoning
 
-ExMachina expects the model to prioritize:
-
-- explicit task boundaries
-- explicit unknowns and missing information
-- clear separation of fact, inference, assumption, and risk
-- verifiable next actions
-- explicit arbitration when evidence conflicts
-
-### 2. Layered Structure
-
-ExMachina uses a three-layer structure for multi-agent coordination:
+### 2. Layered structure
 
 ```mermaid
 flowchart TD
-    U["User Task"] --> C["00 Global Commander"]
-    C --> G["10-19 Domain Commander Layer"]
-    G --> A["30-70 Specialist Unit Layer"]
+    U["User task"] --> C["00 Full-Link Coordinator"]
+    C --> G["01-11 Link teams"]
+    G --> A["30-70 Sub-individuals"]
     A --> G
     G --> C
-    C --> O["Final Delivery"]
+    C --> O["Final deliverable"]
 
-    P["Protocol Layer src/prompt/protocol"]
+    P["Protocol layer src/prompt/protocol"]
     P --> C
     P --> G
     P --> A
 ```
 
-The layers are:
+- **Top**: the `Full-Link Coordinator` — global routing, arbitration, and closure.
+- **Middle**: per-domain `Link teams` — scheduling sub-individuals, constraining output shape, controlling return flow.
+- **Bottom**: `Sub-individuals` — stable, composable, replaceable functional units.
 
-- top layer: the `global commander`
-- middle layer: `domain clusters`
-- lower layer: `specialist units`
+A `Link team` is a **team concept**, not a single agent: the team leader plus the sub-individuals mounted for the current task. The same sub-individual can be reused by multiple teams.
 
-The most important distinction is:
+### 3. Teams for big tasks, direct calls for small ones
 
-- a `cluster` is a team concept, not a single agent
-- a single agent must be named as an `xx commander`
-- one `xx cluster` means `xx commander + the specialist units dynamically mounted for the current task`
-- one specialist unit can be reused by multiple clusters when its function matches; cluster membership is not exclusive ownership
-
-For example:
-
-- `research commander` is one agent
-- `research cluster` means the research commander plus whichever context, tracing, comparison, hypothesis, evidence, counter-evidence, and related units the current task requires
-
-### 3. Team Up for Large Tasks, Route Directly for Small Ones
-
-ExMachina does not force every task through the full team structure:
-
-- complex tasks route through `global commander -> domain cluster -> specialist unit`
-- medium tasks can stop at a domain commander
-- small tasks can directly load a narrow specialist capability without forming a full cluster
-
-This lets the system handle complex work while still simulating partial specialist paths inside software that lacks native multi-agent support.
+- Complex tasks flow through `Full-Link Coordinator -> Link team -> Sub-individual`.
+- Medium tasks go straight to a Link team.
+- Small tasks can temporarily load a single sub-individual capability without assembling a full team.
 
 ## Role System
 
-### Top Layer
+Role sources live in `src/prompt/agents/`. The actual composition:
 
-- the global commander, stored as the canonical `00_*.md` file under `agents/`
+| Layer | Numbering | Count | Examples |
+|-------|-----------|------:|----------|
+| Top coordinator | `00_` | 1 | `00_全连结指挥体` |
+| Link teams | `01_` ~ `11_` | 11 | `02_研究连结体` (research), `04_实作连结体` (implementation), `05_校验连结体` (validation), `10_安全连结体` (security) |
+| Sub-individuals | `30_` ~ `70_` | 21 | `30_上下文体` (context), `45_证据体` (evidence), `65_侦察体` (recon), `69_编码体` (coding), `70_审核体` (review) |
 
-Responsibilities:
-
-- collect the user’s real goal
-- judge task complexity and risk
-- choose the right work domain
-- decide between full cluster routing and direct specialist routing
-- merge results into the final answer
-
-### Middle Layer
-
-Current domain commanders occupy the canonical `10_*.md` through `19_*.md` files under `agents/`, covering knowledge, rational arbitration, verification, documentation, security, integration, operations, research, architecture, and implementation.
-
-These roles route the specialist units mounted for the current task, constrain output shape, and control the return-flow rhythm inside each work domain.
-
-### Lower Layer
-
-Specialist units span `30_` to `70_`, covering context, tracing, comparison, hypothesis, bridging, configuration, release, observation, rollback, terminology, decision, indexing, questioning, reporting, evidence, counter-evidence, arbitration, calibration, reproduction, assertion, regression, structure, examples, editing, threats, auditing, hardening, compliance, boundaries, interfaces, risk control, scouting, decomposition, constraints, route design, coding, and review.
-
-They are not meant to be “independent personalities”. They are stable, composable, replaceable capability units.
-They are reusable by function and can appear in multiple domain clusters.
+> Note: the `agents/` directory went through a naming convergence; a few numbers (e.g. `37_`, `40_`) are shared by two sub-individuals and are distinguished by full file name.
 
 ## Protocol Layer
 
-ExMachina does not rely on agents to “figure out how to collaborate”. The collaboration rules are fixed as explicit protocols under `src/prompt/protocol/`, covering rationality, evidence grading, conflict arbitration, workspace collaboration, multi-agent return flow, and output contracts.
+Protocol sources live in `src/prompt/protocol/` and apply to every role — 12 documents in total:
 
-These protocols define things such as:
+| Protocol | Focus |
+|----------|-------|
+| `01_绝对理性协议` | language discipline, execution stance |
+| `02_证据分级协议` | evidence grades A/B/C/D matched to conclusion strength |
+| `03_冲突裁决协议` | arbitration when conclusions conflict |
+| `04_工作区与协作协议` | workspace resources and collaboration boundaries |
+| `05_多智能体回流协议` | how intermediate results flow back between layers |
+| `06_输出契约` | minimum fields of the final output |
+| `06_代码审查协议` | execution standard for review tasks |
+| `07_调试协议` | execution standard for debugging tasks |
+| `08_变更协议` | change scope and reversibility control |
+| `09_安全审计协议` | execution standard for security reviews |
+| `10_发布协议` | pre-release checks and closure |
+| `11_回滚协议` | rollback paths and recovery discipline |
 
-- when unknowns must be preserved
-- when evidence grades must be stated
-- how conflicting sub-conclusions are arbitrated
-- how intermediate results flow back across agents
-- which minimum fields final outputs should retain
+> Note: the `06_` number is shared by `输出契约` and `代码审查协议`, distinguished by full file name.
 
-In short: roles tell the model what to do, and protocols tell it what counts as compliant execution.
+Roles tell the model what to do; protocols tell the model what counts as compliant.
 
-## Installation Guide
+## Repository Layout
 
-### Native Codex Install
+```text
+.
+├─ agents/                # shared role prompts (generated)
+├─ benchmark/             # benchmark scenarios
+├─ commands/              # command entry docs (generated)
+├─ dist/                  # per-platform artifacts
+│  ├─ codex/              # Codex docs and skill surfaces
+│  ├─ claude-plugin/      # repo-level Claude plugin entry
+│  ├─ cursor/             # repo-level Cursor rules fallback
+│  ├─ cursor-plugin/      # repo-level Cursor plugin entry
+│  ├─ gemini/             # Gemini helper files
+│  ├─ hermes/             # Hermes Agent surface (install docs + config snippet + skill copies)
+│  ├─ opencode/           # repo-level OpenCode plugin entry
+│  ├─ kiro/               # Kiro skills and steering
+│  ├─ openclaw/           # OpenClaw pack
+│  ├─ trae/               # Trae rules, skills, custom agents
+│  ├─ vscode/             # VS Code-style prompt / instructions
+│  └─ old/                # historical archive
+├─ evals/                 # eval helpers and trigger samples
+├─ examples/              # example task briefs
+├─ hooks/                 # shared hooks
+├─ paper/                 # long-form docs
+├─ skills/                # shared skill surfaces
+├─ src/                   # single source layer (the only place edited by hand)
+│  ├─ build.ts            # dispatcher (orchestration)
+│  ├─ build/              # dispatcher modules (lib / content / prompts / platforms / openclaw)
+│  ├─ exmachina/          # plugin.json source
+│  ├─ prompt/             # agents / protocol / AGENTS.md / RULES.md
+│  └─ templates/          # cross-surface templates (zh-CN / en-US)
+├─ scripts/               # install scripts (setup-exmachina.sh / .ps1) and dev tools
+├─ gemini-extension.json  # repo-level Gemini extension manifest
+└─ README.md
+```
 
-You can now connect the repository `skills/` directly into a local Codex skill library and sync `agents/` into `~/.codex/agents/`.
+## Installation
 
-Install docs:
-
-- in-repo: [`.codex/INSTALL.en.md`](.codex/INSTALL.en.md)
-- raw URL: `https://raw.githubusercontent.com/KurohaneKaoruko/Ex-Machina/main/.codex/INSTALL.en.md`
-
-Quick install:
+### Generic install (Codex route)
 
 ```bash
 git clone https://github.com/KurohaneKaoruko/Ex-Machina ~/exmachina
@@ -178,258 +180,180 @@ cd ~/exmachina
 bash ./scripts/setup-exmachina.sh
 ```
 
-## Repository Layout
+Windows PowerShell:
 
-```text
-.
-├─ agents/                # shared agent prompts
-├─ benchmark/             # benchmark scenarios
-├─ .codex/                # Codex docs and skill surfaces
-├─ commands/              # command entry docs
-├─ .claude-plugin/        # repository-level Claude plugin entry
-├─ .cursor/               # repository-level Cursor rules fallback
-├─ .cursor-plugin/        # repository-level Cursor plugin entry
-├─ .gemini/               # Gemini helper files
-├─ .opencode/             # repository-level OpenCode plugin entry
-├─ evals/                 # evaluation helpers and trigger samples
-├─ examples/              # example task packs
-├─ gemini-extension.json  # repository-level Gemini extension manifest
-├─ GEMINI.md              # repository-level Gemini context
-├─ hooks/                 # shared hooks
-├─ .kiro/                 # Kiro skill and steering surfaces
-├─ paper/                 # long-form docs
-├─ skills/                # shared skill surfaces
-├─ src/
-│  ├─ build.ts
-│  ├─ prompt/
-│  │  ├─ agents/
-│  │  └─ protocol/
-│  ├─ templates/
-│  └─ trae-agents/
-├─ scripts/
-│  ├─ setup-exmachina.sh
-│  ├─ setup-exmachina.ps1
-│  └─ dev/
-│     └─ verify-generated.mjs
-├─ .trae/                 # Trae rules, skills, and custom agents
-├─ .vscode/               # VS Code-style prompt / instruction surfaces
-└─ README-en.md
+```powershell
+git clone https://github.com/KurohaneKaoruko/Ex-Machina "$HOME/exmachina"
+Set-Location "$HOME/exmachina"
+.\scripts\setup-exmachina.ps1
 ```
 
-### Platform Install Surfaces
+Lifecycle modes:
 
-Choose the install surface that matches your tool:
+```bash
+bash ./scripts/setup-exmachina.sh --verify           # check install status
+bash ./scripts/setup-exmachina.sh --uninstall        # remove managed content
+bash ./scripts/setup-exmachina.sh --install-guidance --guidance-language en
+```
 
-| Platform | Install Surface | Reference Docs |
-| --- | --- | --- |
-| OpenAI Codex | `scripts/` + `skills/` + `agents/` + `.codex/` | [`.codex/INSTALL.md`](.codex/INSTALL.md), [`.codex/INSTALL.en.md`](.codex/INSTALL.en.md), [`.codex/README.md`](.codex/README.md), [`.codex/README.en.md`](.codex/README.en.md) |
-| Trae | `.trae/` | [`.trae/INSTALL.md`](.trae/INSTALL.md), [`.trae/INSTALL.en.md`](.trae/INSTALL.en.md) |
-| Cursor | `.cursor-plugin/` + `.cursor/` | [`.cursor-plugin/INSTALL.md`](.cursor-plugin/INSTALL.md), [`.cursor-plugin/INSTALL.en.md`](.cursor-plugin/INSTALL.en.md) |
-| Claude Code | `.claude-plugin/` | [`.claude-plugin/INSTALL.md`](.claude-plugin/INSTALL.md), [`.claude-plugin/INSTALL.en.md`](.claude-plugin/INSTALL.en.md) |
-| OpenCode | `.opencode/` | [`.opencode/INSTALL.md`](.opencode/INSTALL.md), [`.opencode/INSTALL.en.md`](.opencode/INSTALL.en.md) |
-| Gemini CLI | `gemini-extension.json` + `GEMINI.md` + `.gemini/` | [`.gemini/INSTALL.md`](.gemini/INSTALL.md), [`.gemini/INSTALL.en.md`](.gemini/INSTALL.en.md) |
-| VS Code | `.vscode/` | prompt and instruction surfaces are generated |
-| Kiro | `.kiro/` | skill and steering surfaces are generated |
+### Per-platform install
 
-### Contributor Build Flow
+| Platform | Location | Reference doc |
+|----------|----------|---------------|
+| OpenAI Codex | `scripts/` + `skills/` + `agents/` + `dist/codex/` | [`dist/codex/INSTALL.en.md`](dist/codex/INSTALL.en.md) |
+| Claude Code | `dist/claude-plugin/` | [`dist/claude-plugin/INSTALL.en.md`](dist/claude-plugin/INSTALL.en.md) |
+| Cursor | `dist/cursor-plugin/` + `dist/cursor/` | [`dist/cursor-plugin/INSTALL.en.md`](dist/cursor-plugin/INSTALL.en.md) |
+| OpenCode | `dist/opencode/` | [`dist/opencode/INSTALL.en.md`](dist/opencode/INSTALL.en.md) |
+| Gemini CLI | `gemini-extension.json` + `dist/GEMINI.md` + `dist/gemini/` | [`dist/gemini/INSTALL.en.md`](dist/gemini/INSTALL.en.md) |
+| **Hermes Agent** | `dist/hermes/` (or the root `skills/` directly) | [`dist/hermes/INSTALL.en.md`](dist/hermes/INSTALL.en.md) |
+| OpenClaw | `dist/openclaw/` | [`dist/openclaw/INSTALL.en.md`](dist/openclaw/INSTALL.en.md) |
+| Trae | `dist/trae/` | [`dist/trae/INSTALL.en.md`](dist/trae/INSTALL.en.md) |
+| Kiro | `dist/kiro/` | artifacts generated; follow the directory layout |
+| VS Code | `dist/vscode/` | prompt / instructions artifacts generated |
 
-If you edit the source under `src/`, regenerate and verify the distributed surfaces:
+### Hermes Agent quick start
+
+Hermes Agent (Nous Research) uses a "directory + `SKILL.md`" skill library, directly compatible with the root `skills/`. Pick one:
+
+**Option A — external_dirs (recommended)**: add to `~/.hermes/config.yaml` (see [`dist/hermes/config-snippet.yaml`](dist/hermes/config-snippet.yaml)):
+
+```yaml
+skills:
+  external_dirs:
+    - ~/exmachina/skills
+```
+
+**Option B — copy install**:
+
+```bash
+mkdir -p ~/.hermes/skills
+cp -r ~/exmachina/skills/exmachina-zh ~/exmachina/skills/exmachina-en \
+      ~/exmachina/skills/using-exmachina ~/exmachina/skills/using-exmachina-zh \
+      ~/exmachina/skills/using-exmachina-en ~/.hermes/skills/
+```
+
+Verify:
+
+```bash
+hermes skills list   # should list exmachina-zh
+```
+
+Full instructions (SOUL.md managed block, uninstall, troubleshooting) in [`dist/hermes/INSTALL.en.md`](dist/hermes/INSTALL.en.md).
+
+### Contributor build
 
 ```bash
 npm install
-npm run generate
-npm run verify
+npm run generate   # tsc compile + node build/build.js
+npm run verify     # artifact integrity + installer smoke test
 ```
 
-### Quick Start
+## Configuration
 
-After installation, in the target tool:
+### User side
 
-1. Use skills: in Codex, choose `using-exmachina-zh` / `using-exmachina-en` and `exmachina-zh` / `exmachina-en` based on language; on other platforms load the matching skill or rule surface.
-2. Use commands: `/ex` starts an ExMachina task.
-3. Use rules: configure `project_rules.md` or `user_rules.md` where the platform supports rules.
+| Setting | Purpose | Platform |
+|---------|---------|----------|
+| `EXMACHINA_LANG` / `EXMACHINA_LANGUAGE` | force bootstrap skill language (`zh` / `en`), overriding locale detection | OpenCode plugin |
+| `LANG` / `LC_ALL` | language fallback when not forced | OpenCode plugin |
+| `skills.external_dirs` | register the repo `skills/` into the Hermes skill library | Hermes Agent |
+| Cursor Rules | install `dist/cursor/rules/exmachina.mdc` (zh) or `exmachina-en.mdc` (en), `alwaysApply: true` | Cursor |
+| `GEMINI.md` context | `gemini-extension.json` points `contextFileName` at `GEMINI.md`, which `@`-includes the bootstrap skill | Gemini CLI |
+| OpenClaw settings | `dist/openclaw/openclaw.settings.json` (full) and `openclaw.settings.lite.json` (lite) with merge instructions | OpenClaw |
 
-### Verification
+### Contributor side (build environment variables)
 
-For end users, verify a Codex install with:
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `EXMACHINA_REPOSITORY_URL` | repository URL rendered into artifacts (SSH form auto-converted) | `https://github.com/KurohaneKaoruko/Ex-Machina` |
+| `EXMACHINA_BRANCH` | branch used for raw links | `main` |
+| `EXMACHINA_RAW_BASE_URL` | raw base URL override, skipping derivation | derived from the two above |
 
-```bash
-ls ~/.codex/skills/exmachina
+### Language convention
+
+Chinese surfaces are the default entry; English surfaces are provided via `*.en.md` / `-en` skills. Bilingual priority: skill entries, command entries, per-platform install docs, READMEs. Internal agents / protocols may stay single-language.
+
+## Usage Examples
+
+### Command entry
+
+```text
+/ex Track this regression, evidence before code.
 ```
 
-For contributors, verify the latest generated surfaces with:
+### Skill trigger (no command needed)
 
-```bash
-npm run verify
+Tasks that naturally trigger ExMachina behavior:
+
+```text
+Analyze this error and fix it.
+Do a code review; list risks before summarizing.
+The requirements are unclear — lock the acceptance criteria first, then assess risk.
 ```
 
-After generation, shared content lives directly at the repository root in `skills/`, `agents/`, `commands/`, `hooks/`, `.codex/`, `.trae/`, `.kiro/`, `.vscode/`, and related directories. Platform installation scripts remain under root `scripts/`.
+Prompts that do **not** trigger (normal conversation):
 
-## Source Layer and Distributed Surfaces
+```text
+Simple greetings.
+Translating a sentence.
+Summarizing text already provided.
+```
 
-`src/` is the only source layer that should be edited by hand. The repository root is the generated shared-content layer plus the thin platform-adapter layer.
+(Trigger samples in `evals/trigger-prompts/`.)
 
-### `src/prompt/`
+### Expected behavior difference
 
-This is the source for roles and protocols.
+For the same fix task:
 
-- `src/prompt/agents/`: global commander, domain commanders, and specialist units
-- `src/prompt/protocol/`: all shared protocols
+- **Without ExMachina**: the model guesses a cause and proposes a change.
+- **With ExMachina**: the model locks the task boundary → lists evidence and gaps → separates fact/inference/hypothesis → proposes a minimal reversible fix with a rollback path → states residual unknowns.
 
-Only two directory types are kept here:
+### Multi-agent cooperation (OpenClaw route)
 
-- `agents/`: any prompt that can load as an independent role
-- `protocol/`: any shared constraint that applies across the system
+In OpenClaw full mode, the `exmachina-main` coordinator splits complex tasks across link-team sub-agents; results flow back with `[role]:` markers and evidence grades, and the coordinator arbitrates and closes. See [`dist/openclaw/INSTALL.en.md`](dist/openclaw/INSTALL.en.md).
 
-Prompt structure:
+### Example task brief
 
-| Path | Component Type | Count | Description |
-| --- | --- | ---: | --- |
-| `src/prompt/agents/00_*.md` | top commander | 1 | the highest routing layer, directly facing the user and responsible for global routing, arbitration, and closure |
-| `src/prompt/agents/10_*.md ~ 19_*.md` | domain commanders | 10 | one commander per work domain; one file means one commander, while a cluster is that commander plus its dynamically mounted specialist units |
-| `src/prompt/agents/30_*.md ~ 70_*.md` | specialist units | 41 | atomic execution units for concrete subtasks such as context capture, evidence tracing, coding, and review |
-| `src/prompt/protocol/*.md` | protocol layer | 6 | shared protocols that apply to every role, including rationality, evidence grading, and conflict arbitration |
+`examples/task-brief.json` shows the standard task input format (goal, acceptance criteria, constraints, excluded scope) — usable directly as a prompt template.
 
-### `src/templates/`
+## Source Layer vs Artifact Layer
 
-The template source for skills, command docs, and platform docs that repeat across multiple install surfaces.
+`src/` is the single source layer; the repository root is the generated shared-content layer and platform adaptation layer.
 
-### `src/build.ts`
+| Path | Responsibility |
+|------|----------------|
+| `src/prompt/agents/` | coordinator, link team, and sub-individual prompts |
+| `src/prompt/protocol/` | all shared protocols |
+| `src/prompt/AGENTS.md` | the full operating protocol (generates root `AGENTS.md` and `dist/codex/AGENTS.md`) |
+| `src/prompt/RULES.md` | rules source (generates Cursor / Kiro rule artifacts) |
+| `src/templates/{zh-CN,en-US}/` | per-platform install docs, skills, command templates |
+| `src/build.ts` + `src/build/` | the single dispatcher (orchestration + lib/content/prompts/platforms/openclaw modules) |
+| `src/exmachina/plugin.json` | repo-level entry metadata source |
 
-The single distributor. It copies the single source into platform-specific surfaces so behavior does not drift through manual edits.
+Hand-edits to generated artifacts will be overwritten on the next build.
 
-### Root Shared Content Layer
+## Implementation Status
 
-Shared content now expands directly at the repository root instead of being wrapped again under `exmachina/`.
+Available today:
 
-### `agents/`
+- Skill and multi-platform distribution surfaces (including the Hermes Agent surface)
+- Codex native install surface with a lifecycle-managed installer script
+- Repo-level install entries for Cursor / Claude / OpenCode / Gemini / OpenClaw
+- Bilingual (zh/en) user-facing surfaces
+- Pyramid role sources and protocol sources
+- `src/` single source of truth with a modular dispatcher
+- `/ex`, `/excodex`, `/exclaude` command entries
+- Basic `benchmark` and `evals` skeletons
+- `npm run verify` artifact integrity checks and installer smoke tests
 
-The full role list, preserved in numbered order for stable indexing and distribution consistency.
+Known limitations and ongoing work:
 
-### `skills/`
+- **The project has not been fully tested** (see the warning at the top)
+- Stronger runtime routing
+- A complete automated evaluation loop
+- The OpenClaw install doc references `scripts/apply-openclaw-settings.mjs`, which is not shipped yet; OpenClaw integration currently requires manual steps per the doc
+- More stable scenario benchmarks and regression mechanisms
 
-The skill install surface. It currently includes:
+## License
 
-- `using-exmachina`
-- `using-exmachina-zh`
-- `using-exmachina-en`
-- `exmachina-zh`
-- `exmachina-en`
-
-### `commands/`
-
-The command entry surface. Current main command and aliases:
-
-- `/ex`
-- `/excodex`
-- `/exclaude`
-
-### `.codex/`
-
-The Codex-facing surface, including:
-
-- `.codex/exmachina/SKILL.md`
-- `.codex/exmachina-en/SKILL.md`
-- `INSTALL.md`
-- `README.md`
-
-### `.trae/`
-
-The Trae-facing surface, including rules, skills, and custom agents.
-
-### `hooks/`
-
-Runtime helpers and session-protection hooks such as:
-
-- routing guards
-- session snapshots
-- session recovery
-
-### `benchmark/` and `evals/`
-
-These two layers answer different questions:
-
-- `benchmark`: what to measure, including benchmark task sets and behavior examples
-- `evals`: how to measure, including triggers, scripts, and helper functions
-
-### `examples/`
-
-Example inputs, example task packs, and minimal usage samples.
-
-### `paper/`
-
-Long-form design docs, whitepaper-style documents, and extended technical writing.
-
-### Root Platform Adapter Layer
-
-Platform entry surfaces now stay intentionally thin. Their job is only to let each platform discover the shared content:
-
-- `.cursor-plugin/` and `.cursor/`: Cursor plugin manifest, hooks, and rule fallback surfaces
-- `.claude-plugin/`: Claude plugin manifest and marketplace metadata
-- `.opencode/`: OpenCode repository plugin entry
-- `gemini-extension.json`, `GEMINI.md`, and `.gemini/`: Gemini CLI native extension surface
-- `.kiro/`: Kiro skill and steering entry
-- `.vscode/`: VS Code-style prompt / instruction surface
-- `plugin.json`: repository-level entry metadata
-
-### `scripts/`
-
-Repository tooling and installation scripts:
-
-- `scripts/setup-exmachina.sh`
-- `scripts/setup-exmachina.ps1`
-- `scripts/dev/verify-generated.mjs`
-
-## Migration Note
-
-The old nested distribution directory `./exmachina` has been removed from the current architecture. The only authoritative shared-content paths are now the root-level `skills/`, `agents/`, `commands/`, `hooks/`, `.codex/`, `.trae/`, `.kiro/`, `.vscode/`, and related directories.
-
-The new rule set is:
-
-- no more double-copy structure where the root mirrors a second wrapped `exmachina/` bundle
-- the repository root itself is the installation surface
-- `src/` remains the single source of truth
-
-## Default Operating Flow
-
-The recommended ExMachina execution flow is:
-
-1. the user submits a task
-2. the global commander identifies task type, complexity, risk, and unknowns
-3. it decides whether to call a specialist directly, route through a domain commander, or assemble a full cluster
-4. specialist units produce partial results under protocol constraints
-5. domain commanders merge, arbitrate, fill gaps, and return results upward
-6. the global commander produces the final actionable output
-
-If the environment does not support native multi-agent workflows, the skill or command entry surface simulates the needed role path inside the current context.
-
-## Current Implementation Status
-
-The repository already includes these baseline capabilities:
-
-- skills and multi-platform distribution surfaces
-- a native Codex installation surface and runnable setup scripts
-- repository-native Cursor / Claude / OpenCode / Gemini entry surfaces
-- Chinese and English user-facing surfaces
-- pyramid-style role sources and protocol sources
-- a single `src/` source of truth
-- root-level shared content surfaces
-- `/ex`, `/excodex`, and `/exclaude` command entry points
-- baseline `benchmark` and `evals` scaffolding
-
-Still worth expanding:
-
-- stronger runtime routing behavior
-- a more complete automated evaluation loop
-- deeper install details for platforms such as VS Code
-- more stable benchmark and regression mechanisms
-
-## Design Summary
-
-If ExMachina must be summarized in a few lines, the core is:
-
-- organize multi-agent work with a layered structure
-- constrain behavior with protocols instead of personas
-- replace confident guessing with evidence and arbitration
-- generate multi-platform surfaces from one source of truth
-- execute complex work in a mechanical, auditable, return-flow-friendly way
+MIT

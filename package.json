@@ -18,7 +18,9 @@
     "claude",
     "cursor",
     "opencode",
-    "gemini"
+    "gemini",
+    "hermes",
+    "openclaw"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

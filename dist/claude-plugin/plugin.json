@@ -17,7 +17,9 @@
     "claude",
     "cursor",
     "opencode",
-    "gemini"
+    "gemini",
+    "hermes",
+    "openclaw"
   ],
   "defaultLanguage": "zh-CN",
   "entrypoints": {

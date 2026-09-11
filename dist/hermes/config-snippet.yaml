@@ -1,0 +1,6 @@
+# ExMachina Hermes Agent 配置片段
+# 合并进 ~/.hermes/config.yaml（可用 hermes config edit 编辑）
+# 路径按仓库实际检出位置调整
+skills:
+  external_dirs:
+    - ~/exmachina/skills
