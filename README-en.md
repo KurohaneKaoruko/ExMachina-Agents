@@ -2,9 +2,27 @@
 
 [中文](README.md)
 
-A **platform-agnostic** mechanical-intelligence prompt set. Absolute rationality, evidence-driven reasoning, bounded scope, closed verification loops. Not tied to any specific agent platform — any AI coding tool that supports custom instructions, rules files, or system prompts can adopt it.
+> [!WARNING]
+> **⚠️ This project has not been fully tested.**
+> Install surfaces, generated artifacts, and multi-agent behavior may deviate in unverified scenarios.
+> You must **verify the install and runtime behavior yourself** and use it **cautiously in controlled environments**.
+> Do not deploy it to production or high-risk tasks without your own validation.
+> Please open an issue if you hit problems.
 
-> This repository contains prompts only, no executable code. Behavioral differences across platforms must be verified by the user.
+```text
+███████╗██╗  ██╗███╗   ███╗ █████╗  ██████╗██╗  ██╗██╗███╗   ██╗ █████╗
+██╔════╝╚██╗██╔╝████╗ ████║██╔══██╗██╔════╝██║  ██║██║████╗  ██║██╔══██╗
+█████╗   ╚███╔╝ ██╔████╔██║███████║██║     ███████║██║██╔██╗ ██║███████║
+██╔══╝   ██╔██╗ ██║╚██╔╝██║██╔══██║██║     ██╔══██║██║██║╚██╗██║██╔══██║
+███████╗██╔╝ ██╗██║ ╚═╝ ██║██║  ██║╚██████╗██║  ██║██║██║ ╚████║██║  ██║
+╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
+```
+
+**ExMachina** is a mechanical-intelligence operating layer for general AI software. It does not optimize for persona, chat style, or human-like conversation. It optimizes for explicit evidence, bounded execution, visible conflict handling, auditable routing, and stable decomposition, implementation, verification, and closure for complex tasks.
+
+Supported platforms: **Codex · Claude Code · OpenCode · Cursor · Gemini CLI · Windsurf · Trae · Kiro · VS Code Copilot**; for any other tool, see [install/generic.md](install/generic.md). This repository contains prompts only, no executable code.
+
+---
 
 ## Repository Layout
 
